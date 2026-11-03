@@ -14,6 +14,8 @@ const PERMITIDOS = [
   'siscom.ibama.gov.br',           // Embargos IBAMA
   'terrabrasilis.dpi.inpe.br',     // PRODES / INPE
   'dataserver-coids.inpe.br',      // Queimadas / INPE
+  'pamgia.ibama.gov.br',           // Embargos IBAMA (ArcGIS)
+  'geo.infrasa.gov.br',            // SIGEF nacional (ArcGIS, Infra S.A.)
 ];
 
 const CORS = {

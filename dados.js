@@ -99,8 +99,29 @@ async function carNoPonto(lon, lat, uf) {
   const pt = turf.point([lon, lat]);
   return fs.filter(f => { try { return turf.booleanPointInPolygon(pt, f); } catch { return false; } });
 }
-// SIGEF (INCRA, temas por estado)
+// Serviços ArcGIS (aceitam consulta direta do navegador)
+const ARC_SIGEF = 'https://geo.infrasa.gov.br/server/rest/services/Hosted/Sigef_Brasil/FeatureServer/0';
+const ARC_EMBARGO = 'https://pamgia.ibama.gov.br/server/rest/services/01_Publicacoes_Bases/embargos_siscom_brasil/MapServer/2';
+function esriParaGeoJSON(j) {
+  if (j.error) throw new Error(j.error.message || 'a base recusou a consulta');
+  const area = r => { let a = 0; for (let i = 0, k = r.length - 1; i < r.length; k = i++) a += (r[k][0] - r[i][0]) * (r[k][1] + r[i][1]); return a / 2; };
+  const features = (j.features || []).filter(f => f.geometry && f.geometry.rings).map(f => {
+    const polys = [];
+    f.geometry.rings.forEach(r => { if (area(r) < 0 || !polys.length) polys.push([r]); else polys[polys.length - 1].push(r); }); // externo: sentido horário
+    return { type: 'Feature', properties: f.attributes || {}, geometry: polys.length === 1 ? { type: 'Polygon', coordinates: polys[0] } : { type: 'MultiPolygon', coordinates: polys } };
+  });
+  return { type: 'FeatureCollection', features };
+}
+async function arcgisNaArea(servico, b) {
+  const q = `${servico}/query?where=1%3D1&geometry=${bboxStr(b)}&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=true&outSR=4326&resultRecordCount=500&f=json`;
+  const fc = esriParaGeoJSON(JSON.parse(await buscarTexto(q)));
+  fc.features.forEach(fixAxis);
+  return fc.features;
+}
+// SIGEF: base nacional (Infra S.A.) e, se falhar, Acervo Fundiário do INCRA por estado (via ponte)
 async function sigefNaArea(b, uf) {
+  try { const fs = await arcgisNaArea(ARC_SIGEF, b); fs.forEach(f => f.properties._tema = 'SIGEF'); return fs; }
+  catch (e) { console.warn('SIGEF Infra S.A. falhou:', e.message); }
   const out = [];
   for (const tema of [`certificada_sigef_particular_${uf.toLowerCase()}`, `certificada_sigef_publico_${uf.toLowerCase()}`]) {
     const base = `https://acervofundiario.incra.gov.br/i3geo/ogc.php?tema=${tema}&service=WFS&version=1.0.0&request=GetFeature&typename=${tema}&bbox=${bboxStr(b)}`;
@@ -111,8 +132,10 @@ async function sigefNaArea(b, uf) {
   }
   return out;
 }
-// Embargos IBAMA
+// Embargos IBAMA: PAMGIA (cópia oficial do SISCOM, atualizada 2x ao dia) e, se falhar, SISCOM
 async function embargosNaArea(b) {
+  try { return await arcgisNaArea(ARC_EMBARGO, b); }
+  catch (e) { console.warn('PAMGIA falhou:', e.message); }
   return (await getGeo(`https://siscom.ibama.gov.br/geoserver/publica/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=publica:vw_brasil_adm_embargo_a&outputFormat=application/json&srsName=EPSG:4326&maxFeatures=500&bbox=${bboxStr(b)}`)).features;
 }
 // PRODES (Amazônia Legal e Cerrado)
@@ -158,6 +181,12 @@ async function climaNoPonto(lon, lat) {
   return r.json();
 }
 
+// datas: texto 'AAAA-MM-DD…' ou número em milissegundos (ArcGIS)
+function dataISO(v) {
+  if (v == null || v === '') return '';
+  if (typeof v === 'number' || /^\d{11,}$/.test(String(v))) { const d = new Date(+v); return isNaN(d) ? '' : d.toISOString().slice(0, 10); }
+  return String(v).slice(0, 10);
+}
 // ---------- Geometria auxiliar ----------
 function farmFeature(f) { return f.polys.length === 1 ? turf.polygon(f.polys[0]) : turf.multiPolygon(f.polys); }
 function interHa(a, b) {
@@ -255,12 +284,12 @@ const RENDER = {
     let nivel = 'ok', resumo;
     if (!rows.length) { nivel = 'alerta'; resumo = 'Nenhuma parcela certificada no SIGEF sobre esta área. A área pode não estar georreferenciada/certificada no INCRA.'; }
     else { if (cob / areaF < 0.8) nivel = 'alerta'; resumo = `${rows.length} parcela(s) certificada(s) cobrindo ${ha(cob)} (${fmt(Math.min(100, cob / areaF * 100), 0)}% da área).${rows.length > 1 ? ' Confira se todas pertencem ao mesmo imóvel.' : ''}${cob / areaF < 0.8 ? ' Parte da área não está certificada.' : ''}`; }
-    return { nivel, resumo, detalhes: rows.length ? tabela(['Denominação', 'Código/parcela', 'Tipo', 'Sobre a fazenda'], rows.map(r => [esc(pick(r.p, 'nome_area', 'nome_imove', 'denominaca') || '—'), esc(pick(r.p, 'parcela_co', 'codigo_imo', 'cod_imovel') || '—'), r.p._tema || '', ha(r.oh)])) : '' };
+    return { nivel, resumo, detalhes: rows.length ? tabela(['Denominação', 'Código/parcela', 'Situação', 'Sobre a fazenda'], rows.map(r => [esc(pick(r.p, 'nome_area', 'nome_imove', 'denominaca') || '—'), esc(pick(r.p, 'parcela_co', 'codigo_imo', 'cod_imovel') || '—'), esc(pick(r.p, 'situacao_i', 'situ_imov', 'status') || r.p._tema || ''), ha(r.oh)])) : '' };
   },
   emb(feats, F) {
     const rows = feats.map(ft => {
       const p = ft.properties, oh = interHa(F, ft);
-      return { ft, oh, km: oh > 0 ? 0 : distKm(F, ft), tad: pick(p, 'num_tad', 'numero_tad', 'seq_tad') || '—', data: (pick(p, 'dat_embarg', 'data_tad', 'dat_ult_al') || '').slice(0, 10), mun: pick(p, 'municipio', 'nom_munici') || '', inf: pick(p, 'des_infrac', 'des_tad', 'infracao') || '', area: +pick(p, 'qtd_area_e', 'area_ha', 'qtd_area_d') || turf.area(ft) / 1e4 };
+      return { ft, oh, km: oh > 0 ? 0 : distKm(F, ft), tad: pick(p, 'num_tad', 'numero_tad', 'seq_tad') || '—', data: dataISO(pick(p, 'dat_embarg', 'data_tad', 'dat_ult_al')), mun: pick(p, 'municipio', 'nom_munici') || '', inf: pick(p, 'des_infrac', 'des_tad', 'infracao') || '', area: +pick(p, 'qtd_area_e', 'area_ha', 'qtd_area_d') || turf.area(ft) / 1e4 };
     }).filter(r => r.oh > 0 || r.km <= CONF.raioKm).sort((a, b) => a.km - b.km);
     camada(rows.map(r => r.ft), { color: '#ff3b3b', weight: 2, fillColor: '#ff3b3b', fillOpacity: .35 }, ft => `<b>Embargo IBAMA</b><br>TAD ${esc(pick(ft.properties, 'num_tad', 'seq_tad') || '')}`);
     const dentro = rows.filter(r => r.oh > 0), perto = rows.filter(r => !r.oh);
