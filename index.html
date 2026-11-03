@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a110d">
 <title>AgroSat — Monitoramento de fazendas por satélite</title>
 <link rel="stylesheet" href="lib/leaflet.css">
 <link rel="stylesheet" href="lib/maplibre-gl.css">
@@ -132,7 +133,7 @@
         <p class="hint">Dados: Open‑Meteo (modelos meteorológicos e reanálise ERA5), no centro da fazenda. Soma térmica = Σ máx(0, (Tmáx+Tmín)/2 − Tbase).</p>
       </div>
       <div class="tab" id="tab-situacao" hidden>
-        <p class="hint">Cruza a fazenda com CAR, SIGEF/INCRA, embargos do IBAMA, desmatamento PRODES, focos de queimada do INPE (área + 5 km ao redor) e clima.</p>
+        <p class="hint">Cruza a fazenda com CAR, SIGEF/INCRA, embargos do IBAMA, desmatamento PRODES (desde 2008), focos de queimada do INPE (área + 5 km ao redor) e clima. Indica onde conferir ICMBio, SEMA‑MA e Lista de Trabalho Escravo.</p>
         <button class="btn full" id="btnDiag">Verificar situação da fazenda</button>
         <div id="diagBox" class="diag"></div>
         <p class="hint">Dados públicos consultados na hora. Não substituem certidões oficiais.</p>
