@@ -17,11 +17,25 @@ function precisaPonte() {
 }
 const viaPonte = url => `${CONF.proxy}/?url=${encodeURIComponent(url)}`;
 
-async function getGeo(url) {
-  precisaPonte();
+// Tenta direto do navegador; se a base recusar (CORS), passa pelo servidor-ponte.
+const diretoBloqueado = new Set();
+async function buscarTexto(url) {
+  const host = new URL(url).hostname;
+  if (!diretoBloqueado.has(host)) {
+    try {
+      const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 25000);
+      const r = await fetch(url, { signal: ctl.signal }); clearTimeout(t);
+      if (r.ok) return await r.text();
+      if (r.status >= 500 && !CONF.proxy) throw new Error(`a base respondeu ${r.status} (fora do ar?)`);
+    } catch (e) { if (/fora do ar/.test(e.message)) throw e; diretoBloqueado.add(host); }
+  }
+  if (!CONF.proxy) throw new Error('esta base não aceita consulta direta do navegador. Configure o servidor-ponte em ⚙ Configurações.');
   const r = await fetch(viaPonte(url));
-  const txt = await r.text();
   if (!r.ok) throw new Error(`base respondeu ${r.status}`);
+  return r.text();
+}
+async function getGeo(url) {
+  const txt = await buscarTexto(url);
   let fc;
   const t = txt.trim();
   if (t.startsWith('{')) fc = JSON.parse(t);
@@ -114,10 +128,28 @@ async function prodesNaArea(b) {
 }
 // Focos de queimada INPE
 async function focosNaArea(b, dias) {
-  precisaPonte();
-  const r = await fetch(`${CONF.proxy}/focos?bbox=${bboxStr(b)}&dias=${dias}`);
-  if (!r.ok) throw new Error(`ponte respondeu ${r.status}`);
-  return r.json();
+  if (CONF.proxy) {
+    const r = await fetch(`${CONF.proxy}/focos?bbox=${bboxStr(b)}&dias=${dias}`);
+    if (!r.ok) throw new Error(`ponte respondeu ${r.status}`);
+    return r.json();
+  }
+  // sem ponte: tenta ler os arquivos diários do INPE direto
+  const base = 'https://dataserver-coids.inpe.br/queimadas/queimadas/focos/csv/diario/Brasil/';
+  const focos = [], arquivos = []; let bloqueado = 0;
+  await Promise.all(Array.from({ length: dias + 1 }, async (_, k) => {
+    const nome = `focos_diario_br_${isoDay(new Date(Date.now() - k * 864e5)).replace(/-/g, '')}.csv`;
+    try {
+      const r = await fetch(base + nome); if (!r.ok) return;
+      const linhas = (await r.text()).split(/\r?\n/), cab = linhas[0].split(',').map(s => s.trim().toLowerCase());
+      const iLat = cab.indexOf('lat'), iLon = cab.indexOf('lon'); arquivos.push(nome);
+      for (let i = 1; i < linhas.length; i++) {
+        const c = linhas[i].split(','), lat = +c[iLat], lon = +c[iLon];
+        if (lon >= b[0] && lon <= b[2] && lat >= b[1] && lat <= b[3]) { const o = {}; cab.forEach((h, j) => o[h] = c[j]); focos.push(o); }
+      }
+    } catch (e) { bloqueado++; }
+  }));
+  if (!arquivos.length && bloqueado) throw new Error('o INPE não aceita consulta direta do navegador. Configure o servidor-ponte em ⚙ Configurações.');
+  return { arquivos, focos };
 }
 // Clima (Open-Meteo, sem chave)
 async function climaNoPonto(lon, lat) {

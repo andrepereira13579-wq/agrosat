@@ -46,7 +46,6 @@ $('farmForm').onsubmit = async e => {
       meta.uf = cod.trim().slice(0, 2).toUpperCase();
       $('farmModal').hidden = true; criarFazenda(meta, polysDoCAR(ft), pick(ft.properties, 'cod_imovel') || cod.trim().toUpperCase());
     } else {
-      precisaPonte();
       $('farmModal').hidden = true; iniciarPino(meta);
     }
   } catch (err) { console.error(err); $('fmErr').textContent = err.message || 'Falhou.'; }

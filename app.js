@@ -203,11 +203,27 @@ function itemEPSG(it) {
   return null;
 }
 function asset(it, ...keys) { for (const k of keys) if (it.assets[k]) return it.assets[k]; return null; }
+function detectarOffset(R, NI, mask, SC, meta) {
+  if (!meta) return 0;            // metadados dizem que não há offset
+  const v = [];
+  for (let i = 0; i < R.length; i++) if (mask[i] && R[i] > 0 && NI[i] > 0 && (!SC || !CFG.invalidSCL.has(SC[i]))) v.push(R[i]);
+  if (v.length < 20) return 0;
+  v.sort((a, b) => a - b);
+  // valores abaixo de 1000 provam que a imagem NÃO tem o +1000 (senão a reflectância seria negativa)
+  return v[Math.floor(v.length * 0.02)] >= 1000 ? meta : 0;
+}
 function scaleOffset(it, a) {
   const rb = a && a['raster:bands'] && a['raster:bands'][0];
-  if (rb && rb.scale != null) return [rb.scale, rb.offset || 0];
+  const scale = rb && rb.scale != null ? rb.scale : 1e-4;
+  // Earth Search v1 "sentinel-2-l2a": os pixels já vêm SEM o +1000, apesar de raster:bands dizer offset -0,1
+  // (problema conhecido: github.com/Element84/earth-search/issues/71). Exceção: cenas de 25/01 a 27/02/2022.
+  if (it.collection === 'sentinel-2-l2a') {
+    const d = (it.properties.datetime || '').slice(0, 10);
+    return [scale, d >= '2022-01-25' && d <= '2022-02-27' ? -0.1 : 0];
+  }
+  if (rb && rb.scale != null) return [scale, rb.offset || 0];
   const pb = parseFloat(it.properties['s2:processing_baseline'] || '0');
-  return [1e-4, pb >= 4 ? -0.1 : 0];
+  return [scale, pb >= 4 ? -0.1 : 0];
 }
 
 // ---------- Leitura das bandas (COG) ----------
@@ -279,13 +295,20 @@ async function processScene(it, res = 10, withRGB = true) {
   ]);
   const N = g.W * g.H, ndvi = new Float32Array(N).fill(NaN), ndre = new Float32Array(N).fill(NaN), cloud = new Uint8Array(N);
   const R = red.data[0], NI = nir.data[0], RE = re1.data[0], SC = scl ? scl.data[0] : null;
+  // Calibração: imagens Sentinel-2 mais novas somam +1000 aos valores (offset de -0,1 na reflectância),
+  // mas nem todas as cenas do catálogo vêm assim, e os metadados nem sempre batem.
+  // Decide pela própria imagem: com offset, o vermelho quase nunca fica abaixo de 1000.
+  const off = detectarOffset(R, NI, g.mask, SC, red.so[1]);
+  const so = (x, s) => x * s[0] + off;
   let nIn = 0, nCloud = 0;
   for (let i = 0; i < N; i++) {
     if (!g.mask[i]) continue; nIn++;
     if ((SC && CFG.invalidSCL.has(SC[i])) || R[i] === 0 || NI[i] === 0) { cloud[i] = 1; nCloud++; continue; }
-    const r = R[i] * red.so[0] + red.so[1], n = NI[i] * nir.so[0] + nir.so[1], e = RE[i] * re1.so[0] + re1.so[1];
-    ndvi[i] = (n + r) > 0 ? (n - r) / (n + r) : NaN;
-    ndre[i] = (n + e) > 0 ? (n - e) / (n + e) : NaN;
+    const r = so(R[i], red.so), n = so(NI[i], nir.so), e = so(RE[i], re1.so);
+    if (r <= 0 || n <= 0) continue;
+    const v = (n - r) / (n + r), w = e > 0 ? (n - e) / (n + e) : NaN;
+    ndvi[i] = v > 1 || v < -1 ? NaN : v;
+    ndre[i] = w > 1 || w < -1 ? NaN : w;
   }
   let rgb = null;
   if (withRGB) {
@@ -305,7 +328,7 @@ async function processScene(it, res = 10, withRGB = true) {
       if (!Number.isNaN(ndvi[i])) { a.n++; a.s += ndvi[i]; }
       if (!Number.isNaN(ndre[i])) { a.nr++; a.sr += ndre[i]; }
     }
-    const linha = (nome, area, a, fora) => ({ nome, area, fora, ndvi: a.n ? a.s / a.n : NaN, ndre: a.nr ? a.sr / a.nr : NaN, nuvem: a.tot ? a.nub / a.tot : 0 });
+    const linha = (nome, area, a, fora) => { const nuvem = a.tot ? a.nub / a.tot : 0, ok = a.n && nuvem < 0.8; return { nome, area, fora, ndvi: ok ? a.s / a.n : NaN, ndre: ok && a.nr ? a.sr / a.nr : NaN, nuvem }; };
     divStats = f.divs.map((d, k) => linha(d.nome, areaHa([d.rings]), acc[k]));
     const foraHa = acc[nd].tot * g.res * g.res / 1e4;
     if (foraHa >= 0.5) divStats.push(linha('Fora das divisões', foraHa, acc[nd], true));
