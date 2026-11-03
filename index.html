@@ -39,6 +39,7 @@
       <h2>Comece cadastrando uma fazenda</h2>
       <p>Informe o <b>código do CAR</b>, toque no mapa sobre a fazenda ou envie o perímetro em <b>KML</b>, <b>KMZ</b>, <b>GeoJSON</b> ou <b>Shapefile (.zip)</b>. O app busca as imagens Sentinel‑2 (10 m, a cada ~5 dias) e calcula o NDVI só dentro da área.</p>
       <button class="btn" id="btnAddFarm2">+ Cadastrar fazenda</button>
+      <div class="kmls" id="kmlsVazio"></div>
     </div>
 
     <div id="farmPanel" hidden>
@@ -156,6 +157,7 @@
     <p data-for="pino" class="hint" hidden>Depois de salvar, toque no mapa em cima da fazenda. O app acha o CAR daquele ponto e usa o perímetro dele.</p>
     <label class="file" data-for="arq" hidden>Perímetro (KML, KMZ, GeoJSON ou SHP .zip)
       <input type="file" id="fmFile" accept=".kml,.kmz,.geojson,.json,.zip"></label>
+    <div data-for="arq" hidden class="kmls" id="kmlsModal"></div>
     <p class="err" id="fmErr"></p>
     <div class="actions">
       <button type="button" class="btn ghost" id="fmCancel">Cancelar</button>
@@ -215,5 +217,6 @@
 <script src="dados.js"></script>
 <script src="integracao.js"></script>
 <script src="extras.js"></script>
+<script src="kmls.js"></script>
 </body>
 </html>
