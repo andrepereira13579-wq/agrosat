@@ -124,9 +124,33 @@ const saveFarms = () => { store('agrosat.farms', S.farms); store('agrosat.curren
 
 // ---------- Mapa ----------
 const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([-3.9, -45.1], 8);
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-  maxZoom: 19, attribution: 'Esri World Imagery',
-}).addTo(map);
+// Mapas de fundo: se um não carregar, troca sozinho para o próximo.
+const FUNDOS = {
+  'Satélite (Esri)': { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', nat: 19, attr: 'Esri World Imagery' },
+  'Satélite Sentinel‑2 sem nuvens (EOX)': { url: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg', nat: 15, attr: 'Sentinel‑2 cloudless 2020 © EOX IT Services (dados Copernicus)' },
+  'Mapa de ruas (OpenStreetMap)': { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', nat: 19, attr: '© colaboradores do OpenStreetMap' },
+};
+const BASES = {};
+Object.entries(FUNDOS).forEach(([nome, d]) => { BASES[nome] = L.tileLayer(d.url, { maxZoom: 20, maxNativeZoom: d.nat, attribution: d.attr }); BASES[nome]._nomeFundo = nome; });
+let fundoAtual = null;
+function usarFundo(nome) {
+  if (!BASES[nome]) nome = Object.keys(BASES)[0];
+  if (fundoAtual) map.removeLayer(fundoAtual);
+  fundoAtual = BASES[nome].addTo(map); fundoAtual.bringToBack(); store('agrosat.fundo', nome);
+}
+Object.values(BASES).forEach(l => {
+  let ok = 0, falhas = 0;
+  l.on('tileload', () => ok++);
+  l.on('tileerror', () => {
+    if (++falhas >= 4 && ok === 0 && fundoAtual === l) {
+      const nomes = Object.keys(BASES), prox = nomes[(nomes.indexOf(l._nomeFundo) + 1) % nomes.length];
+      toast(`O fundo "${l._nomeFundo}" não carregou; trocando para "${prox}".`, 5000);
+      usarFundo(prox);
+    }
+  });
+});
+map.on('baselayerchange', e => { fundoAtual = e.layer; store('agrosat.fundo', e.layer._nomeFundo); });
+usarFundo(store('agrosat.fundo') || Object.keys(BASES)[0]);
 
 function drawOutline() {
   if (S.outline) S.outline.remove();

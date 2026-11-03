@@ -20,6 +20,8 @@ Web app de monitoramento de fazendas: satélite + situação ambiental e fundiá
 **Subdivisões**: se o KML tiver piquetes, glebas ou talhões dentro do contorno, o app mostra o NDVI de cada um, do pior para o melhor.
 **⬇ KML**: baixa o perímetro e as divisões para abrir no Google Earth.
 **📐 Memorial**: memorial descritivo com vértices (lat/long e UTM SIRGAS 2000), azimutes, distâncias, perímetro e área. Dá para imprimir ou salvar em PDF e baixar a planilha CSV. Não substitui o memorial certificado do SIGEF.
+**🏔 3D**: relevo real com a imagem de satélite por cima, contorno, divisões e NDVI. Mostra altitude mínima, média e máxima e o desnível da área. Dá para girar, inclinar e exagerar o relevo.
+**Mapa de fundo**: Esri, Sentinel‑2 sem nuvens (EOX) ou mapa de ruas, escolhidos no ícone de camadas. Se um não carregar, o app troca sozinho.
 **Relatório**: botão 📄, depois "Imprimir / salvar PDF", com seu nome e empresa no cabeçalho.
 **Camadas no mapa** (ícone de camadas, canto superior direito): CAR, SIGEF, embargos e PRODES de toda a região.
 

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AgroSat — Monitoramento de fazendas por satélite</title>
 <link rel="stylesheet" href="lib/leaflet.css">
+<link rel="stylesheet" href="lib/maplibre-gl.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -48,7 +49,7 @@
         <span class="chip" id="farmArea">— ha</span>
       </div>
       <div class="farmsub"><span id="farmCar"></span></div>
-      <div class="acoes"><button class="btn ghost sm" id="btnReport">📄 Relatório</button><button class="btn ghost sm" id="btnKML">⬇ KML</button><button class="btn ghost sm" id="btnMemo">📐 Memorial</button></div>
+      <div class="acoes"><button class="btn ghost sm" id="btnReport">📄 Relatório</button><button class="btn ghost sm" id="btnKML">⬇ KML</button><button class="btn ghost sm" id="btnMemo">📐 Memorial</button><button class="btn ghost sm" id="btn3D">🏔 3D</button></div>
       <nav class="tabs" id="tabs">
         <button data-tab="imagens" class="on">Imagens</button>
         <button data-tab="serie">Histórico</button>
@@ -202,6 +203,20 @@
 </div>
 
 <div class="pinbar" id="pinbar" hidden>👆 Toque no mapa em cima da fazenda <button class="btn ghost sm" id="pinCancel">Cancelar</button></div>
+<div class="m3d" id="m3d" hidden>
+  <div id="map3d"></div>
+  <div class="top3d">
+    <b id="t3dNome">3D</b>
+    <span id="t3dAlt" class="alt3d">Calculando altitude…</span>
+    <button class="btn ghost sm" id="c3d">✕ Fechar</button>
+  </div>
+  <div class="bar3d">
+    <label>Relevo ×<b id="exV">4</b> <input type="range" id="ex3d" min="1" max="10" step="0.5" value="4"></label>
+    <label class="chk"><input type="checkbox" id="nd3d" checked> NDVI</label>
+    <label class="chk"><input type="checkbox" id="dv3d" checked> Divisões</label>
+    <select id="fd3d"></select>
+  </div>
+</div>
 <div class="toast" id="toast" hidden></div>
 
 <script src="lib/leaflet.js"></script>
@@ -218,5 +233,7 @@
 <script src="integracao.js"></script>
 <script src="extras.js"></script>
 <script src="kmls.js"></script>
+<script src="lib/maplibre-gl.js"></script>
+<script src="tresd.js"></script>
 </body>
 </html>

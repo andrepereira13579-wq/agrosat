@@ -109,10 +109,10 @@ let ctrlCamadas = null;
 window.onFarmChange = f => {
   limparDiag(); S.diag = null; $('diagBox').innerHTML = '';
   if (ctrlCamadas) { Object.values(ctrlCamadas._agro).forEach(l => l.remove()); ctrlCamadas.remove(); ctrlCamadas = null; }
+  const ref = f ? camadasReferencia(f.uf) : {};
+  ctrlCamadas = L.control.layers(BASES, ref, { collapsed: true, position: 'topright' }).addTo(map);
+  ctrlCamadas._agro = ref;
   if (!f) return;
   $('farmCar').textContent = f.car ? `CAR ${f.car}` : (f.uf ? `Estado: ${f.uf}` : '');
-  const ref = camadasReferencia(f.uf);
-  ctrlCamadas = L.control.layers(null, ref, { collapsed: true, position: 'topright' }).addTo(map);
-  ctrlCamadas._agro = ref;
 };
-if (farm()) window.onFarmChange(farm());
+window.onFarmChange(farm() || null);
