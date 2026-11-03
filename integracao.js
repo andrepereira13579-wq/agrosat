@@ -115,3 +115,8 @@ window.onFarmChange = f => {
   $('farmCar').textContent = f.car ? `CAR ${f.car}` : (f.uf ? `Estado: ${f.uf}` : '');
 };
 window.onFarmChange(farm() || null);
+
+// alterna imagem suavizada / pixels
+function rotSuave() { $('btnSuave').textContent = S.suave ? '◼ Ver pixels' : '◍ Suavizar'; }
+$('btnSuave').onclick = () => { S.suave = !S.suave; store('agrosat.suave', S.suave); rotSuave(); if (S.result) showLayer(); };
+rotSuave();

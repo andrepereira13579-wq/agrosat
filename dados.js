@@ -349,13 +349,13 @@ function camadasReferencia(uf) {
 function imagemNDVIcomContorno() {
   const res = S.result; if (!res || res.isDiff) return null;
   const f = farm(), g = res.g, fwd = toUTM(g.epsg);
-  const img = new Image(); img.src = renderCanvas(res, 'ndvi');
+  const img = new Image(); img.src = renderCanvas(res, 'ndvi', false);
   return new Promise(ok => {
     img.onload = () => {
       const k = Math.max(1, Math.round(900 / Math.max(g.W, g.H)));
       const cv = document.createElement('canvas'); cv.width = g.W * k; cv.height = g.H * k;
       const ctx = cv.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cv.width, cv.height);
-      ctx.imageSmoothingEnabled = false; ctx.drawImage(img, 0, 0, cv.width, cv.height);
+      ctx.imageSmoothingEnabled = S.suave; ctx.imageSmoothingQuality = 'high'; ctx.drawImage(img, 0, 0, cv.width, cv.height);
       const desenha = (rings, lw) => rings.forEach(r => {
         ctx.lineWidth = lw; ctx.beginPath();
         r.forEach((c, i) => { const [x, y] = fwd(c); const px = (x - g.bbox[0]) / g.res * k, py = (g.bbox[3] - y) / g.res * k; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });

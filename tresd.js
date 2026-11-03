@@ -50,7 +50,7 @@
       const res = S.result && !S.result.isDiff ? S.result : null;
       if (res) {
         M3.addSource('ndvi', { type: 'image', url: renderCanvas(res, 'ndvi'), coordinates: cantosNDVI(res) });
-        M3.addLayer({ id: 'ndvi', type: 'raster', source: 'ndvi', paint: { 'raster-opacity': 0.85, 'raster-resampling': 'nearest' }, layout: { visibility: $('nd3d').checked ? 'visible' : 'none' } });
+        M3.addLayer({ id: 'ndvi', type: 'raster', source: 'ndvi', paint: { 'raster-opacity': 0.85, 'raster-resampling': S.suave ? 'linear' : 'nearest' }, layout: { visibility: $('nd3d').checked ? 'visible' : 'none' } });
       } else { $('nd3d').checked = false; $('nd3d').disabled = true; $('nd3d').parentElement.title = 'Abra uma imagem na aba Imagens para ver o NDVI em 3D'; }
       if (res) $('nd3d').disabled = false;
       M3.addSource('div', { type: 'geojson', data: G.div });

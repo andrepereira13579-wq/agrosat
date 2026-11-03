@@ -117,6 +117,7 @@ async function readPerimeter(file) {
 const S = {
   farms: store('agrosat.farms') || [],
   farmId: store('agrosat.current'),
+  suave: store('agrosat.suave') !== false,
   scenes: [], scene: null, result: null, layer: 'ndvi', overlay: null, outline: null, chart: null,
 };
 const farm = () => S.farms.find(f => f.id === S.farmId);
@@ -127,6 +128,7 @@ const map = L.map('map', { zoomControl: true, attributionControl: true }).setVie
 // Mapas de fundo: se um não carregar, troca sozinho para o próximo.
 const FUNDOS = {
   'Satélite (Esri)': { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', nat: 19, attr: 'Esri World Imagery' },
+  'Satélite (Esri, servidor 2)': { url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', nat: 19, attr: 'Esri World Imagery' },
   'Satélite Sentinel‑2 sem nuvens (EOX)': { url: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg', nat: 15, attr: 'Sentinel‑2 cloudless 2020 © EOX IT Services (dados Copernicus)' },
   'Mapa de ruas (OpenStreetMap)': { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', nat: 19, attr: '© colaboradores do OpenStreetMap' },
 };
@@ -136,21 +138,24 @@ let fundoAtual = null;
 function usarFundo(nome) {
   if (!BASES[nome]) nome = Object.keys(BASES)[0];
   if (fundoAtual) map.removeLayer(fundoAtual);
-  fundoAtual = BASES[nome].addTo(map); fundoAtual.bringToBack(); store('agrosat.fundo', nome);
+  fundoAtual = BASES[nome].addTo(map); fundoAtual.bringToBack();
 }
+const fundosFalhos = new Set();
 Object.values(BASES).forEach(l => {
   let ok = 0, falhas = 0;
   l.on('tileload', () => ok++);
   l.on('tileerror', () => {
-    if (++falhas >= 4 && ok === 0 && fundoAtual === l) {
-      const nomes = Object.keys(BASES), prox = nomes[(nomes.indexOf(l._nomeFundo) + 1) % nomes.length];
-      toast(`O fundo "${l._nomeFundo}" não carregou; trocando para "${prox}".`, 5000);
-      usarFundo(prox);
-    }
+    if (++falhas < 4 || ok > 0 || fundoAtual !== l || fundosFalhos.has(l._nomeFundo)) return;
+    fundosFalhos.add(l._nomeFundo);
+    const prox = Object.keys(BASES).find(n => !fundosFalhos.has(n));
+    if (!prox) { toast('Nenhum mapa de fundo carregou. Verifique a internet.', 6000); return; }
+    toast(`O fundo "${l._nomeFundo}" não carregou; trocando para "${prox}".`, 4000);
+    usarFundo(prox);
   });
 });
-map.on('baselayerchange', e => { fundoAtual = e.layer; store('agrosat.fundo', e.layer._nomeFundo); });
-usarFundo(store('agrosat.fundo') || Object.keys(BASES)[0]);
+// só lembra o fundo escolhido à mão; a troca automática vale só para aquela visita
+map.on('baselayerchange', e => { fundoAtual = e.layer; store('agrosat.fundoEscolhido', e.layer._nomeFundo); });
+usarFundo(store('agrosat.fundoEscolhido') || Object.keys(BASES)[0]);
 
 function drawOutline() {
   if (S.outline) S.outline.remove();
@@ -361,7 +366,7 @@ function ramp(stops, v) {
 }
 const cssGrad = stops => `linear-gradient(90deg,${stops.map(([v, c], i) => `rgb(${c}) ${(i / (stops.length - 1) * 100).toFixed(0)}%`).join(',')})`;
 
-function renderCanvas(res, layer) {
+function renderCanvas(res, layer, suave) {
   const { g } = res, cv = document.createElement('canvas'); cv.width = g.W; cv.height = g.H;
   const ctx = cv.getContext('2d'), img = ctx.createImageData(g.W, g.H), d = img.data;
   const st = res.stats, thr = st ? zoneThr(st) : -1;
@@ -396,12 +401,22 @@ function renderCanvas(res, layer) {
     d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
   }
   ctx.putImageData(img, 0, 0);
+  if (suave === undefined ? S.suave : suave) {
+    // amplia com interpolação: mesma informação de 10 m, sem os quadrados
+    const k = Math.max(1, Math.min(8, Math.floor(2400 / Math.max(g.W, g.H))));
+    if (k > 1) {
+      const big = document.createElement('canvas'); big.width = g.W * k; big.height = g.H * k;
+      const bx = big.getContext('2d'); bx.imageSmoothingEnabled = true; bx.imageSmoothingQuality = 'high';
+      bx.drawImage(cv, 0, 0, big.width, big.height);
+      return big.toDataURL('image/png');
+    }
+  }
   return cv.toDataURL('image/png');
 }
 function showLayer() {
   const res = S.result; if (!res) return;
   if (S.overlay) S.overlay.remove();
-  S.overlay = L.imageOverlay(renderCanvas(res, S.layer), res.g.bounds, { opacity: $('opacity').value / 100, className: 'pix' }).addTo(map);
+  S.overlay = L.imageOverlay(renderCanvas(res, S.layer), res.g.bounds, { opacity: $('opacity').value / 100, className: S.suave ? 'suave' : 'pix' }).addTo(map);
   if (S.outline) S.outline.bringToFront();
   document.querySelectorAll('#layerSeg button').forEach(b => {
     b.classList.toggle('on', b.dataset.layer === S.layer);
