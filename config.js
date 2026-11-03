@@ -1,7 +1,7 @@
 /* Configuração do AgroSat. Edite aqui depois de criar o servidor-ponte no Cloudflare,
    assim todos os aparelhos (você e seus clientes) já abrem configurados. */
 window.AGROSAT_PROXY = '';   // ex.: 'https://agrosat-ponte.seuusuario.workers.dev'
-window.AGROSAT_CONSULTOR = { nome: '', empresa: '', contato: '' };
+window.AGROSAT_CONSULTOR = { nome: 'André Silva Pereira — Zootecnista', empresa: 'André Zootec · Soluções em Pecuária', contato: 'andrespzoot@hotmail.com · @andre.zootec' };
 
 // KMLs guardados no site (pasta kml/): aparecem para baixar ou cadastrar com um toque.
 window.AGROSAT_KMLS = [

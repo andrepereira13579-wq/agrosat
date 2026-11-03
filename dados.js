@@ -194,6 +194,35 @@ function farmFeature(f) { return f.polys.length === 1 ? turf.polygon(f.polys[0])
 function interHa(a, b) {
   try { const i = turf.intersect(a, b); return i ? turf.area(i) / 1e4 : 0; } catch (e) { return 0; }
 }
+// Área (ha) da UNIÃO das partes de várias feições que caem dentro da fazenda.
+// Evita contar duas vezes onde as próprias feições se sobrepõem entre si.
+function uniaoDentroHa(farmF, feats) {
+  let U = null, soma = 0;
+  for (const ft of feats) {
+    let i = null;
+    try { i = turf.intersect(farmF, ft); } catch (e) { i = null; }
+    if (!i) continue;
+    soma += turf.area(i) / 1e4;
+    try { U = U ? (turf.union(U, i) || U) : i; } catch (e) { return Math.min(soma, turf.area(farmF) / 1e4); }
+  }
+  return U ? turf.area(U) / 1e4 : 0;
+}
+// '2026-10-31 16:20:00' (UTC) -> '31/10 às 13:20' no horário do aparelho
+function dataHoraFoco(s) {
+  if (!s) return '';
+  const d = new Date(String(s).trim().replace(' ', 'T') + (/[zZ]|[+-]\d\d:?\d\d$/.test(s) ? '' : 'Z'));
+  if (isNaN(d)) return esc(s);
+  return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
+}
+const agoraBR = iso => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
+const FONTES_DIAG = 'SICAR/SFB (CAR) · INCRA/SIGEF e Infra S.A. (parcelas certificadas) · IBAMA/PAMGIA–SISCOM (embargos) · INPE/TerraBrasilis (PRODES) · INPE/BDQueimadas (focos de queimada) · Open‑Meteo (clima)';
+// Bases sem consulta por mapa: o app indica onde conferir pelo CPF/CNPJ do proprietário
+const OUTRAS_LISTAS = [
+  ['Embargos do ICMBio (unidades de conservação federais)', 'https://www.gov.br/pt-br/servicos/consultar-ocorrencia-de-embargo-e-emitir-certidao-negativa-de-embargo-icmbio'],
+  ['Embargos da SEMA‑MA (órgão estadual)', 'https://www.sema.ma.gov.br/'],
+  ['Lista de Trabalho Escravo (Cadastro de Empregadores do MTE)', 'https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/inspecao-do-trabalho/areas-de-atuacao/cadastro_de_empregadores.pdf'],
+  ['Certidão negativa de embargo do IBAMA', 'https://servicos.ibama.gov.br/ctf/publico/areasembargadas/ConsultaPublicaAreasEmbargadas.php'],
+];
 function distKm(farmF, feat) {
   try {
     if (interHa(farmF, feat) > 0) return 0;
@@ -244,6 +273,7 @@ async function rodarDiagnostico() {
     }
     pintarCard(k);
   }));
+  box.insertAdjacentHTML('beforeend', `<div class="dfoot">Consulta feita em <b>${agoraBR(S.diag.data)}</b> para ${esc(f.name)}${f.car ? ` (CAR ${esc(f.car)})` : ''}.<br>Fontes: ${FONTES_DIAG}.<br>Para levar ao cliente, use o botão 📄 Relatório.</div>`);
   $('btnDiag').disabled = false;
 }
 function pintarCard(k) {
@@ -274,7 +304,12 @@ const RENDER = {
       resumo = proprio ? `CAR <b>${esc(proprio.cod)}</b> · ${STATUS_CAR[proprio.st] || proprio.st || 'situação não informada'} · ${ha(proprio.area)} declarados${proprio.mun ? ' · ' + esc(proprio.mun) : ''}.` : 'Nenhum CAR cobre a maior parte da área.';
       if (proprio && ['SU', 'CA'].includes(proprio.st)) nivel = 'grave';
       else if (proprio && proprio.st === 'PE') nivel = 'alerta';
-      if (outros.length) { nivel = nivel === 'grave' ? 'grave' : 'alerta'; resumo += ` <b>${outros.length} outro(s) CAR sobreposto(s)</b>, somando ${ha(outros.reduce((s, r) => s + r.oh, 0))} dentro da área.`; }
+      if (outros.length) {
+        const sob = uniaoDentroHa(F, outros.map(r => r.ft)), pct = sob / areaF * 100;
+        // até 5%: costuma ser erro de desenho na divisa; acima de 25%: sobreposição séria
+        nivel = nivel === 'grave' || pct >= 25 ? 'grave' : 'alerta';
+        resumo += ` <b>${outros.length} outro(s) CAR sobreposto(s)</b>, ocupando <b>${ha(sob)} (${fmt(Math.min(100, pct), 0)}% da área)</b>${pct >= 25 ? '. Sobreposição grande: confira a divisa com os vizinhos e retifique o CAR' : pct < 5 ? ', provavelmente diferença de desenho na divisa' : ''}.`;
+      }
     }
     return { nivel, resumo, detalhes: rows.length ? tabela(['Código CAR', 'Situação', 'Área declarada', 'Sobre a fazenda'], rows.map(r => [esc(r.cod), STATUS_CAR[r.st] || esc(r.st), ha(r.area), `${ha(Math.min(r.oh, areaF))} (${fmt(Math.min(100, r.oh / areaF * 100), 0)}%)`])) : '' };
   },
@@ -282,10 +317,10 @@ const RENDER = {
     const areaF = turf.area(F) / 1e4;
     const rows = feats.map(ft => ({ ft, p: ft.properties, oh: interHa(F, ft) })).filter(r => r.oh > 0.01).sort((a, b) => b.oh - a.oh);
     camada(rows.map(r => r.ft), { color: '#00e5ff', weight: 2, fill: false }, ft => `<b>SIGEF</b><br>${esc(pick(ft.properties, 'nome_area', 'parcela_co', 'codigo_imo') || '')}`);
-    const cob = rows.reduce((s, r) => s + r.oh, 0);
+    const cob = uniaoDentroHa(F, rows.map(r => r.ft));
     let nivel = 'ok', resumo;
     if (!rows.length) { nivel = 'alerta'; resumo = 'Nenhuma parcela certificada no SIGEF sobre esta área. A área pode não estar georreferenciada/certificada no INCRA.'; }
-    else { if (cob / areaF < 0.8) nivel = 'alerta'; resumo = `${rows.length} parcela(s) certificada(s) cobrindo ${ha(cob)} (${fmt(Math.min(100, cob / areaF * 100), 0)}% da área).${rows.length > 1 ? ' Confira se todas pertencem ao mesmo imóvel.' : ''}${cob / areaF < 0.8 ? ' Parte da área não está certificada.' : ''}`; }
+    else { if (cob / areaF < 0.8) nivel = 'alerta'; resumo = `${rows.length} parcela(s) certificada(s) cobrindo ${ha(cob)} de ${ha(areaF)} do perímetro cadastrado no app (${fmt(Math.min(100, cob / areaF * 100), 0)}%).${rows.length > 1 ? ' Confira se todas pertencem ao mesmo imóvel.' : ''}${cob / areaF < 0.8 ? ' Parte da área não está certificada.' : ''}`; }
     return { nivel, resumo, detalhes: rows.length ? tabela(['Denominação', 'Código/parcela', 'Situação', 'Sobre a fazenda'], rows.map(r => [esc(pick(r.p, 'nome_area', 'nome_imove', 'denominaca') || '—'), esc(pick(r.p, 'parcela_co', 'codigo_imo', 'cod_imovel') || '—'), esc(pick(r.p, 'situacao_i', 'situ_imov', 'status') || r.p._tema || ''), ha(r.oh)])) : '' };
   },
   emb(feats, F) {
@@ -298,7 +333,9 @@ const RENDER = {
     let nivel = 'ok', resumo = `Nenhum embargo do IBAMA na área nem em até ${CONF.raioKm} km.`;
     if (dentro.length) { nivel = 'grave'; resumo = `<b>${dentro.length} embargo(s) dentro da área</b>, somando ${ha(dentro.reduce((s, r) => s + r.oh, 0))}.`; }
     if (perto.length) { if (nivel === 'ok') nivel = 'alerta'; resumo += ` ${perto.length} embargo(s) no entorno de ${CONF.raioKm} km.`; resumo = resumo.replace(`Nenhum embargo do IBAMA na área nem em até ${CONF.raioKm} km. `, 'Nenhum embargo dentro da área. '); }
-    return { nivel, resumo, detalhes: rows.length ? tabela(['TAD', 'Data', 'Infração', 'Área', 'Distância'], rows.map(r => [esc(r.tad), r.data ? dBR(r.data) : '—', esc(String(r.inf).slice(0, 90)), ha(r.area), r.oh ? `<b>dentro (${ha(r.oh)})</b>` : `${fmt(r.km, 1)} km`])) : '' };
+    const listas = `<p class="hint" style="margin-bottom:4px">Estas bases não têm consulta por mapa. Confira pelo CPF/CNPJ do proprietário:</p><ul class="links">${OUTRAS_LISTAS.map(([t, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${t}</a></li>`).join('')}</ul>`;
+    resumo += ' <span class="hint">ICMBio, SEMA‑MA e Lista de Trabalho Escravo: conferir pelo CPF/CNPJ (ver Detalhes).</span>';
+    return { nivel, resumo, detalhes: (rows.length ? tabela(['TAD', 'Data', 'Infração', 'Área', 'Distância'], rows.map(r => [esc(r.tad), r.data ? dBR(r.data) : '—', esc(String(r.inf).slice(0, 90)), ha(r.area), r.oh ? `<b>dentro (${ha(r.oh)})</b>` : `${fmt(r.km, 1)} km`])) : '') + listas, listas: OUTRAS_LISTAS };
   },
   prodes(feats, F) {
     const rows = feats.map(ft => {
@@ -310,13 +347,17 @@ const RENDER = {
     const porAno = {}; rows.forEach(r => { const k = Number.isNaN(r.ano) ? 's/ano' : r.ano; porAno[k] = (porAno[k] || 0) + r.oh; });
     const pos2008 = rows.filter(r => r.ano >= 2009).reduce((s, r) => s + r.oh, 0);
     const total = rows.reduce((s, r) => s + r.oh, 0);
-    let nivel = 'ok', resumo = 'Nenhuma supressão de vegetação nativa mapeada pelo PRODES dentro da área.';
+    const pos2020 = rows.filter(r => r.ano >= 2021).reduce((s, r) => s + r.oh, 0);
+    const fontes = [...new Set(rows.map(r => r.fonte).filter(Boolean))];
+    let nivel = 'ok', resumo = 'Nenhuma supressão de vegetação nativa mapeada pelo PRODES dentro da área <b>desde 2008</b> (marco de 22/07/2008 do Código Florestal).';
     if (rows.length) {
       nivel = pos2008 > 0 ? 'alerta' : 'ok';
       resumo = `${ha(total)} de supressão mapeada pelo PRODES dentro da área${pos2008 > 0 ? `, sendo <b>${ha(pos2008)} depois de 2008</b> (após o marco de 22/07/2008 do Código Florestal; verifique se havia autorização)` : ', toda até 2008'}.`;
+      if (pos2020 > 0) resumo += ` Desse total, <b>${ha(pos2020)} são de 2021 em diante</b> (após a data de corte de 31/12/2020 usada pela União Europeia).`;
     }
     const anos = Object.keys(porAno).sort();
-    return { nivel, resumo, detalhes: anos.length ? tabela(['Ano', 'Área na fazenda'], anos.map(a => [a, ha(porAno[a])])) + '<p class="hint">PRODES: mapeamento anual do INPE (Landsat, 30 m). Áreas pequenas podem não aparecer.</p>' : '' };
+    const nota = `<p class="hint">Período: série anual do PRODES/INPE${fontes.length ? ` (${fontes.join(' e ')})` : ''}, com destaque para o que é posterior a 22/07/2008. O ano PRODES vai de agosto a julho (ex.: “2009” = ago/2008 a jul/2009). Mapeamento por satélite Landsat (30 m); áreas pequenas podem não aparecer.</p>`;
+    return { nivel, resumo, detalhes: (anos.length ? tabela(['Ano', 'Área na fazenda'], anos.map(a => [a, ha(porAno[a])])) : '') + nota };
   },
   fogo(res, F) {
     const fs = (res.focos || []).map(o => ({ o, pt: turf.point([+o.lon, +o.lat]) }));
@@ -324,10 +365,12 @@ const RENDER = {
     const perto = fs.filter(x => !dentro.includes(x)).map(x => ({ ...x, km: distKm(F, x.pt) })).filter(x => x.km <= CONF.raioKm);
     [...dentro, ...perto].forEach(x => L.circleMarker([+x.o.lat, +x.o.lon], { radius: 6, color: '#fff', weight: 1, fillColor: '#ff5a00', fillOpacity: 1 }).bindPopup(`<b>Foco de queimada</b><br>${esc(x.o.data_hora_gmt || '')}<br>${esc(x.o.satelite || '')}`).addTo(DL.group));
     let nivel = 'ok', resumo = `Nenhum foco de queimada na área nem em até ${CONF.raioKm} km nos últimos ${CONF.diasFocos} dias.`;
-    if (dentro.length) { nivel = 'grave'; resumo = `<b>${dentro.length} foco(s) dentro da área</b> nos últimos ${CONF.diasFocos} dias${perto.length ? `, e mais ${perto.length} a menos de ${CONF.raioKm} km` : ''}.`; }
-    else if (perto.length) { nivel = 'alerta'; resumo = `${perto.length} foco(s) a menos de ${CONF.raioKm} km nos últimos ${CONF.diasFocos} dias. O mais próximo a ${fmt(Math.min(...perto.map(p => p.km)), 1)} km.`; }
+    const recente = l => l.slice().sort((a, b) => String(b.o.data_hora_gmt).localeCompare(String(a.o.data_hora_gmt)))[0];
+    if (dentro.length) { const r = recente(dentro); nivel = 'grave'; resumo = `<b>${dentro.length} foco(s) dentro da área</b> nos últimos ${CONF.diasFocos} dias${perto.length ? `, e mais ${perto.length} a menos de ${CONF.raioKm} km` : ''}. O mais recente dentro da área foi em <b>${dataHoraFoco(r.o.data_hora_gmt)}</b>${r.o.satelite ? ` (satélite ${esc(r.o.satelite)})` : ''}.`; }
+    else if (perto.length) { const p = perto.reduce((a, b) => b.km < a.km ? b : a); nivel = 'alerta'; resumo = `${perto.length} foco(s) a menos de ${CONF.raioKm} km nos últimos ${CONF.diasFocos} dias. O mais próximo, a <b>${fmt(p.km, 1)} km</b>, foi em <b>${dataHoraFoco(p.o.data_hora_gmt)}</b>${p.o.satelite ? ` (satélite ${esc(p.o.satelite)})` : ''}.`; }
+    resumo += ' <span class="hint">Fonte: INPE/BDQueimadas.</span>';
     const all = [...dentro.map(x => ({ ...x, km: 0 })), ...perto].sort((a, b) => String(b.o.data_hora_gmt).localeCompare(String(a.o.data_hora_gmt)));
-    return { nivel, resumo, detalhes: all.length ? tabela(['Data/hora (UTC)', 'Satélite', 'Distância', 'Dias sem chuva'], all.slice(0, 50).map(x => [esc(x.o.data_hora_gmt || ''), esc(x.o.satelite || ''), x.km ? `${fmt(x.km, 1)} km` : '<b>dentro</b>', esc(x.o.numero_dias_sem_chuva || '—')])) : '' };
+    return { nivel, resumo, detalhes: all.length ? tabela(['Data/hora', 'Satélite', 'Distância', 'Dias sem chuva'], all.slice(0, 50).map(x => [dataHoraFoco(x.o.data_hora_gmt), esc(x.o.satelite || ''), x.km ? `${fmt(x.km, 1)} km` : '<b>dentro</b>', esc(x.o.numero_dias_sem_chuva || '—')])) + '<p class="hint">Focos detectados por satélite (INPE/BDQueimadas, arquivos diários). Horário convertido para o fuso do aparelho.</p>' : '' };
   },
   clima(j) {
     const d = j.daily, hoje = isoDay(new Date());
@@ -435,6 +478,7 @@ async function gerarRelatorio() {
  .tag{display:inline-block;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700}
  img{max-width:100%} .item{margin-bottom:10px;page-break-inside:avoid} details{display:block} summary{display:none}
  .grad{height:10px;border-radius:5px;background:linear-gradient(90deg,#a50026,#f46d43,#fee08b,#a6d96a,#1a9850,#006837);margin:4px 0}
+ .hint{color:#666;font-size:11.5px} ul.links{margin:4px 0 0;padding-left:18px;font-size:12px} a{color:#1a6b3c}
  footer{margin-top:26px;border-top:1px solid #ddd;padding-top:8px;font-size:11px;color:#666}
  @media print{body{padding:0} button{display:none}}
 </style></head><body>
@@ -442,13 +486,13 @@ async function gerarRelatorio() {
 <header><div><h1>Relatório da propriedade — ${esc(f.name)}</h1>
 <div class="sub">${f.owner ? 'Cliente: ' + esc(f.owner) + ' · ' : ''}${ha(f.area)} · ${esc(f.uf || '')}${f.car ? ' · CAR ' + esc(f.car) : ''}</div></div>
 <div class="sub" style="text-align:right">${cons.nome ? '<b>' + esc(cons.nome) + '</b><br>' : ''}${cons.empresa ? esc(cons.empresa) + '<br>' : ''}${cons.contato ? esc(cons.contato) + '<br>' : ''}Emitido em ${dBR(isoDay(new Date()))}</div></header>
-${diag.length ? `<h2>Situação ambiental e fundiária</h2>${diag.map(d => `<div class="item"><span class="tag" style="background:${cor[d.nivel]}">${rot[d.nivel]}</span> <b>${d.titulo}</b><div>${d.resumo}</div>${d.detalhes || ''}</div>`).join('')}` : '<p class="sub">Situação não verificada (aba Situação).</p>'}
+${diag.length ? `<h2>Situação ambiental e fundiária</h2><p class="sub">Bases públicas consultadas em ${agoraBR(S.diag.data)}.</p>${diag.map(d => `<div class="item"><span class="tag" style="background:${cor[d.nivel]}">${rot[d.nivel]}</span> <b>${d.titulo}</b><div>${d.resumo}</div>${d.detalhes || ''}</div>`).join('')}` : '<p class="sub">Situação não verificada (aba Situação).</p>'}
 ${ndvi ? `<h2>Vigor da vegetação — ${dBR(S.result.it.properties.datetime)}</h2>
 <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;align-items:start"><div><img src="${ndvi}"><div class="grad"></div><div class="sub" style="display:flex;justify-content:space-between"><span>NDVI baixo</span><span>NDVI alto</span></div></div>
 <div><div class="grid" style="grid-template-columns:1fr 1fr">${st ? `<div class="k"><b>${fmt(st.mean)}</b>NDVI médio</div><div class="k"><b>${S.result.statsRE ? fmt(S.result.statsRE.mean) : '—'}</b>NDRE médio</div><div class="k"><b>${fmt(st.p10)}</b>pior 10%</div><div class="k"><b>${fmt(st.p90)}</b>melhor 10%</div>` : ''}</div>${tabelaDivs(S.result.divStats)}</div></div>` : '<p class="sub">Nenhuma imagem de satélite aberta (aba Imagens).</p>'}
 ${typeof CL !== 'undefined' && CL.dados ? `<h2>Clima — ${dBR(CL.dados.ini)} a ${dBR(CL.dados.fim)}</h2><div class="grid"><div class="k"><b>${fmt(CL.dados.chuva, 0)} mm</b>chuva acumulada</div><div class="k"><b>${CL.dados.diasChuva}</b>dias com chuva</div><div class="k"><b>${CL.dados.seco}</b>dias seguidos sem chuva</div><div class="k"><b>+${fmt(CL.dados.gdd, 0)}</b>soma térmica (base ${CL.dados.tb} °C)</div><div class="k"><b>${fmt(CL.dados.tmaxMed, 1)}° / ${fmt(CL.dados.tminMed, 1)}°</b>máx / mín médias</div><div class="k"><b>${fmt(CL.dados.chuvaPrev, 0)} mm</b>previsão 7 dias</div></div>` : ''}
 ${serieImg ? `<h2>Histórico de NDVI</h2><img src="${serieImg}"><p class="sub">${$('serieSum').textContent}</p>` : ''}
-<footer>Fontes: SICAR/SFB (CAR), INCRA/Acervo Fundiário (SIGEF), IBAMA/SISCOM (embargos), INPE/TerraBrasilis (PRODES), INPE/Programa Queimadas (focos), Open-Meteo (clima), Copernicus Sentinel-2/ESA (imagens). Dados públicos consultados na data de emissão; não substituem certidões oficiais.</footer>
+<footer>Fontes: ${FONTES_DIAG} · Copernicus Sentinel‑2/ESA (imagens).${S.diag ? ` Situação consultada em ${agoraBR(S.diag.data)}.` : ''} Relatório emitido em ${agoraBR(new Date().toISOString())}. Dados públicos; não substituem certidões oficiais.${cons.nome || cons.empresa ? `<br>${esc([cons.nome, cons.empresa, cons.contato].filter(Boolean).join(' · '))}` : ''}</footer>
 </body></html>`;
   const w = window.open('', '_blank');
   if (!w) { toast('Permita janelas pop-up para abrir o relatório.'); return; }
