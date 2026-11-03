@@ -101,7 +101,7 @@ async function carNoPonto(lon, lat, uf) {
 }
 // Serviços ArcGIS (aceitam consulta direta do navegador)
 const ARC_SIGEF = 'https://geo.infrasa.gov.br/server/rest/services/Hosted/Sigef_Brasil/FeatureServer/0';
-const ARC_EMBARGO = 'https://pamgia.ibama.gov.br/server/rest/services/01_Publicacoes_Bases/embargos_siscom_brasil/MapServer/2';
+const ARC_EMBARGO = 'https://pamgia.ibama.gov.br/server/rest/services/01_Publicacoes_Bases/adm_embargos_ibama_a/MapServer/0'; // camada oficial viva (a antiga embargos_siscom_brasil ficou vazia)
 function esriParaGeoJSON(j) {
   if (j.error) throw new Error(j.error.message || 'a base recusou a consulta');
   const area = r => { let a = 0; for (let i = 0, k = r.length - 1; i < r.length; k = i++) a += (r[k][0] - r[i][0]) * (r[k][1] + r[i][1]); return a / 2; };
@@ -134,8 +134,10 @@ async function sigefNaArea(b, uf) {
 }
 // Embargos IBAMA: PAMGIA (cópia oficial do SISCOM, atualizada 2x ao dia) e, se falhar, SISCOM
 async function embargosNaArea(b) {
+  let erroPamgia;
   try { return await arcgisNaArea(ARC_EMBARGO, b); }
-  catch (e) { console.warn('PAMGIA falhou:', e.message); }
+  catch (e) { erroPamgia = e; console.warn('PAMGIA falhou:', e.message); }
+  if (!CONF.proxy) throw new Error('o servidor do IBAMA (PAMGIA) não respondeu: ' + erroPamgia.message);
   return (await getGeo(`https://siscom.ibama.gov.br/geoserver/publica/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=publica:vw_brasil_adm_embargo_a&outputFormat=application/json&srsName=EPSG:4326&maxFeatures=500&bbox=${bboxStr(b)}`)).features;
 }
 // PRODES (Amazônia Legal e Cerrado)
@@ -289,7 +291,7 @@ const RENDER = {
   emb(feats, F) {
     const rows = feats.map(ft => {
       const p = ft.properties, oh = interHa(F, ft);
-      return { ft, oh, km: oh > 0 ? 0 : distKm(F, ft), tad: pick(p, 'num_tad', 'numero_tad', 'seq_tad') || '—', data: dataISO(pick(p, 'dat_embarg', 'data_tad', 'dat_ult_al')), mun: pick(p, 'municipio', 'nom_munici') || '', inf: pick(p, 'des_infrac', 'des_tad', 'infracao') || '', area: +pick(p, 'qtd_area_e', 'area_ha', 'qtd_area_d') || turf.area(ft) / 1e4 };
+      return { ft, oh, km: oh > 0 ? 0 : distKm(F, ft), tad: pick(p, 'num_tad', 'numero_tad', 'nr_tad', 'seq_tad') || '—', data: dataISO(pick(p, 'dat_embargo', 'dat_embarg', 'data_tad', 'dat_ult_al')), mun: pick(p, 'nom_municipio', 'municipio', 'nom_munici') || '', inf: pick(p, 'des_infracao', 'des_tad', 'des_infrac', 'infracao', 'des_embargo') || '', area: +pick(p, 'qtd_area_embargada', 'qtd_area_e', 'area_ha', 'qtd_area_d') || turf.area(ft) / 1e4 };
     }).filter(r => r.oh > 0 || r.km <= CONF.raioKm).sort((a, b) => a.km - b.km);
     camada(rows.map(r => r.ft), { color: '#ff3b3b', weight: 2, fillColor: '#ff3b3b', fillOpacity: .35 }, ft => `<b>Embargo IBAMA</b><br>TAD ${esc(pick(ft.properties, 'num_tad', 'seq_tad') || '')}`);
     const dentro = rows.filter(r => r.oh > 0), perto = rows.filter(r => !r.oh);
