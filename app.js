@@ -124,16 +124,16 @@ const farm = () => S.farms.find(f => f.id === S.farmId);
 const saveFarms = () => { store('agrosat.farms', S.farms); store('agrosat.current', S.farmId); };
 
 // ---------- Mapa ----------
-const map = L.map('map', { zoomControl: true, attributionControl: true }).setView([-3.9, -45.1], 8);
+const map = L.map('map', { zoomControl: true, attributionControl: true, maxZoom: 19 }).setView([-3.9, -45.1], 8);
 // Mapas de fundo: se um não carregar, troca sozinho para o próximo.
 const FUNDOS = {
-  'Satélite (Esri)': { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', nat: 19, attr: 'Esri World Imagery' },
-  'Satélite (Esri, servidor 2)': { url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', nat: 19, attr: 'Esri World Imagery' },
+  'Satélite (Esri)': { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', nat: 17, attr: 'Esri World Imagery' },
+  'Satélite (Esri, servidor 2)': { url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', nat: 17, attr: 'Esri World Imagery' },
   'Satélite Sentinel‑2 sem nuvens (EOX)': { url: 'https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2020_3857/default/g/{z}/{y}/{x}.jpg', nat: 15, attr: 'Sentinel‑2 cloudless 2020 © EOX IT Services (dados Copernicus)' },
   'Mapa de ruas (OpenStreetMap)': { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', nat: 19, attr: '© colaboradores do OpenStreetMap' },
 };
 const BASES = {};
-Object.entries(FUNDOS).forEach(([nome, d]) => { BASES[nome] = L.tileLayer(d.url, { maxZoom: 20, maxNativeZoom: d.nat, attribution: d.attr }); BASES[nome]._nomeFundo = nome; });
+Object.entries(FUNDOS).forEach(([nome, d]) => { BASES[nome] = L.tileLayer(d.url, { maxZoom: 19, maxNativeZoom: d.nat, attribution: d.attr }); BASES[nome]._nomeFundo = nome; });
 let fundoAtual = null;
 function usarFundo(nome) {
   if (!BASES[nome]) nome = Object.keys(BASES)[0];
