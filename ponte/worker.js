@@ -21,6 +21,8 @@ const PERMITIDOS = [
   'data.inpe.br',                  // CBERS-4A (Brazil Data Cube / INPE)
   'planetarycomputer.microsoft.com', // Landsat (catálogo e autorização)
   'landsateuwest.blob.core.windows.net', // Landsat (arquivos)
+  'ai4edataeuwest.blob.core.windows.net', // Uso do solo Esri/Impact Observatory (Planetary Computer)
+  'modiseuwest.blob.core.windows.net',    // Áreas queimadas MODIS (Planetary Computer)
   'rest.isric.org',                // Solo (SoilGrids / ISRIC)
   'files.isric.org',               // Solo (mapas SoilGrids)
   'geoservicos.ibge.gov.br',       // IBGE (biomas, limites, fronteira)
