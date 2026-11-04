@@ -71,8 +71,7 @@ async function queimadasNaFazenda(f) {
   const queimado = new Uint16Array(g.W * g.H);   // último ano queimado em cada pixel
   await Promise.all(FOGO_ANOS.map(async a => {
     try {
-      const t = await openTiff(FOGO_URL(a));
-      const r = await t.readRasters({ bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0, samples: [0] });
+      const r = await lerRasters(FOGO_URL(a), { bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0, samples: [0] });
       const v = r[0], porMes = {}; let n = 0;
       for (let i = 0; i < v.length; i++) {
         if (!g.mask[i] || !v[i] || v[i] > 12) continue;

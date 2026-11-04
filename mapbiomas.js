@@ -32,8 +32,7 @@
     if (cache.has(k)) return cache.get(k);
     const resDeg = c.res / 111320;
     const g = grid(f.polys, 4326, resDeg);
-    const tiff = await openTiff(c.url(ano));
-    const r = await tiff.readRasters({ bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0, samples: [0] });
+    const r = await lerRasters(c.url(ano), { bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0, samples: [0] });
     const out = { g, cod: r[0], c, ano, colK };
     cache.set(k, out); return out;
   }

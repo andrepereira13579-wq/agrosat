@@ -285,12 +285,28 @@ function openTiff(href) {
     catch (e) {
       // servidor que não aceita o navegador: tenta pelo servidor-ponte
       const ponte = (typeof CONF !== 'undefined') && CONF.proxy;
-      if (!ponte || /amazonaws\.com/.test(href)) throw e;
+      if (!ponte || href.startsWith(ponte) || /amazonaws\.com/.test(href)) throw e;
       const t = await GeoTIFF.fromUrl(`${ponte}/?url=${encodeURIComponent(href)}`, { allowFullFile: false }); await t.getImage(); return t;
     }
   })());
   const p = tiffCache.get(href); p.catch(() => tiffCache.delete(href));
   return p;
+}
+// Lê um recorte; se a leitura direta falhar (servidor que recusa parte dos pedidos do navegador), refaz pelo servidor-ponte.
+async function lerRasters(href, opts) {
+  try { const t = await openTiff(href); return await t.readRasters(opts); }
+  catch (e) {
+    const ponte = (typeof CONF !== 'undefined') && CONF.proxy;
+    if (!ponte || href.startsWith(ponte) || /amazonaws\.com/.test(href)) throw e;
+    console.warn('leitura direta falhou, tentando pela ponte:', e.message);
+    try { const t = await openTiff(`${ponte}/?url=${encodeURIComponent(href)}`); return await t.readRasters(opts); }
+    catch (e2) { throw new Error(`direto: ${detalheErro(e)} · pela ponte: ${detalheErro(e2)}`); }
+  }
+}
+function detalheErro(e) {
+  const dentro = e && e.errors && e.errors[0];
+  const m = (e && e.message) || String(e);
+  return dentro && dentro.message && dentro.message !== m ? `${m} (${dentro.message})` : m;
 }
 function makeGrid(polys, epsg, res, divs) {
   const f = toUTM(epsg);
