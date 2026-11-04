@@ -279,14 +279,52 @@ function scaleOffset(it, a) {
 
 // ---------- Leitura das bandas (COG) ----------
 const tiffCache = new Map();
+// Leitura de GeoTIFF (COG) por partes, sem cache do navegador: o Safari do iPhone às vezes devolve
+// do cache o primeiro pedaço do arquivo no lugar do pedaço pedido. Cada resposta é conferida.
+const ultimoErroTiff = { msg: '' };
+class ClienteTiff {
+  constructor(url) { this.url = url; this.n = 0; }
+  async request({ headers = {}, signal } = {}) {
+    const rg = headers.Range || headers.range || '', pedido = +((rg.match(/bytes=(\d+)/) || [])[1] || 0);
+    const via = (u, unico) => {
+      if (!unico) return u;
+      const sep = u.includes('?') ? '&' : '?';
+      return `${u}${sep}agrosat_r=${pedido}-${Date.now() % 1e6}-${this.n++}`;
+    };
+    let ultimo = null;
+    for (let tent = 0; tent < 3; tent++) {
+      const unico = tent > 0 || /[?&]url=/.test(this.url);   // pela ponte: endereço único desde a 1ª vez
+      let r;
+      try { r = await fetch(via(this.url, unico), { headers, signal, cache: 'no-store' }); }
+      catch (e) { ultimo = `falha de rede (${e.message})`; if (signal && signal.aborted) throw e; continue; }
+      if (r.status === 206 && rg) {
+        const cr = r.headers.get('content-range') || '';
+        const ini = +((cr.match(/bytes (\d+)-/) || [])[1]);
+        if (!cr) { ultimo = 'o servidor não informou a parte devolvida (Content-Range)'; }
+        else if (ini !== pedido) { ultimo = `pedi a partir do byte ${pedido} e veio ${cr}`; }
+        else { const buf = await r.arrayBuffer(); return { ok: true, status: 206, getHeader: n => r.headers.get(n), getData: async () => buf }; }
+        try { await r.body?.cancel(); } catch (e) { }
+        continue;
+      }
+      if (!r.ok) { ultimo = `o servidor respondeu ${r.status}`; if (r.status === 403 || r.status === 404) break; continue; }
+      if (rg) { ultimo = `pedi uma parte e veio o arquivo inteiro (${r.status})`; try { await r.body?.cancel(); } catch (e) { } break; }
+      const buf = await r.arrayBuffer(); return { ok: true, status: r.status, getHeader: n => r.headers.get(n), getData: async () => buf };
+    }
+    ultimoErroTiff.msg = ultimo || 'falha desconhecida';
+    return { ok: false, status: 0, getHeader: () => null, getData: async () => new ArrayBuffer(0) };
+  }
+}
+function abrirGeoTIFF(href) {
+  return GeoTIFF.fromCustomClient ? GeoTIFF.fromCustomClient(new ClienteTiff(href), { allowFullFile: false }) : GeoTIFF.fromUrl(href, { allowFullFile: false });
+}
 function openTiff(href) {
   if (!tiffCache.has(href)) tiffCache.set(href, (async () => {
-    try { const t = await GeoTIFF.fromUrl(href, { allowFullFile: false }); await t.getImage(); return t; }
+    try { const t = await abrirGeoTIFF(href); await t.getImage(); return t; }
     catch (e) {
       // servidor que não aceita o navegador: tenta pelo servidor-ponte
       const ponte = (typeof CONF !== 'undefined') && CONF.proxy;
       if (!ponte || href.startsWith(ponte) || /amazonaws\.com/.test(href)) throw e;
-      const t = await GeoTIFF.fromUrl(`${ponte}/?url=${encodeURIComponent(href)}`, { allowFullFile: false }); await t.getImage(); return t;
+      const t = await abrirGeoTIFF(`${ponte}/?url=${encodeURIComponent(href)}`); await t.getImage(); return t;
     }
   })());
   const p = tiffCache.get(href); p.catch(() => tiffCache.delete(href));
@@ -305,8 +343,10 @@ async function lerRasters(href, opts) {
 }
 function detalheErro(e) {
   const dentro = e && e.errors && e.errors[0];
-  const m = (e && e.message) || String(e);
-  return dentro && dentro.message && dentro.message !== m ? `${m} (${dentro.message})` : m;
+  let m = (e && e.message) || String(e);
+  if (dentro && dentro.message && dentro.message !== m) m += ` (${dentro.message})`;
+  if (/Request failed|Error fetching/i.test(m) && ultimoErroTiff.msg) { m += ` — ${ultimoErroTiff.msg}`; ultimoErroTiff.msg = ''; }
+  return m;
 }
 function makeGrid(polys, epsg, res, divs) {
   const f = toUTM(epsg);
