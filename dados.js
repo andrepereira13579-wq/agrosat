@@ -396,7 +396,7 @@ function imagemNDVIcomContorno() {
       (f.divs || []).forEach(dv => {
         desenha(dv.rings, 1);
         const c = turf.centroid(turf.polygon(dv.rings)).geometry.coordinates, [x, y] = fwd(c);
-        ctx.font = `bold ${Math.max(11, 6 * k)}px system-ui`; ctx.textAlign = 'center'; ctx.fillStyle = '#111';
+        ctx.font = `bold ${Math.round(Math.max(12, Math.min(22, cv.width * 0.022)))}px system-ui`; ctx.textAlign = 'center'; ctx.fillStyle = '#111';
         ctx.fillText(dv.nome, (x - g.bbox[0]) / g.res * k, (g.bbox[3] - y) / g.res * k);
       });
       ctx.lineWidth = 2;
