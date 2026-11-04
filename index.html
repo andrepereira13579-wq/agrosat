@@ -60,7 +60,7 @@
         <span class="chip" id="farmArea">— ha</span>
       </div>
       <div class="farmsub"><span id="farmCar"></span></div>
-      <div class="acoes"><button class="btn ghost sm" id="btnReport">📄 Relatório</button><button class="btn ghost sm" id="btnKML">⬇ KML</button><button class="btn ghost sm" id="btnMemo">📐 Memorial</button><button class="btn ghost sm" id="btn3D">🏔 3D</button></div>
+      <div class="acoes"><button class="btn ghost sm" id="btnReport">📄 Relatório</button><button class="btn ghost sm" id="btnKML">⬇ KML</button><button class="btn ghost sm" id="btnMemo">📐 Memorial</button><button class="btn ghost sm" id="btn3D">🏔 3D</button><button class="btn sm wz" id="btnWhats">💬 WhatsApp</button></div>
       <nav class="tabs" id="tabs">
         <button data-tab="imagens" class="on">Imagens</button>
         <button data-tab="serie">Histórico</button>
@@ -192,6 +192,20 @@
   </div>
 </div>
 
+<div class="modal" id="wzModal" hidden>
+  <div class="card">
+    <h3>💬 Enviar pelo WhatsApp</h3>
+    <label>Número do cliente (opcional, com DDD) <input id="wzNumero" inputmode="tel" placeholder="Ex.: 98 99999-9999 — em branco: você escolhe o contato"></label>
+    <label>Mensagem (pode editar)<textarea id="wzTexto" rows="12"></textarea></label>
+    <p class="hint">Rode antes as abas Imagens, Situação e Clima para a mensagem sair completa. O link abre a mesma fazenda no AgroSat, com perímetro e divisões.</p>
+    <div class="actions">
+      <button class="btn ghost" id="wzCancel">Fechar</button>
+      <button class="btn ghost" id="wzCopiar">Copiar</button>
+      <button class="btn wz" id="wzEnviar">Abrir no WhatsApp</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="confirmModal" hidden>
   <div class="card">
     <h3 id="cfTitle">Confirmar</h3>
@@ -261,5 +275,6 @@
 <script src="lib/maplibre-gl.js"></script>
 <script src="tresd.js"></script>
 <script src="local.js"></script>
+<script src="whats.js"></script>
 </body>
 </html>

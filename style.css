@@ -154,3 +154,7 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--ac2);font-size:12.5px}
 #locInput{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;resize:vertical}
 .locpin{width:14px;height:14px;border-radius:50%;background:#ff3b3b;border:3px solid #fff;box-shadow:0 0 0 2px #ff3b3b}
 #farmName{cursor:pointer}#farmName::after{content:" ✏";font-size:.7em;opacity:.6}
+
+.btn.wz{background:#25d366;color:#04210f}
+#wzTexto{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;font-size:13px;resize:vertical;color:var(--tx)}
+.card{max-height:92vh;overflow:auto}

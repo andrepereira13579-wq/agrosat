@@ -23,6 +23,7 @@ Web app de monitoramento de fazendas: satélite + situação ambiental e fundiá
 **📐 Memorial**: memorial descritivo com vértices (lat/long e UTM SIRGAS 2000), azimutes, distâncias, perímetro e área. Dá para imprimir ou salvar em PDF e baixar a planilha CSV. Não substitui o memorial certificado do SIGEF.
 **🏔 3D**: relevo real com a imagem de satélite por cima, contorno, divisões e NDVI. Mostra altitude mínima, média e máxima e o desnível da área. Dá para girar, inclinar e exagerar o relevo.
 **Mapa de fundo**: Esri, Sentinel‑2 sem nuvens (EOX) ou mapa de ruas, escolhidos no ícone de camadas. Se um não carregar, o app troca sozinho.
+**💬 WhatsApp**: monta uma mensagem com área, CAR, NDVI (piquetes mais fracos e mais fortes), situação e chuva, mais um link que abre a mesma fazenda (perímetro e divisões) no AgroSat de quem receber. Dá para editar o texto antes de enviar, informar o número do cliente ou escolher o contato no WhatsApp.
 **Relatório**: botão 📄, depois "Imprimir / salvar PDF", com seu nome e empresa no cabeçalho.
 **Camadas no mapa** (ícone de camadas, canto superior direito): CAR, SIGEF, embargos e PRODES de toda a região.
 
