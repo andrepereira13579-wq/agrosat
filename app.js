@@ -292,19 +292,17 @@ class ClienteTiff {
       return `${u}${sep}agrosat_r=${pedido}-${Date.now() % 1e6}-${this.n++}`;
     };
     let ultimo = null;
+    const ponte = /[?&]url=/.test(this.url);
     for (let tent = 0; tent < 3; tent++) {
-      const unico = tent > 0 || /[?&]url=/.test(this.url);   // pela ponte: endereço único desde a 1ª vez
+      // endereço único só pela ponte (servidores de imagem com assinatura recusam parâmetros extras)
       let r;
-      try { r = await fetch(via(this.url, unico), { headers, signal, cache: 'no-store' }); }
+      try { r = await fetch(via(this.url, ponte), { headers, signal, cache: tent ? 'reload' : 'no-store' }); }
       catch (e) { ultimo = `falha de rede (${e.message})`; if (signal && signal.aborted) throw e; continue; }
       if (r.status === 206 && rg) {
-        const cr = r.headers.get('content-range') || '';
-        const ini = +((cr.match(/bytes (\d+)-/) || [])[1]);
-        if (!cr) { ultimo = 'o servidor não informou a parte devolvida (Content-Range)'; }
-        else if (ini !== pedido) { ultimo = `pedi a partir do byte ${pedido} e veio ${cr}`; }
-        else { const buf = await r.arrayBuffer(); return { ok: true, status: 206, getHeader: n => r.headers.get(n), getData: async () => buf }; }
-        try { await r.body?.cancel(); } catch (e) { }
-        continue;
+        const cr = r.headers.get('content-range');
+        const ini = cr ? +((cr.match(/bytes (\d+)-/) || [])[1]) : pedido;   // alguns servidores não deixam o navegador ler esse cabeçalho
+        if (ini !== pedido) { ultimo = `pedi a partir do byte ${pedido} e veio ${cr}`; try { await r.body?.cancel(); } catch (e) { } continue; }
+        const buf = await r.arrayBuffer(); return { ok: true, status: 206, getHeader: n => r.headers.get(n), getData: async () => buf };
       }
       if (!r.ok) { ultimo = `o servidor respondeu ${r.status}`; if (r.status === 403 || r.status === 404) break; continue; }
       if (rg) { ultimo = `pedi uma parte e veio o arquivo inteiro (${r.status})`; try { await r.body?.cancel(); } catch (e) { } break; }
