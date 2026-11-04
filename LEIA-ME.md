@@ -3,6 +3,7 @@
 Web app de monitoramento de fazendas: satélite + situação ambiental e fundiária.
 
 ## Funções
+**📍 Abrir por localização**: cole um link do Google Maps, a localização recebida no WhatsApp ou coordenadas (decimais ou graus/minutos/segundos), ou use o GPS do celular. O app acha o imóvel do CAR que contém o ponto, cria a fazenda com o polígono e já busca as imagens e verifica a situação. Também funciona pelo endereço: `…/agrosat/?loc=-3.7345,-46.0605`. No Android, instalando o app ("Adicionar à tela inicial"), o AgroSat aparece no menu **Compartilhar** do Google Maps.
 **Cadastro da fazenda**: pelo código do CAR, tocando no mapa sobre a fazenda, ou por arquivo (KML, KMZ, GeoJSON, Shapefile .zip).
 
 **Imagens**: Sentinel-2 (10 m, a cada ~5 dias), com mapas em cor real, NDVI, NDRE e zonas de atenção, recortados no perímetro. Nuvem e sombra ficam mascaradas.

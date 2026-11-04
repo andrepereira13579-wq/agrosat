@@ -147,3 +147,10 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--ac2);font-size:12.5px}
 .docov[hidden]{display:none!important}
 .docbar{display:flex;gap:8px;justify-content:flex-end;padding:8px 10px;background:#0a110d}
 .docov iframe{flex:1;border:0;width:100%;background:#fff}
+
+.locbox{background:var(--card);border:1px solid var(--ac);border-radius:var(--r);padding:12px;margin:10px 0 14px;display:flex;flex-direction:column;gap:8px}
+.locbox .hint{margin:0}
+.locrow{display:flex;gap:6px}.locrow input{flex:1}
+#locInput{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;resize:vertical}
+.locpin{width:14px;height:14px;border-radius:50%;background:#ff3b3b;border:3px solid #fff;box-shadow:0 0 0 2px #ff3b3b}
+#farmName{cursor:pointer}#farmName::after{content:" ✏";font-size:.7em;opacity:.6}

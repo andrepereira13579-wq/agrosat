@@ -22,6 +22,7 @@ function criarFazenda(meta, polys0, car) {
   const f = { id: 'f' + Date.now().toString(36), name: meta.name, owner: meta.owner, uf: meta.uf, car: car || null, polys: o.polys, divs: o.divs, area: areaHa(o.polys), created: new Date().toISOString() };
   S.farms.push(f); selectFarm(f.id);
   toast(`${f.name} cadastrada: ${fmt(f.area, 1)} ha${f.divs.length ? ` em ${f.divs.length} divisões` : ''}.`);
+  return f;
 }
 function polysDoCAR(ft) {
   const p = polysFromGeoJSON({ type: 'FeatureCollection', features: [ft] });
@@ -120,3 +121,16 @@ window.onFarmChange(farm() || null);
 function rotSuave() { $('btnSuave').textContent = S.suave ? '◼ Ver pixels' : '◍ Suavizar'; }
 $('btnSuave').onclick = () => { S.suave = !S.suave; store('agrosat.suave', S.suave); rotSuave(); if (S.result) showLayer(); };
 rotSuave();
+
+// renomear fazenda tocando no nome
+$('farmName').title = 'Toque para renomear';
+$('farmName').onclick = () => {
+  const f = farm(); if (!f) return;
+  const novo = prompt('Nome da fazenda:', f.name);
+  if (novo && novo.trim()) {
+    f.name = novo.trim();
+    const dono = prompt('Cliente / proprietário (opcional):', f.owner || '');
+    if (dono !== null) f.owner = dono.trim();
+    saveFarms(); renderFarmSelect(); $('farmName').textContent = f.name; toast('Nome atualizado.');
+  }
+};

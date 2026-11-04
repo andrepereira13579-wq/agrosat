@@ -7,12 +7,16 @@
 <link rel="stylesheet" href="lib/leaflet.css">
 <link rel="stylesheet" href="lib/maplibre-gl.css">
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d1510">
+<link rel="apple-touch-icon" href="icone-192.png">
 </head>
 <body>
 <header class="top">
   <div class="brand"><span class="logo">◢</span> AgroSat <small>pasto e lavoura por satélite</small></div>
   <div class="farmbar">
     <select id="farmSelect" aria-label="Fazenda"></select>
+    <button id="btnLoc" class="btn ghost icon" title="Abrir fazenda por localização">📍</button>
     <button id="btnAddFarm" class="btn ghost">+ Fazenda</button>
     <button id="btnDelFarm" class="btn ghost icon" title="Excluir fazenda">🗑</button>
     <button id="btnConf" class="btn ghost icon" title="Configurações">⚙</button>
@@ -40,6 +44,12 @@
     <div class="empty" id="emptyState">
       <h2>Comece cadastrando uma fazenda</h2>
       <p>Informe o <b>código do CAR</b>, toque no mapa sobre a fazenda ou envie o perímetro em <b>KML</b>, <b>KMZ</b>, <b>GeoJSON</b> ou <b>Shapefile (.zip)</b>. O app busca as imagens Sentinel‑2 (10 m, a cada ~5 dias) e calcula o NDVI só dentro da área.</p>
+      <div class="locbox">
+        <b>📍 Abrir por localização</b>
+        <p class="hint">Cole o link do Google Maps, a localização recebida no WhatsApp ou as coordenadas. O app acha o imóvel no CAR e faz todas as consultas.</p>
+        <div class="locrow"><input id="locInput2" placeholder="Ex.: -3.7345, -46.0605 ou link do Maps"><button class="btn" id="locGo2">Buscar</button></div>
+        <button class="btn ghost full" id="locGps2">🎯 Usar minha localização (GPS)</button>
+      </div>
       <button class="btn" id="btnAddFarm2">+ Cadastrar fazenda</button>
       <div class="kmls" id="kmlsVazio"></div>
     </div>
@@ -168,6 +178,20 @@
   </form>
 </div>
 
+<div class="modal" id="locModal" hidden>
+  <div class="card">
+    <h3>📍 Abrir fazenda por localização</h3>
+    <p class="hint">Cole um link do Google Maps, a localização compartilhada no WhatsApp ou coordenadas (ex.: <b>-3.7345, -46.0605</b> ou <b>3°44'04"S 46°03'38"W</b>).</p>
+    <textarea id="locInput" rows="3" placeholder="Cole aqui"></textarea>
+    <p class="err" id="locErr"></p>
+    <button class="btn ghost" id="locGps">🎯 Usar minha localização (GPS)</button>
+    <div class="actions">
+      <button class="btn ghost" id="locCancel">Cancelar</button>
+      <button class="btn" id="locGo">Buscar imóvel</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="confirmModal" hidden>
   <div class="card">
     <h3 id="cfTitle">Confirmar</h3>
@@ -236,5 +260,6 @@
 <script src="kmls.js"></script>
 <script src="lib/maplibre-gl.js"></script>
 <script src="tresd.js"></script>
+<script src="local.js"></script>
 </body>
 </html>
