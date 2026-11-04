@@ -483,7 +483,6 @@ async function gerarRelatorio(janela) {
  footer{margin-top:26px;border-top:1px solid #ddd;padding-top:8px;font-size:11px;color:#666}
  @media print{body{padding:0} button{display:none}}
 </style></head><body>
-<div style="text-align:right;margin-bottom:10px"><button onclick="print()" style="padding:8px 14px">Imprimir / salvar PDF</button></div>
 <header><div><h1>Relatório da propriedade — ${esc(f.name)}</h1>
 <div class="sub">${f.owner ? 'Cliente: ' + esc(f.owner) + ' · ' : ''}${ha(f.area)} · ${esc(f.uf || '')}${f.car ? ' · CAR ' + esc(f.car) : ''}</div></div>
 <div class="sub" style="text-align:right">${cons.nome ? '<b>' + esc(cons.nome) + '</b><br>' : ''}${cons.empresa ? esc(cons.empresa) + '<br>' : ''}${cons.contato ? esc(cons.contato) + '<br>' : ''}Emitido em ${dBR(isoDay(new Date()))}</div></header>
@@ -509,7 +508,19 @@ function abrirJanela(titulo) {
   if (w) { try { w.document.write(`<!DOCTYPE html><meta name="viewport" content="width=device-width"><title>${titulo}</title><p style="font:16px system-ui;padding:24px">Gerando ${titulo.toLowerCase()}…</p>`); } catch (e) { } }
   return w;
 }
+// Barra fixa "Voltar ao app" em todo documento (relatórios, memorial): no celular a janela nova não tem botão de voltar.
+function comBarraVoltar(html) {
+  const app = location.href.split('#')[0];
+  const barra = `<div class="agv-barra"><button type="button" onclick="agvFechar()">← Voltar</button><button type="button" onclick="print()">🖨 Salvar PDF</button></div>
+<style>.agv-barra{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;gap:8px;padding:8px 10px;background:#14532d;margin:0 0 8px}
+.agv-barra button{border:0;border-radius:8px;padding:10px 14px;font:600 15px system-ui,sans-serif;background:#fff;color:#14532d}
+.agv-barra button+button{background:#2fd37a;color:#08240f}@media print{.agv-barra{display:none!important}}</style>
+<script>function agvFechar(){try{if(window.parent!==window){var o=window.parent.document.getElementById('docOverlay');if(o){o.hidden=true;return;}}}catch(e){}
+try{window.close();}catch(e){}setTimeout(function(){if(history.length>1)history.back();else location.href=${JSON.stringify(app)};},250);}</script>`;
+  return /<body[^>]*>/i.test(html) ? html.replace(/<body([^>]*)>/i, `<body$1>${barra}`) : barra + html;
+}
 function mostrarDocumento(w, html) {
+  html = comBarraVoltar(html);
   if (w && !w.closed) { try { w.document.open(); w.document.write(html); w.document.close(); return; } catch (e) { } }
   // bloqueado: mostra dentro do próprio app
   let ov = $('docOverlay');

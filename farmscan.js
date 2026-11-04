@@ -455,7 +455,7 @@
       <h2>${p.titulo}</h2>${p.lead ? `<p class="lead">${p.lead}</p>` : ''}${p.corpo}
       <div class="rod"><span>Dados públicos consolidados pelo AgroSat${cons.empresa ? ' · ' + esc(cons.empresa) : ''}</span><span>${quando} · ID ${id}</span></div></section>`).join('');
     return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Relatório completo — ${esc(f.name)}</title><style>${CSS}</style></head><body>
-      <div class="noprint barra-topo"><button onclick="print()">Imprimir / salvar PDF</button></div>${corpo}</body></html>`;
+      ${corpo}</body></html>`;
   }
 
   const CSS = `
