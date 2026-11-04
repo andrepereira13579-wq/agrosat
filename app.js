@@ -13,6 +13,27 @@ const CFG = {
   invalidSCL: new Set([0, 1, 3, 8, 9, 10, 11]), // sem dado, saturado, sombra, nuvem, cirrus, neve
 };
 
+// ---------- Satélites (fontes de imagem) ----------
+const FONTES = {
+  s2: { nome: 'Sentinel‑2 · 10 m · desde 2017', curto: 'Sentinel‑2', stac: CFG.stac, col: CFG.collection, res: 10, red: ['red', 'B04'], nir: ['nir', 'B08'], re: ['rededge1', 'B05'], qa: ['scl', 'SCL'], qaTipo: 'scl', vis: ['visual', 'TCI'], g: ['green', 'B03'], b: ['blue', 'B02'], nuvemQuery: true },
+  ls: { nome: 'Landsat 5/7/8/9 · 30 m · desde 1984', curto: 'Landsat', stac: 'https://planetarycomputer.microsoft.com/api/stac/v1', col: 'landsat-c2-l2', res: 30, red: ['red'], nir: ['nir08'], re: null, qa: ['qa_pixel'], qaTipo: 'landsat', vis: null, g: ['green'], b: ['blue'], nuvemQuery: true, assinar: 'landsat-c2-l2' },
+  cb: { nome: 'CBERS‑4A · 2 m · só cor real', curto: 'CBERS‑4A', stac: 'https://data.inpe.br/bdc/stac/v1', col: 'CB4A-WPM-PCA-FUSED-1', res: 2, soRGB: true, nuvemQuery: false },
+};
+const fonteDe = it => FONTES[it._fonte || 's2'];
+// Landsat (Planetary Computer) exige um "token" gratuito na URL dos arquivos
+const tokensPC = {};
+async function assinarHref(fonte, href) {
+  if (!fonte.assinar) return href;
+  const t = tokensPC[fonte.assinar];
+  if (!t || t.exp < Date.now() + 120000) {
+    const r = await fetch(`https://planetarycomputer.microsoft.com/api/sas/v1/token/${fonte.assinar}`);
+    if (!r.ok) throw new Error('não consegui a autorização do Planetary Computer');
+    const j = await r.json();
+    tokensPC[fonte.assinar] = { token: j.token, exp: Date.parse(j['msft:expiry']) || Date.now() + 3e6 };
+  }
+  return href + (href.includes('?') ? '&' : '?') + tokensPC[fonte.assinar].token;
+}
+
 // ---------- Utilidades ----------
 const $ = id => document.getElementById(id);
 const fmt = (n, d = 2) => Number(n).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -72,6 +93,7 @@ function bboxOf(polys) {
 }
 function utmEPSG(lon, lat) { const z = Math.floor((lon + 180) / 6) + 1; return (lat < 0 ? 32700 : 32600) + z; }
 function projDef(epsg) {
+  if (epsg === 4326 || epsg === 4674) return '+proj=longlat +datum=WGS84 +no_defs';
   const z = epsg % 100, south = Math.floor(epsg / 100) === 327;
   return `+proj=utm +zone=${z}${south ? ' +south' : ''} +datum=WGS84 +units=m +no_defs`;
 }
@@ -170,22 +192,38 @@ function drawOutline() {
 }
 
 // ---------- STAC ----------
-async function stacSearch(polys, from, to, cloud, limit = 200) {
+async function stacSearch(polys, from, to, cloud, limit = 200, fk = 's2') {
+  const F = FONTES[fk];
   const b = bboxOf(polys);
   const body = {
-    collections: [CFG.collection], bbox: b, datetime: `${from}T00:00:00Z/${to}T23:59:59Z`,
-    query: { 'eo:cloud_cover': { lte: cloud } }, limit: 100,
+    collections: [F.col], bbox: b, datetime: `${from}T00:00:00Z/${to}T23:59:59Z`, limit: 100,
     sortby: [{ field: 'properties.datetime', direction: 'desc' }],
   };
-  let url = `${CFG.stac}/search`, items = [], guard = 0;
-  while (url && items.length < limit && guard++ < 10) {
-    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (!r.ok) throw new Error(`Catálogo respondeu ${r.status}`);
+  if (F.nuvemQuery) body.query = { 'eo:cloud_cover': { lte: cloud } };
+  if (!F.nuvemQuery) delete body.sortby;
+  let url = `${fk === 's2' ? CFG.stac : F.stac}/search`, items = [], guard = 0, metodo = 'POST';
+  while (url && items.length < limit && guard++ < 12) {
+    let r = metodo === 'POST' ? await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }) : await fetch(url);
+    if (!r.ok && metodo === 'POST' && guard === 1 && (r.status === 405 || r.status === 400)) {
+      // catálogo que só aceita GET
+      metodo = 'GET';
+      url = `${F.stac}/search?collections=${F.col}&bbox=${b.join(',')}&datetime=${encodeURIComponent(body.datetime)}&limit=100`;
+      r = await fetch(url);
+    }
+    if (!r.ok) throw new Error(`Catálogo ${F.curto} respondeu ${r.status}`);
     const j = await r.json();
     items.push(...(j.features || []));
     const next = (j.links || []).find(l => l.rel === 'next');
-    if (next && next.body) { Object.assign(body, next.body); url = next.href; } else url = null;
+    if (!next) url = null;
+    else if (next.body && (next.method || 'POST').toUpperCase() === 'POST') { Object.assign(body, next.body); url = next.href; metodo = 'POST'; }
+    else { url = next.href; metodo = 'GET'; }
   }
+  items.forEach(it => it._fonte = fk);
+  const nuvem = it => { const p = it.properties; return p['eo:cloud_cover'] ?? p.cloud_cover ?? p['cbers:cloud_cover'] ?? 0; };
+  items = items.filter(it => nuvem(it) <= cloud);
+  // Landsat 7 depois de 2003 tem faixas sem dado (falha do sensor): fica de fora
+  if (fk === 'ls') items = items.filter(it => !(it.properties.platform === 'landsat-7' && it.properties.datetime >= '2003-06-01'));
+  items.forEach(it => { if (it.properties['eo:cloud_cover'] == null) it.properties['eo:cloud_cover'] = nuvem(it); });
   // Uma cena por dia: a que cobre toda a fazenda, no fuso UTM da fazenda, com menos nuvem
   const farmEPSG = utmEPSG((b[0] + b[2]) / 2, (b[1] + b[3]) / 2);
   const covers = it => it.bbox && it.bbox[0] <= b[0] && it.bbox[1] <= b[1] && it.bbox[2] >= b[2] && it.bbox[3] >= b[3];
@@ -207,11 +245,19 @@ function itemEPSG(it) {
   if (a['proj:code']) return +String(a['proj:code']).split(':').pop();
   return null;
 }
-function asset(it, ...keys) { for (const k of keys) if (it.assets[k]) return it.assets[k]; return null; }
-function detectarOffset(R, NI, mask, SC, meta) {
+function asset(it, ...keys) { for (const k of keys) if (k && it.assets[k]) return it.assets[k]; return null; }
+// asset colorido do CBERS-4A (nome pode variar entre versões do catálogo)
+function assetRGB(it) {
+  const ks = Object.keys(it.assets);
+  const tif = k => /\.tiff?($|\?)/i.test(it.assets[k].href || '') || /tiff/i.test(it.assets[k].type || '');
+  const k = ks.find(k => tif(k) && /pca|rgb|tci|visual|fus/i.test(k)) || ks.find(k => tif(k) && !/thumb|quick|preview|mask|cmask/i.test(k));
+  return k ? it.assets[k] : null;
+}
+const qaInvalido = { scl: v => CFG.invalidSCL.has(v), landsat: v => (v & 0x1F) !== 0 };
+function detectarOffset(R, NI, mask, SC, meta, inval = qaInvalido.scl) {
   if (!meta) return 0;            // metadados dizem que não há offset
   const v = [];
-  for (let i = 0; i < R.length; i++) if (mask[i] && R[i] > 0 && NI[i] > 0 && (!SC || !CFG.invalidSCL.has(SC[i]))) v.push(R[i]);
+  for (let i = 0; i < R.length; i++) if (mask[i] && R[i] > 0 && NI[i] > 0 && (!SC || !inval(SC[i]))) v.push(R[i]);
   if (v.length < 20) return 0;
   v.sort((a, b) => a - b);
   // valores abaixo de 1000 provam que a imagem NÃO tem o +1000 (senão a reflectância seria negativa)
@@ -234,8 +280,17 @@ function scaleOffset(it, a) {
 // ---------- Leitura das bandas (COG) ----------
 const tiffCache = new Map();
 function openTiff(href) {
-  if (!tiffCache.has(href)) tiffCache.set(href, GeoTIFF.fromUrl(href, { allowFullFile: false }));
-  return tiffCache.get(href);
+  if (!tiffCache.has(href)) tiffCache.set(href, (async () => {
+    try { const t = await GeoTIFF.fromUrl(href, { allowFullFile: false }); await t.getImage(); return t; }
+    catch (e) {
+      // servidor que não aceita o navegador: tenta pelo servidor-ponte
+      const ponte = (typeof CONF !== 'undefined') && CONF.proxy;
+      if (!ponte || /amazonaws\.com/.test(href)) throw e;
+      const t = await GeoTIFF.fromUrl(`${ponte}/?url=${encodeURIComponent(href)}`, { allowFullFile: false }); await t.getImage(); return t;
+    }
+  })());
+  const p = tiffCache.get(href); p.catch(() => tiffCache.delete(href));
+  return p;
 }
 function makeGrid(polys, epsg, res, divs) {
   const f = toUTM(epsg);
@@ -285,31 +340,46 @@ function grid(polys, epsg, res) {
   return gridCache.get(k);
 }
 async function readBand(it, keys, g, samples) {
-  const a = asset(it, ...keys); if (!a) throw new Error(`Banda ${keys[0]} indisponível nesta cena.`);
-  const tiff = await openTiff(a.href);
+  const a = keys && asset(it, ...keys); if (!a) throw new Error(`Banda ${keys ? keys[0] : ''} indisponível nesta cena.`);
+  const tiff = await openTiff(await assinarHref(fonteDe(it), a.href));
   const r = await tiff.readRasters({ bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0, samples });
   return { data: r, so: scaleOffset(it, a) };
 }
 
-async function processScene(it, res = 10, withRGB = true) {
+async function processCBERS(it, res) {
+  const f = farm(), a = assetRGB(it); if (!a) throw new Error('cena CBERS sem imagem colorida');
+  const tiff = await openTiff(a.href), img = await tiff.getImage(), gk = img.getGeoKeys() || {};
+  let epsg = gk.ProjectedCSTypeGeoKey || gk.GeographicTypeGeoKey || itemEPSG(it) || 4326;
+  if (epsg === 32767 || !epsg) epsg = itemEPSG(it) || 4326;
+  const geo = epsg === 4326 || epsg === 4674;
+  const g = grid(f.polys, epsg, geo ? res / 111320 : res);
+  const data = await tiff.readRasters({ bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'bilinear', fillValue: 0 });
+  const N = g.W * g.H, cloud = new Uint8Array(N), nada = new Float32Array(N).fill(NaN);
+  return { it, g, ndvi: nada, ndre: nada, cloud, rgb: { tci: true, data: data.length >= 3 ? data : [data[0], data[0], data[0]] }, nIn: g.nIn, nCloud: 0, stats: null, statsRE: null, divStats: null, soRGB: true };
+}
+async function processScene(it, res, withRGB = true) {
+  const F = fonteDe(it);
+  if (F.soRGB) return processCBERS(it, res || F.res);
+  res = res || F.res;
   const f = farm(); const epsg = itemEPSG(it) || utmEPSG(...bboxCenter(f.polys));
   const g = grid(f.polys, epsg, res);
   const [red, nir, re1, scl] = await Promise.all([
-    readBand(it, ['red', 'B04'], g, [0]), readBand(it, ['nir', 'B08'], g, [0]),
-    readBand(it, ['rededge1', 'B05'], g, [0]), readBand(it, ['scl', 'SCL'], g, [0]).catch(() => null),
+    readBand(it, F.red, g, [0]), readBand(it, F.nir, g, [0]),
+    F.re ? readBand(it, F.re, g, [0]).catch(() => null) : null, readBand(it, F.qa, g, [0]).catch(() => null),
   ]);
+  const inval = qaInvalido[F.qaTipo];
   const N = g.W * g.H, ndvi = new Float32Array(N).fill(NaN), ndre = new Float32Array(N).fill(NaN), cloud = new Uint8Array(N);
-  const R = red.data[0], NI = nir.data[0], RE = re1.data[0], SC = scl ? scl.data[0] : null;
+  const R = red.data[0], NI = nir.data[0], RE = re1 ? re1.data[0] : null, SC = scl ? scl.data[0] : null;
   // Calibração: imagens Sentinel-2 mais novas somam +1000 aos valores (offset de -0,1 na reflectância),
   // mas nem todas as cenas do catálogo vêm assim, e os metadados nem sempre batem.
   // Decide pela própria imagem: com offset, o vermelho quase nunca fica abaixo de 1000.
-  const off = detectarOffset(R, NI, g.mask, SC, red.so[1]);
+  const off = detectarOffset(R, NI, g.mask, SC, red.so[1], inval);
   const so = (x, s) => x * s[0] + off;
   let nIn = 0, nCloud = 0;
   for (let i = 0; i < N; i++) {
     if (!g.mask[i]) continue; nIn++;
-    if ((SC && CFG.invalidSCL.has(SC[i])) || R[i] === 0 || NI[i] === 0) { cloud[i] = 1; nCloud++; continue; }
-    const r = so(R[i], red.so), n = so(NI[i], nir.so), e = so(RE[i], re1.so);
+    if ((SC && inval(SC[i])) || R[i] === 0 || NI[i] === 0) { cloud[i] = 1; nCloud++; continue; }
+    const r = so(R[i], red.so), n = so(NI[i], nir.so), e = RE ? so(RE[i], re1.so) : NaN;
     if (r <= 0 || n <= 0) continue;
     const v = (n - r) / (n + r), w = e > 0 ? (n - e) / (n + e) : NaN;
     ndvi[i] = v > 1 || v < -1 ? NaN : v;
@@ -317,10 +387,10 @@ async function processScene(it, res = 10, withRGB = true) {
   }
   let rgb = null;
   if (withRGB) {
-    const vis = asset(it, 'visual', 'TCI');
+    const vis = F.vis && asset(it, ...F.vis);
     try {
-      if (vis) { const t = await openTiff(vis.href); rgb = { tci: true, data: await t.readRasters({ bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0 }) }; }
-      else { const [gr, bl] = await Promise.all([readBand(it, ['green', 'B03'], g, [0]), readBand(it, ['blue', 'B02'], g, [0])]); rgb = { tci: false, r: red, g: gr, b: bl }; }
+      if (vis) { const t = await openTiff(await assinarHref(F, vis.href)); rgb = { tci: true, data: await t.readRasters({ bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0 }) }; }
+      else { const [gr, bl] = await Promise.all([readBand(it, F.g, g, [0]), readBand(it, F.b, g, [0])]); rgb = { tci: false, r: red, g: gr, b: bl }; }
     } catch (e) { rgb = null; }
   }
   let divStats = null;
@@ -420,14 +490,14 @@ function showLayer() {
   if (S.outline) S.outline.bringToFront();
   document.querySelectorAll('#layerSeg button').forEach(b => {
     b.classList.toggle('on', b.dataset.layer === S.layer);
-    b.hidden = res.isDiff ? b.dataset.layer !== 'diff' : b.dataset.layer === 'diff';
+    b.hidden = res.isDiff ? b.dataset.layer !== 'diff' : res.soRGB ? b.dataset.layer !== 'rgb' : b.dataset.layer === 'diff';
   });
   $('layerbar').hidden = false;
   legend();
 }
 function legend() {
   const L_ = $('legend'), res = S.result; L_.hidden = false;
-  if (S.layer === 'rgb') { L_.innerHTML = `<b>Cor real</b><div class="ends"><span>${dBR(res.it.properties.datetime)}</span></div>`; return; }
+  if (S.layer === 'rgb') { L_.innerHTML = `<b>Cor real · ${fonteDe(res.it).curto} ${fonteDe(res.it).res} m</b><div class="ends"><span>${dBR(res.it.properties.datetime)}</span></div>`; return; }
   if (S.layer === 'diff') { L_.innerHTML = `<b>Variação do NDVI</b><div class="grad" style="background:${cssGrad(RAMP_DIFF)}"></div><div class="ends"><span>caiu −0,3</span><span>0</span><span>subiu +0,3</span></div>`; return; }
   if (S.layer === 'zonas') { L_.innerHTML = `<b>Zonas de atenção</b><div class="ends"><span><i style="display:inline-block;width:10px;height:10px;background:#ff28c8;border-radius:2px"></i> NDVI bem abaixo da média da área</span></div><div class="ends"><span>Limite: NDVI &lt; ${fmt(zoneThr(res.stats))}</span></div>`; return; }
   const ndre = S.layer === 'ndre', st = ndre ? RAMP_NDRE : RAMP_NDVI;
@@ -444,7 +514,7 @@ function renderFarmSelect() {
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 function selectFarm(id) {
   S.farmId = id; saveFarms();
-  S.scenes = []; S.scene = null; S.result = null; S.seriesData = null;
+  S.scenes = []; S.scene = null; S.result = null; S.seriesData = null; S.extra = null;
   if (S.overlay) { S.overlay.remove(); S.overlay = null; }
   $('layerbar').hidden = true; $('legend').hidden = true; $('stats').hidden = true; $('cmpStats').hidden = true;
   $('scenes').innerHTML = ''; $('searchInfo').textContent = ''; $('serieSum').textContent = '';
@@ -467,8 +537,8 @@ function renderScenes() {
     return `<button class="scene${S.scene === it ? ' on' : ''}" data-k="${k}">
       ${th ? `<img loading="lazy" src="${th.href}" alt="">` : '<img alt="">'}
       <div><div class="d">${dBR(p.datetime)}</div>
-      <div class="m">${(p.platform || 'Sentinel-2').replace('sentinel-', 'Sentinel-').toUpperCase()} · 10 m · ☁ ${fmt(p['eo:cloud_cover'] || 0, 1)}% na cena</div>
-      <div class="m">Toque para ver NDVI na fazenda</div></div></button>`;
+      <div class="m">${esc(String(p.platform || fonteDe(it).curto).replace(/^sentinel-/i, 'Sentinel-').replace(/^landsat-/i, 'Landsat ').toUpperCase())} · ${fonteDe(it).res} m · ☁ ${fmt(p['eo:cloud_cover'] || 0, 1)}% na cena</div>
+      <div class="m">${fonteDe(it).soRGB ? 'Toque para ver a imagem colorida de 2 m' : 'Toque para ver NDVI na fazenda'}</div></div></button>`;
   }).join('');
 }
 
@@ -476,6 +546,7 @@ function renderStats(res) {
   const st = res.stats, el = $('stats'); el.hidden = false;
   const f = farm(), pxHa = (res.g.res * res.g.res) / 1e4;
   const pctCloud = res.nIn ? res.nCloud / res.nIn * 100 : 0;
+  if (res.soRGB) { el.innerHTML = `<h4>${dBR(res.it.properties.datetime)} · CBERS‑4A</h4><p class="hint">Imagem colorida de 2 m (fusão pancromática do INPE). Ótima para enxergar cercas, estradas, sede, aguadas e falhas de pasto, mas não tem infravermelho, então não calcula NDVI. Para vigor da vegetação, use Sentinel‑2 ou Landsat.</p>`; return; }
   if (!st) { el.innerHTML = `<h4>${dBR(res.it.properties.datetime)}</h4><p class="hint">A fazenda está toda coberta por nuvem nessa data. Escolha outra.</p>`; return; }
   const cls = [['Solo/pasto degradado', -1, 0.3, '#d73027'], ['Vigor baixo', 0.3, 0.5, '#fdae61'], ['Vigor bom', 0.5, 0.7, '#a6d96a'], ['Vigor alto', 0.7, 2, '#1a9850']];
   const tot = st.n;
@@ -513,8 +584,8 @@ async function openScene(it) {
   S.scene = it; renderScenes();
   busy(true, `Baixando o recorte de ${dBR(it.properties.datetime)}…`);
   try {
-    S.result = await processScene(it, 10, true);
-    if (S.layer === 'diff') S.layer = 'ndvi';
+    S.result = await processScene(it, null, true);
+    if (S.layer === 'diff' || S.result.soRGB) S.layer = S.result.soRGB ? 'rgb' : 'ndvi';
     showLayer(); renderStats(S.result);
   } catch (e) { console.error(e); toast('Não consegui processar essa imagem: ' + e.message, 6000); }
   finally { busy(false); }
@@ -526,7 +597,9 @@ async function doSearch() {
   if (!from || !to || from > to) return toast('Confira as datas.');
   $('btnSearch').disabled = true; busy(true, 'Buscando imagens no catálogo…');
   try {
-    S.scenes = await stacSearch(f.polys, from, to, cloud);
+    const fk = $('fonteImg').value;
+    busy(true, `Buscando imagens ${FONTES[fk].curto}…`);
+    S.scenes = await stacSearch(f.polys, from, to, cloud, 200, fk);
     $('searchInfo').textContent = S.scenes.length ? `${S.scenes.length} ${S.scenes.length === 1 ? 'imagem encontrada' : 'imagens encontradas'} entre ${dBR(from)} e ${dBR(to)}.` : 'Nenhuma imagem nesse período com esse limite de nuvens. Aumente o período ou o limite.';
     renderScenes(); fillCompare();
     if (S.scenes.length) openScene(S.scenes[0]);
@@ -542,11 +615,21 @@ async function doSerie() {
   const to = new Date(), from = new Date(); from.setMonth(from.getMonth() - meses);
   $('btnSerie').disabled = true; busy(true, 'Buscando imagens do período…');
   try {
-    const items = (await stacSearch(f.polys, isoDay(from), isoDay(to), cloud, 600)).reverse();
+    const fk = $('fonteSerie').value;
+    let items = (await stacSearch(f.polys, isoDay(from), isoDay(to), cloud, fk === 'ls' ? 2000 : 600, fk)).reverse();
+    // períodos longos: no máximo 1 imagem por mês (ou por trimestre acima de 5 anos), a de menos nuvem
+    if (meses > 24) {
+      const passo = meses > 60 ? 3 : 1, grupos = new Map();
+      for (const it of items) {
+        const d = it.properties.datetime, k = d.slice(0, 4) + '-' + Math.floor((+d.slice(5, 7) - 1) / passo);
+        const c = grupos.get(k); if (!c || it.properties['eo:cloud_cover'] < c.properties['eo:cloud_cover']) grupos.set(k, it);
+      }
+      items = [...grupos.values()].sort((x, y) => x.properties.datetime.localeCompare(y.properties.datetime));
+    }
     let done = 0;
     const rows = await pool(items, 4, async it => {
       try {
-        const r = await processScene(it, CFG.serieRes, false);
+        const r = await processScene(it, fk === 's2' ? CFG.serieRes : null, false);
         busy(true, `Calculando NDVI ${++done}/${items.length}…`);
         const valid = r.nIn ? (r.nIn - r.nCloud) / r.nIn : 0;
         if (!r.stats || valid < 0.6) return null;
@@ -595,7 +678,8 @@ async function doCompare() {
   if (itemEPSG(a) !== itemEPSG(b)) return toast('Essas duas imagens estão em fusos UTM diferentes; escolha outras datas.');
   busy(true, 'Comparando as duas datas…');
   try {
-    const [ra, rb] = await Promise.all([processScene(a, 10, false), processScene(b, 10, false)]);
+    if (fonteDe(a).soRGB || fonteDe(b).soRGB) throw new Error('o CBERS‑4A não tem infravermelho; compare com Sentinel‑2 ou Landsat');
+    const [ra, rb] = await Promise.all([processScene(a, null, false), processScene(b, null, false)]);
     const N = ra.g.W * ra.g.H, diff = new Float32Array(N).fill(NaN), cloud = new Uint8Array(N);
     let up = 0, down = 0, n = 0;
     for (let i = 0; i < N; i++) {
@@ -623,7 +707,8 @@ async function doCompare() {
 // ---------- Abas e eventos ----------
 function switchTab(t) {
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  ['imagens', 'serie', 'comparar', 'situacao', 'clima'].forEach(k => $('tab-' + k).hidden = k !== t);
+  ['imagens', 'serie', 'comparar', 'situacao', 'clima', 'uso', 'terreno'].forEach(k => $('tab-' + k).hidden = k !== t);
+  if (['imagens', 'serie', 'comparar'].includes(t) && typeof voltarParaSatelite === 'function') voltarParaSatelite();
   if (t !== 'comparar' && S.result && S.result.isDiff && S.scene) openScene(S.scene);
 }
 $('tabs').onclick = e => { const b = e.target.closest('button'); if (b) switchTab(b.dataset.tab); };

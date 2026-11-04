@@ -16,11 +16,16 @@ const PERMITIDOS = [
   'dataserver-coids.inpe.br',      // Queimadas / INPE
   'pamgia.ibama.gov.br',           // Embargos IBAMA (ArcGIS)
   'geo.infrasa.gov.br',            // SIGEF nacional (ArcGIS, Infra S.A.)
+  'cmr.funai.gov.br',              // Terras indígenas, quilombolas, assentamentos, UCs (FUNAI/CMR)
+  'storage.googleapis.com',        // MapBiomas (mapas anuais em COG)
+  'data.inpe.br',                  // CBERS-4A (Brazil Data Cube / INPE)
+  'planetarycomputer.microsoft.com', // Landsat (catálogo e autorização)
+  'landsateuwest.blob.core.windows.net', // Landsat (arquivos)
 ];
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': '*',
 };
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36';
@@ -29,16 +34,18 @@ function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { ...CORS, 'Content-Type': 'application/json; charset=utf-8' } });
 }
 
-async function repassar(alvo) {
+async function repassar(alvo, req) {
   let u;
   try { u = new URL(alvo); } catch { return json({ erro: 'endereço inválido' }, 400); }
   if (!PERMITIDOS.includes(u.hostname)) return json({ erro: 'endereço não permitido: ' + u.hostname }, 403);
-  const r = await fetch(u.toString(), {
-    headers: { 'User-Agent': UA, 'Accept': '*/*' },
-    cf: { cacheTtl: 3600, cacheEverything: true },
-  });
+  const cab = { 'User-Agent': UA, 'Accept': '*/*' };
+  const range = req && req.headers.get('Range');
+  if (range) cab['Range'] = range;   // leitura parcial de imagens (COG)
+  const r = await fetch(u.toString(), { headers: cab, cf: range ? undefined : { cacheTtl: 3600, cacheEverything: true } });
   const h = new Headers(CORS);
   h.set('Content-Type', r.headers.get('Content-Type') || 'application/octet-stream');
+  for (const k of ['Content-Range', 'Content-Length', 'Accept-Ranges']) if (r.headers.get(k)) h.set(k, r.headers.get(k));
+  h.set('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges');
   h.set('Cache-Control', 'public, max-age=1800');
   return new Response(r.body, { status: r.status, headers: h });
 }
@@ -86,7 +93,7 @@ export default {
     if (u.pathname === '/focos') return focos(u.searchParams);
     const alvo = u.searchParams.get('url');
     if (!alvo) return json({ erro: 'informe ?url=' }, 400);
-    try { return await repassar(alvo); }
+    try { return await repassar(alvo, req); }
     catch (e) { return json({ erro: 'falha ao consultar a base: ' + e.message }, 502); }
   },
 };

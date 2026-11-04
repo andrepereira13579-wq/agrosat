@@ -63,7 +63,7 @@
     }
     if (S.diag) {
       L.push('', '*Situação ambiental e fundiária*');
-      for (const k of ['car', 'sigef', 'emb', 'prodes', 'fogo']) {
+      for (const k of ['car', 'sigef', 'emb', 'prodes', 'prot', 'fogo']) {
         const it = S.diag.itens[k]; if (!it || it.nivel === 'erro') continue;
         L.push(`${ICONE[it.nivel] || '•'} *${it.titulo}:* ${txt(it.resumo)}`);
       }
@@ -73,6 +73,9 @@
       if (typeof CL !== 'undefined' && CL.dados) L.push('', `🌧️ Chuva de ${dBR(cl.ini)} a ${dBR(cl.fim)}: *${fmt(cl.chuva, 0)} mm* · ${cl.seco} dia(s) seguidos sem chuva · previsão 7 dias: ${fmt(cl.chuvaPrev, 0)} mm`);
       else L.push('', `🌧️ Chuva nos últimos 30 dias: *${fmt(cl.chuva30, 0)} mm* · ${cl.semChuva} dia(s) seguidos sem chuva · previsão 7 dias: ${fmt(cl.chuva7, 0)} mm`);
     }
+    if (S.usoSolo && S.usoSolo.grupos) L.push('', `🗺️ *Uso do solo ${S.usoSolo.ano} (MapBiomas):* ${S.usoSolo.grupos.filter(g => g.pct >= 1).map(g => `${g.nome} ${fmt(g.pct, 0)}%`).join(' · ')}`);
+    if (S.usoSolo && S.usoSolo.desde2008) L.push(`🌳 Vegetação nativa convertida desde 2008: ${fmt(S.usoSolo.desde2008.perdida, 1)} ha`);
+    if (S.terreno) L.push('', `⛰️ *Relevo:* declividade média ${fmt(S.terreno.media, 1)}% · altitude ${fmt(S.terreno.altMin, 0)}–${fmt(S.terreno.altMax, 0)} m${S.terreno.app >= 0.1 ? ` · ${fmt(S.terreno.app, 1)} ha acima de 45° (APP)` : ''}`);
     if (!r && !S.diag) L.push('', '_Abra o link para ver imagens de satélite e a situação da área._');
     L.push('', `🗺️ Ver a fazenda no mapa: ${await linkDaFazenda(f)}`);
     const c = CONF.consultor;

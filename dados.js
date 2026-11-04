@@ -140,6 +140,22 @@ async function embargosNaArea(b) {
   if (!CONF.proxy) throw new Error('o servidor do IBAMA (PAMGIA) não respondeu: ' + erroPamgia.message);
   return (await getGeo(`https://siscom.ibama.gov.br/geoserver/publica/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=publica:vw_brasil_adm_embargo_a&outputFormat=application/json&srsName=EPSG:4326&maxFeatures=500&bbox=${bboxStr(b)}`)).features;
 }
+// Áreas protegidas e territórios: IBAMA/PAMGIA (ArcGIS) e, se falhar, FUNAI/CMR (WFS)
+const PROTEGIDAS = [
+  { k: 'ti', nome: 'Terra indígena', arc: 'https://pamgia.ibama.gov.br/server/rest/services/SIGAGEO/bases/MapServer/25', wfs: 'CMR-PUBLICO:lim_terra_indigena_a', campos: ['terrai_nom', 'nome', 'ti_nome'], peso: 'grave' },
+  { k: 'uc', nome: 'Unidade de conservação', arc: 'https://pamgia.ibama.gov.br/server/rest/services/BasesSincronizadas/' + encodeURIComponent('lim_unidades_conservação_mma_a') + '/MapServer/0', wfs: 'CMR-PUBLICO:lim_unidade_conservacao_federal_a', campos: ['nome_uc', 'nome', 'nome_uc1', 'nomeuc'], cat: ['categoria', 'categori3', 'cat_uc', 'grupo'], peso: 'alerta' },
+  { k: 'qu', nome: 'Território quilombola', arc: 'https://pamgia.ibama.gov.br/server/rest/services/BasesSincronizadas/lim_quilombos_incra_a/MapServer/0', wfs: 'CMR-PUBLICO:lim_quilombolas_a', campos: ['nm_comunid', 'nome_comun', 'nome', 'comunidade'], peso: 'grave' },
+  { k: 'as', nome: 'Assentamento (INCRA)', arc: 'https://pamgia.ibama.gov.br/server/rest/services/01_Publicacoes_Bases/assentamentos_incra/MapServer/1', wfs: 'CMR-PUBLICO:lim_assentamento_rural_a', campos: ['nome_proje', 'nome_projeto', 'nome'], peso: 'alerta' },
+];
+async function protegidasNaArea(b) {
+  const out = {};
+  await Promise.all(PROTEGIDAS.map(async P => {
+    try { out[P.k] = await arcgisNaArea(P.arc, b); return; } catch (e) { console.warn(P.k, 'PAMGIA falhou:', e.message); }
+    try { out[P.k] = (await getGeo(`https://cmr.funai.gov.br/geoserver/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${P.wfs}&outputFormat=application/json&srsName=EPSG:4326&maxFeatures=200&bbox=${bboxStr(b)}`)).features; }
+    catch (e) { out[P.k] = { erro: e.message }; }
+  }));
+  return out;
+}
 // PRODES (Amazônia Legal e Cerrado)
 async function prodesNaArea(b) {
   const out = [];
@@ -227,6 +243,7 @@ async function rodarDiagnostico() {
     ['sigef', 'SIGEF / INCRA', () => sigefNaArea(fb, uf)],
     ['emb', 'Embargos IBAMA', () => embargosNaArea(viz)],
     ['prodes', 'Desmatamento PRODES', () => prodesNaArea(fb)],
+    ['prot', 'Áreas protegidas e territórios', () => protegidasNaArea(viz)],
     ['fogo', `Focos de queimada (${CONF.diasFocos} dias)`, () => focosNaArea(viz, CONF.diasFocos)],
     ['clima', 'Clima', () => climaNoPonto(centro[0], centro[1])],
   ];
@@ -259,6 +276,32 @@ function camada(feats, style, popup) {
 const tabela = (cab, linhas) => `<table class="tb"><tr>${cab.map(c => `<th>${c}</th>`).join('')}</tr>${linhas.map(l => `<tr>${l.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table>`;
 
 const RENDER = {
+  prot(res, F) {
+    const linhas = [], falhas = [];
+    let nivel = 'ok';
+    for (const P of PROTEGIDAS) {
+      const fs = res[P.k];
+      if (!fs || fs.erro) { falhas.push(P.nome); continue; }
+      for (const ft of fs) {
+        const oh = interHa(F, ft), km = oh > 0 ? 0 : distKm(F, ft);
+        if (oh <= 0 && !(km <= CONF.raioKm)) continue;
+        const nome = pick(ft.properties, ...P.campos) || P.nome, cat = P.cat ? pick(ft.properties, ...P.cat) : '';
+        linhas.push({ P, ft, nome, cat, oh, km });
+        if (oh > 0.01) nivel = (P.peso === 'grave' || nivel === 'grave') ? 'grave' : 'alerta';
+      }
+    }
+    camada(linhas.map(l => l.ft), { color: '#b26bff', weight: 2, fillColor: '#b26bff', fillOpacity: .25 }, ft => `<b>Área protegida</b>`);
+    const dentro = linhas.filter(l => l.oh > 0.01), perto = linhas.filter(l => l.oh <= 0.01);
+    let resumo;
+    if (!dentro.length && !perto.length) resumo = `Nenhuma terra indígena, unidade de conservação, território quilombola ou assentamento na área nem em até ${CONF.raioKm} km.`;
+    else {
+      resumo = dentro.length ? `<b>Sobreposição com ${dentro.map(l => `${l.P.nome.toLowerCase()} "${esc(l.nome)}" (${ha(l.oh)})`).join('; ')}.</b>` : 'Nenhuma sobreposição com a área.';
+      if (perto.length) { resumo += ` No entorno de ${CONF.raioKm} km: ${perto.map(l => `${l.P.nome.toLowerCase()} "${esc(l.nome)}" a ${fmt(l.km, 1)} km`).join('; ')}.`; if (nivel === 'ok') nivel = 'alerta'; }
+      if (dentro.some(l => l.P.k === 'uc')) resumo += ' Confira a categoria da UC: APA e RDS admitem uso agropecuário com regras; parques e reservas biológicas não.';
+    }
+    if (falhas.length) { resumo += ` <i>Não consegui consultar: ${falhas.join(', ')}.</i>`; if (falhas.length === PROTEGIDAS.length) nivel = 'erro'; }
+    return { nivel, resumo, detalhes: linhas.length ? tabela(['Tipo', 'Nome', 'Categoria', 'Situação'], linhas.map(l => [l.P.nome, esc(l.nome), esc(l.cat || '—'), l.oh > 0.01 ? `<b>dentro (${ha(l.oh)})</b>` : `${fmt(l.km, 1)} km`])) : '' };
+  },
   car(feats, F, f) {
     const areaF = turf.area(F) / 1e4;
     const rows = feats.map(ft => {
@@ -423,7 +466,7 @@ async function gerarRelatorio(janela) {
   }
   const cor = { ok: '#1a9850', alerta: '#e0a800', grave: '#d73027', erro: '#888', info: '#2f6fb3' };
   const rot = { ok: 'Sem pendências', alerta: 'Atenção', grave: 'Crítico', erro: 'Não consultado', info: 'Informativo' };
-  const diag = S.diag ? ['car', 'sigef', 'emb', 'prodes', 'fogo', 'clima'].map(k => S.diag.itens[k]).filter(Boolean) : [];
+  const diag = S.diag ? ['car', 'sigef', 'emb', 'prodes', 'prot', 'fogo', 'clima'].map(k => S.diag.itens[k]).filter(Boolean) : [];
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório — ${esc(f.name)}</title>
 <style>
  body{font:13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1b1b1b;margin:0;padding:24px 28px;max-width:900px}
@@ -449,8 +492,11 @@ ${ndvi ? `<h2>Vigor da vegetação — ${dBR(S.result.it.properties.datetime)}</
 <div class="duas"><div><img src="${ndvi}"><div class="grad"></div><div class="sub" style="display:flex;justify-content:space-between"><span>NDVI baixo</span><span>NDVI alto</span></div></div>
 <div><div class="grid" style="grid-template-columns:1fr 1fr">${st ? `<div class="k"><b>${fmt(st.mean)}</b>NDVI médio</div><div class="k"><b>${S.result.statsRE ? fmt(S.result.statsRE.mean) : '—'}</b>NDRE médio</div><div class="k"><b>${fmt(st.p10)}</b>pior 10%</div><div class="k"><b>${fmt(st.p90)}</b>melhor 10%</div>` : ''}</div>${tabelaDivs(S.result.divStats)}</div></div>` : '<p class="sub">Nenhuma imagem de satélite aberta (aba Imagens).</p>'}
 ${typeof CL !== 'undefined' && CL.dados ? `<h2>Clima — ${dBR(CL.dados.ini)} a ${dBR(CL.dados.fim)}</h2><div class="grid"><div class="k"><b>${fmt(CL.dados.chuva, 0)} mm</b>chuva acumulada</div><div class="k"><b>${CL.dados.diasChuva}</b>dias com chuva</div><div class="k"><b>${CL.dados.seco}</b>dias seguidos sem chuva</div><div class="k"><b>+${fmt(CL.dados.gdd, 0)}</b>soma térmica (base ${CL.dados.tb} °C)</div><div class="k"><b>${fmt(CL.dados.tmaxMed, 1)}° / ${fmt(CL.dados.tminMed, 1)}°</b>máx / mín médias</div><div class="k"><b>${fmt(CL.dados.chuvaPrev, 0)} mm</b>previsão 7 dias</div></div>` : ''}
+${S.usoSolo && S.usoSolo.grupos ? `<h2>Uso do solo — ${S.usoSolo.ano} (${S.usoSolo.col})</h2><table><tr><th>Uso</th><th>ha</th><th>%</th></tr>${S.usoSolo.grupos.map(g => `<tr><td><span style="display:inline-block;width:10px;height:10px;background:${g.cor};border:1px solid #999"></span> ${g.nome}</td><td>${fmt(g.ha, 1)}</td><td>${fmt(g.pct, 1)}</td></tr>`).join('')}</table>` : ''}
+${S.usoSolo && S.usoSolo.desde2008 ? `<p><b>Desde 2008:</b> vegetação nativa ${fmt(S.usoSolo.desde2008.nat08, 1)} ha em 2008 e ${fmt(S.usoSolo.desde2008.natHoje, 1)} ha em ${S.usoSolo.desde2008.fim}; ${fmt(S.usoSolo.desde2008.perdida, 1)} ha convertidos (MapBiomas 30 m).</p>` : ''}
+${S.terreno ? `<h2>Relevo</h2><div class="grid"><div class="k"><b>${fmt(S.terreno.media, 1)}%</b>declividade média</div><div class="k"><b>${fmt(S.terreno.altMin, 0)}–${fmt(S.terreno.altMax, 0)} m</b>altitude</div><div class="k"><b>${fmt(S.terreno.app, 1)} ha</b>acima de 45° (APP)</div></div><table><tr><th>Classe (Embrapa)</th><th>% da área</th></tr>${S.terreno.itens.filter(i => i.pct >= 0.5).map(i => `<tr><td>${i.nome}</td><td>${fmt(i.pct, 0)}%</td></tr>`).join('')}</table>` : ''}
 ${serieImg ? `<h2>Histórico de NDVI</h2><img src="${serieImg}"><p class="sub">${$('serieSum').textContent}</p>` : ''}
-<footer>Fontes: SICAR/SFB (CAR), INCRA/Acervo Fundiário (SIGEF), IBAMA/SISCOM (embargos), INPE/TerraBrasilis (PRODES), INPE/Programa Queimadas (focos), Open-Meteo (clima), Copernicus Sentinel-2/ESA (imagens). Dados públicos consultados na data de emissão; não substituem certidões oficiais.</footer>
+<footer>Fontes: SICAR/SFB (CAR), INCRA (SIGEF, assentamentos, quilombolas), IBAMA/PAMGIA (embargos), FUNAI (terras indígenas), MMA/CNUC (unidades de conservação), MapBiomas (uso do solo), INPE/TerraBrasilis (PRODES), INPE/Programa Queimadas (focos), Open-Meteo (clima), Copernicus Sentinel-2/ESA (imagens). Dados públicos consultados na data de emissão; não substituem certidões oficiais.</footer>
 </body></html>`;
   mostrarDocumento(janela, html);
 }

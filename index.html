@@ -60,16 +60,24 @@
         <span class="chip" id="farmArea">— ha</span>
       </div>
       <div class="farmsub"><span id="farmCar"></span></div>
-      <div class="acoes"><button class="btn ghost sm" id="btnReport">📄 Relatório</button><button class="btn ghost sm" id="btnKML">⬇ KML</button><button class="btn ghost sm" id="btnMemo">📐 Memorial</button><button class="btn ghost sm" id="btn3D">🏔 3D</button><button class="btn sm wz" id="btnWhats">💬 WhatsApp</button></div>
+      <div class="acoes"><button class="btn ghost sm" id="btnReport">📄 Relatório</button><button class="btn ghost sm" id="btnKML">⬇ KML</button><button class="btn ghost sm" id="btnMemo">📐 Memorial</button><button class="btn ghost sm" id="btn3D">🏔 3D</button><button class="btn ghost sm" id="btnImg">🖼 Imagem</button><button class="btn sm wz" id="btnWhats">💬 WhatsApp</button></div>
       <nav class="tabs" id="tabs">
         <button data-tab="imagens" class="on">Imagens</button>
         <button data-tab="serie">Histórico</button>
         <button data-tab="comparar">Comparar</button>
         <button data-tab="situacao">Situação</button>
         <button data-tab="clima">Clima</button>
+        <button data-tab="uso">Uso do solo</button>
+        <button data-tab="terreno">Terreno</button>
       </nav>
 
       <div class="tab" id="tab-imagens">
+        <label class="slider">Satélite
+          <select id="fonteImg">
+            <option value="s2">Sentinel‑2 · 10 m · NDVI e NDRE · desde 2017</option>
+            <option value="ls">Landsat 5/7/8/9 · 30 m · NDVI · desde 1984</option>
+            <option value="cb">CBERS‑4A (INPE) · 2 m · só cor real</option>
+          </select></label>
         <div class="row">
           <label>De <input type="date" id="dFrom"></label>
           <label>Até <input type="date" id="dTo"></label>
@@ -83,6 +91,11 @@
       </div>
 
       <div class="tab" id="tab-serie" hidden>
+        <label class="slider">Satélite
+          <select id="fonteSerie">
+            <option value="s2">Sentinel‑2 · 10 m · desde 2017</option>
+            <option value="ls">Landsat · 30 m · histórico desde 1984</option>
+          </select></label>
         <div class="row">
           <label>Período
             <select id="serieMeses">
@@ -90,6 +103,10 @@
               <option value="12" selected>12 meses</option>
               <option value="24">24 meses</option>
               <option value="36">36 meses</option>
+              <option value="60">5 anos</option>
+              <option value="120">10 anos</option>
+              <option value="240">20 anos</option>
+              <option value="480">40 anos (só Landsat)</option>
             </select></label>
           <label>Nuvens até
             <select id="serieNuvem">
@@ -141,8 +158,23 @@
         <div id="clPrev"></div>
         <p class="hint">Dados: Open‑Meteo (modelos meteorológicos e reanálise ERA5), no centro da fazenda. Soma térmica = Σ máx(0, (Tmáx+Tmín)/2 − Tbase).</p>
       </div>
+      <div class="tab" id="tab-uso" hidden>
+        <p class="hint">Mapa de uso e cobertura do solo do MapBiomas (pasto, lavoura, vegetação nativa, água…) dentro da fazenda, por ano e por divisão.</p>
+        <div class="row">
+          <label>Coleção <select id="mbCol"><option value="m10">10 m · 2017 a 2025</option><option value="m30">30 m · 1985 a 2024</option></select></label>
+          <label>Ano <select id="mbAno"></select></label>
+        </div>
+        <button class="btn full" id="mbBtn">Ver uso do solo</button>
+        <button class="btn ghost full" id="mb2008" hidden>Mudanças desde 2008 (Código Florestal)</button>
+        <div class="stats" id="mbRes" hidden></div>
+      </div>
+      <div class="tab" id="tab-terreno" hidden>
+        <p class="hint">Declividade e altitude da fazenda, a partir do relevo de satélite (SRTM). Classes de relevo da Embrapa, áreas acima de 45° e média por divisão.</p>
+        <button class="btn full" id="tdBtn">Calcular declividade</button>
+        <div class="stats" id="tdRes" hidden></div>
+      </div>
       <div class="tab" id="tab-situacao" hidden>
-        <p class="hint">Cruza a fazenda com CAR, SIGEF/INCRA, embargos do IBAMA, desmatamento PRODES, focos de queimada do INPE (área + 5 km ao redor) e clima.</p>
+        <p class="hint">Cruza a fazenda com CAR, SIGEF/INCRA, embargos do IBAMA, desmatamento PRODES, terras indígenas, unidades de conservação, quilombolas, assentamentos, focos de queimada do INPE (área + 5 km ao redor) e clima.</p>
         <button class="btn full" id="btnDiag">Verificar situação da fazenda</button>
         <div id="diagBox" class="diag"></div>
         <p class="hint">Dados públicos consultados na hora. Não substituem certidões oficiais.</p>
@@ -202,6 +234,19 @@
       <button class="btn ghost" id="wzCancel">Fechar</button>
       <button class="btn ghost" id="wzCopiar">Copiar</button>
       <button class="btn wz" id="wzEnviar">Abrir no WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="imgModal" hidden>
+  <div class="card" style="max-width:720px">
+    <h3>🖼 Imagem do mapa</h3>
+    <img id="imgPrev" alt="Imagem gerada" style="width:100%;border-radius:8px;border:1px solid var(--line)">
+    <p class="hint">A imagem mostra a camada que está aberta no mapa (NDVI, cor real, uso do solo ou declividade). Troque a camada e gere de novo para outra.</p>
+    <div class="actions">
+      <button class="btn ghost" id="imgFechar">Fechar</button>
+      <button class="btn ghost" id="imgShare" hidden>Compartilhar</button>
+      <button class="btn" id="imgBaixar">Baixar PNG</button>
     </div>
   </div>
 </div>
@@ -276,5 +321,9 @@
 <script src="tresd.js"></script>
 <script src="local.js"></script>
 <script src="whats.js"></script>
+<script src="camadas.js"></script>
+<script src="mapbiomas.js"></script>
+<script src="terreno.js"></script>
+<script src="imagem.js"></script>
 </body>
 </html>

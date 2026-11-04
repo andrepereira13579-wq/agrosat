@@ -134,3 +134,12 @@ $('farmName').onclick = () => {
     saveFarms(); renderFarmSelect(); $('farmName').textContent = f.name; toast('Nome atualizado.');
   }
 };
+
+// satélite: ajustes de interface
+$('fonteImg').onchange = () => {
+  const fk = $('fonteImg').value;
+  if (fk === 'cb') { const f = new Date(); f.setMonth(f.getMonth() - 12); $('dFrom').value = isoDay(f); $('cloudMax').value = 100; $('cloudVal').textContent = '100'; toast('CBERS‑4A passa a cada ~31 dias: busquei os últimos 12 meses.', 4500); }
+  if (fk === 'ls') { const f = new Date(); f.setMonth(f.getMonth() - 6); if ($('dFrom').value > isoDay(f)) $('dFrom').value = isoDay(f); }
+};
+$('fonteSerie').onchange = () => { if ($('fonteSerie').value === 's2' && +$('serieMeses').value > 120) $('serieMeses').value = '120'; };
+$('serieMeses').onchange = () => { if (+$('serieMeses').value > 108 && $('fonteSerie').value === 's2') { $('fonteSerie').value = 'ls'; toast('Para mais de 9 anos o histórico usa Landsat (Sentinel‑2 começa em 2017).', 5000); } };

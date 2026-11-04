@@ -6,13 +6,17 @@ Web app de monitoramento de fazendas: satélite + situação ambiental e fundiá
 **📍 Abrir por localização**: cole um link do Google Maps, a localização recebida no WhatsApp ou coordenadas (decimais ou graus/minutos/segundos), ou use o GPS do celular. O app acha o imóvel do CAR que contém o ponto, cria a fazenda com o polígono e já busca as imagens e verifica a situação. Também funciona pelo endereço: `…/agrosat/?loc=-3.7345,-46.0605`. No Android, instalando o app ("Adicionar à tela inicial"), o AgroSat aparece no menu **Compartilhar** do Google Maps.
 **Cadastro da fazenda**: pelo código do CAR, tocando no mapa sobre a fazenda, ou por arquivo (KML, KMZ, GeoJSON, Shapefile .zip).
 
-**Imagens**: Sentinel-2 (10 m, a cada ~5 dias), com mapas em cor real, NDVI, NDRE e zonas de atenção, recortados no perímetro. Nuvem e sombra ficam mascaradas.
-**Histórico**: gráfico de NDVI e NDRE de 6 a 36 meses.
+**Imagens**: escolha o satélite: **Sentinel-2** (10 m, a cada ~5 dias, NDVI e NDRE), **Landsat 5/7/8/9** (30 m, desde 1984, NDVI) ou **CBERS-4A do INPE** (2 m, só cor real, bom para enxergar detalhes). Sentinel-2:, com mapas em cor real, NDVI, NDRE e zonas de atenção, recortados no perímetro. Nuvem e sombra ficam mascaradas.
+**Histórico**: gráfico de NDVI e NDRE de 6 meses a 40 anos (períodos longos usam Landsat).
+**Uso do solo**: mapa do MapBiomas (10 m de 2017 a 2025 ou 30 m de 1985 a 2024) com área de pasto, lavoura, vegetação nativa e água, por divisão, e as mudanças desde 2008 (marco do Código Florestal).
+**Terreno**: declividade (classes de relevo da Embrapa), altitude mínima e máxima, áreas acima de 45° (APP) e média por divisão.
+**🖼 Imagem**: gera um PNG do mapa aberto (NDVI, cor real, uso do solo ou declividade) com título, legenda, escala, norte e sua assinatura.
 **Comparar**: mostra onde o NDVI subiu ou caiu entre duas datas.
 **Situação** (área + 5 km ao redor):
 - CAR: situação (ativo, pendente, suspenso, cancelado) e CARs de outros imóveis sobrepostos
 - SIGEF/INCRA: parcelas certificadas e quanto da área cobrem
 - Embargos IBAMA: dentro da área e no entorno
+- Terras indígenas, unidades de conservação, territórios quilombolas e assentamentos do INCRA
 - Desmatamento PRODES (INPE): área por ano, com destaque para o que é posterior a 2008
 - Focos de queimada INPE dos últimos 10 dias
 - Clima: resumo (detalhes na aba Clima)
