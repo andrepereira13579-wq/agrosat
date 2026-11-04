@@ -120,6 +120,7 @@
     } catch (e) { console.error(e); toast('Não consegui comparar: ' + e.message, 6000); }
     finally { $('mb2008').disabled = false; busy(false); }
   }
+  window.MB = { COL, CL, GRUPO, ler, resumo, desenhar };
   $('mbCol').onchange = preencherAnos;
   $('mbBtn').onclick = verUso;
   $('mb2008').onclick = desde2008;

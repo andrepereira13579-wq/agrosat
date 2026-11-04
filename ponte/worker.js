@@ -21,6 +21,19 @@ const PERMITIDOS = [
   'data.inpe.br',                  // CBERS-4A (Brazil Data Cube / INPE)
   'planetarycomputer.microsoft.com', // Landsat (catálogo e autorização)
   'landsateuwest.blob.core.windows.net', // Landsat (arquivos)
+  'rest.isric.org',                // Solo (SoilGrids / ISRIC)
+  'files.isric.org',               // Solo (mapas SoilGrids)
+  'geoservicos.ibge.gov.br',       // IBGE (biomas, limites, fronteira)
+  'sigel.aneel.gov.br',            // ANEEL (usinas, linhas de transmissão)
+  'dadosabertos.aneel.gov.br',     // ANEEL (geração distribuída)
+  'metadados.snirh.gov.br',        // ANA (hidrografia, outorgas, pivôs)
+  'www.snirh.gov.br',              // ANA
+  'portal1.snirh.gov.br',          // ANA (ArcGIS)
+  'geoservicos.sgb.gov.br',        // Serviço Geológico do Brasil
+  'geo.anm.gov.br',                // ANM (processos minerários)
+  'geoserver.florestal.gov.br',    // SFB (florestas públicas)
+  'portal.iphan.gov.br',           // IPHAN (sítios arqueológicos)
+  'geoinfo.dados.embrapa.br',      // Embrapa (solos, aptidão agrícola)
 ];
 
 const CORS = {

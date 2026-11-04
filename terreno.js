@@ -113,6 +113,7 @@
     } catch (e) { console.error(e); $('tdRes').hidden = false; $('tdRes').innerHTML = `<p class="hint">Não consegui calcular a declividade: ${esc(e.message)}</p>`; }
     finally { $('tdBtn').disabled = false; busy(false); }
   }
+  window.TD = { calcular, CLASSES, classe };
   $('tdBtn').onclick = verDeclividade;
   const _ofc = window.onFarmChange;
   window.onFarmChange = f => { _ofc && _ofc(f); S.terreno = null; $('tdRes').hidden = true; $('tdRes').innerHTML = ''; };
