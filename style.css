@@ -142,3 +142,8 @@ details{margin-top:6px}summary{cursor:pointer;color:var(--ac2);font-size:12.5px}
 .bar3d select{padding:5px 8px;font-size:12.5px;max-width:200px}
 .lbl3d{background:rgba(10,17,13,.8);color:#fff;font:700 11px system-ui;padding:1px 5px;border-radius:4px;pointer-events:none;white-space:nowrap}
 .maplibregl-ctrl-attrib{font-size:10px}
+
+.docov{position:fixed;inset:0;z-index:3000;background:#fff;display:flex;flex-direction:column}
+.docov[hidden]{display:none!important}
+.docbar{display:flex;gap:8px;justify-content:flex-end;padding:8px 10px;background:#0a110d}
+.docov iframe{flex:1;border:0;width:100%;background:#fff}

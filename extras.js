@@ -159,8 +159,8 @@ function memorialDados(f) {
   })).flat();
   return { epsg, zona, partes, perim: partes.filter(p => !p.furo).reduce((s, p) => s + p.perim, 0) };
 }
-function gerarMemorial() {
-  const f = farm(); if (!f) return;
+function gerarMemorial(janela) {
+  const f = farm(); if (!f) { if (janela) janela.close(); return; }
   const M = memorialDados(f), cons = CONF.consultor;
   const m2 = v => fmt(v, 2), m3 = v => fmt(v, 3);
   const texto = M.partes.map(p => {
@@ -191,11 +191,9 @@ p{text-align:justify}table{width:100%;border-collapse:collapse;font-size:11px;ma
 <p class="aviso">Gerado a partir do perímetro cadastrado no AgroSat (${f.car ? 'CAR' : 'arquivo enviado'}). Azimutes e distâncias calculados na projeção UTM (plano), sem levantamento de campo. Não substitui memorial de georreferenciamento certificado (Norma Técnica do INCRA/SIGEF), que exige levantamento por profissional credenciado.</p>
 <script>document.getElementById('csv').onclick=()=>{const b=new Blob(['\\ufeff'+${JSON.stringify(csv)}],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=${JSON.stringify(slug(f.name) + '_vertices.csv')};document.body.appendChild(a);a.click();};<\/script>
 </body></html>`;
-  const w = window.open('', '_blank');
-  if (!w) { toast('Permita janelas pop-up para abrir o memorial.'); return; }
-  w.document.open(); w.document.write(html); w.document.close();
+  mostrarDocumento(janela, html);
 }
-$('btnMemo').onclick = gerarMemorial;
+$('btnMemo').onclick = () => gerarMemorial(abrirJanela('Memorial descritivo'));
 
 // abre o clima automaticamente ao entrar na aba; limpa ao trocar de fazenda
 document.querySelector('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.tab === 'clima' && !CL.dados) atualizarClima(); });

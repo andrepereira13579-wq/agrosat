@@ -103,7 +103,7 @@ $('cfTest').onclick = async () => {
 
 // ----- situação, relatório, camadas -----
 $('btnDiag').onclick = rodarDiagnostico;
-$('btnReport').onclick = gerarRelatorio;
+$('btnReport').onclick = () => gerarRelatorio(abrirJanela('Relatório'));
 let ctrlCamadas = null;
 window.onFarmChange = f => {
   limparDiag(); S.diag = null; $('diagBox').innerHTML = '';

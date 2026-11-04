@@ -409,8 +409,8 @@ function imagemNDVIcomContorno() {
     };
   });
 }
-async function gerarRelatorio() {
-  const f = farm(); if (!f) return;
+async function gerarRelatorio(janela) {
+  const f = farm(); if (!f) { if (janela) janela.close(); return; }
   const cons = CONF.consultor;
   const ndvi = await imagemNDVIcomContorno();
   const st = S.result && !S.result.isDiff ? S.result.stats : null;
@@ -435,6 +435,8 @@ async function gerarRelatorio() {
  .tag{display:inline-block;color:#fff;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:700}
  img{max-width:100%} .item{margin-bottom:10px;page-break-inside:avoid} details{display:block} summary{display:none}
  .grad{height:10px;border-radius:5px;background:linear-gradient(90deg,#a50026,#f46d43,#fee08b,#a6d96a,#1a9850,#006837);margin:4px 0}
+ .duas{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;align-items:start}
+ @media (max-width:640px){.duas{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}header{flex-direction:column;align-items:flex-start;gap:6px}header .sub[style]{text-align:left!important}}
  footer{margin-top:26px;border-top:1px solid #ddd;padding-top:8px;font-size:11px;color:#666}
  @media print{body{padding:0} button{display:none}}
 </style></head><body>
@@ -444,13 +446,33 @@ async function gerarRelatorio() {
 <div class="sub" style="text-align:right">${cons.nome ? '<b>' + esc(cons.nome) + '</b><br>' : ''}${cons.empresa ? esc(cons.empresa) + '<br>' : ''}${cons.contato ? esc(cons.contato) + '<br>' : ''}Emitido em ${dBR(isoDay(new Date()))}</div></header>
 ${diag.length ? `<h2>Situação ambiental e fundiária</h2>${diag.map(d => `<div class="item"><span class="tag" style="background:${cor[d.nivel]}">${rot[d.nivel]}</span> <b>${d.titulo}</b><div>${d.resumo}</div>${d.detalhes || ''}</div>`).join('')}` : '<p class="sub">Situação não verificada (aba Situação).</p>'}
 ${ndvi ? `<h2>Vigor da vegetação — ${dBR(S.result.it.properties.datetime)}</h2>
-<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;align-items:start"><div><img src="${ndvi}"><div class="grad"></div><div class="sub" style="display:flex;justify-content:space-between"><span>NDVI baixo</span><span>NDVI alto</span></div></div>
+<div class="duas"><div><img src="${ndvi}"><div class="grad"></div><div class="sub" style="display:flex;justify-content:space-between"><span>NDVI baixo</span><span>NDVI alto</span></div></div>
 <div><div class="grid" style="grid-template-columns:1fr 1fr">${st ? `<div class="k"><b>${fmt(st.mean)}</b>NDVI médio</div><div class="k"><b>${S.result.statsRE ? fmt(S.result.statsRE.mean) : '—'}</b>NDRE médio</div><div class="k"><b>${fmt(st.p10)}</b>pior 10%</div><div class="k"><b>${fmt(st.p90)}</b>melhor 10%</div>` : ''}</div>${tabelaDivs(S.result.divStats)}</div></div>` : '<p class="sub">Nenhuma imagem de satélite aberta (aba Imagens).</p>'}
 ${typeof CL !== 'undefined' && CL.dados ? `<h2>Clima — ${dBR(CL.dados.ini)} a ${dBR(CL.dados.fim)}</h2><div class="grid"><div class="k"><b>${fmt(CL.dados.chuva, 0)} mm</b>chuva acumulada</div><div class="k"><b>${CL.dados.diasChuva}</b>dias com chuva</div><div class="k"><b>${CL.dados.seco}</b>dias seguidos sem chuva</div><div class="k"><b>+${fmt(CL.dados.gdd, 0)}</b>soma térmica (base ${CL.dados.tb} °C)</div><div class="k"><b>${fmt(CL.dados.tmaxMed, 1)}° / ${fmt(CL.dados.tminMed, 1)}°</b>máx / mín médias</div><div class="k"><b>${fmt(CL.dados.chuvaPrev, 0)} mm</b>previsão 7 dias</div></div>` : ''}
 ${serieImg ? `<h2>Histórico de NDVI</h2><img src="${serieImg}"><p class="sub">${$('serieSum').textContent}</p>` : ''}
 <footer>Fontes: SICAR/SFB (CAR), INCRA/Acervo Fundiário (SIGEF), IBAMA/SISCOM (embargos), INPE/TerraBrasilis (PRODES), INPE/Programa Queimadas (focos), Open-Meteo (clima), Copernicus Sentinel-2/ESA (imagens). Dados públicos consultados na data de emissão; não substituem certidões oficiais.</footer>
 </body></html>`;
-  const w = window.open('', '_blank');
-  if (!w) { toast('Permita janelas pop-up para abrir o relatório.'); return; }
-  w.document.open(); w.document.write(html); w.document.close();
+  mostrarDocumento(janela, html);
+}
+
+// ---------- Abrir documentos (relatório, memorial) ----------
+// A janela precisa abrir no instante do toque; senão o navegador do celular bloqueia como pop-up.
+function abrirJanela(titulo) {
+  let w = null;
+  try { w = window.open('', '_blank'); } catch (e) { w = null; }
+  if (w) { try { w.document.write(`<!DOCTYPE html><meta name="viewport" content="width=device-width"><title>${titulo}</title><p style="font:16px system-ui;padding:24px">Gerando ${titulo.toLowerCase()}…</p>`); } catch (e) { } }
+  return w;
+}
+function mostrarDocumento(w, html) {
+  if (w && !w.closed) { try { w.document.open(); w.document.write(html); w.document.close(); return; } catch (e) { } }
+  // bloqueado: mostra dentro do próprio app
+  let ov = $('docOverlay');
+  if (!ov) {
+    ov = document.createElement('div'); ov.id = 'docOverlay'; ov.className = 'docov';
+    ov.innerHTML = '<div class="docbar"><button class="btn sm" id="docPrint">Imprimir / salvar PDF</button><button class="btn ghost sm" id="docClose">✕ Fechar</button></div><iframe id="docFrame" title="Documento"></iframe>';
+    document.body.appendChild(ov);
+    $('docClose').onclick = () => { ov.hidden = true; };
+    $('docPrint').onclick = () => { try { $('docFrame').contentWindow.focus(); $('docFrame').contentWindow.print(); } catch (e) { toast('Não consegui imprimir daqui.'); } };
+  }
+  ov.hidden = false; $('docFrame').srcdoc = html;
 }
