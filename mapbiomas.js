@@ -20,6 +20,7 @@
   const GRUPO = { nat: ['Vegetação nativa', '#1f8d49'], pas: ['Pastagem', '#edde8e'], agr: ['Agricultura', '#e974ed'], sil: ['Silvicultura', '#7a5900'], mos: ['Mosaico de usos', '#ffefc3'], nv: ['Não vegetada', '#db4d4f'], agu: ['Água', '#2532e4'] };
   const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
   const cache = new Map();
+  let mbFora = false;   // MapBiomas recusou (downloads suspensos): não insiste nesta sessão
 
   function preencherAnos() {
     const c = COL[$('mbCol').value], sel = $('mbAno'), atual = sel.value;
@@ -32,7 +33,17 @@
     if (cache.has(k)) return cache.get(k);
     const resDeg = c.res / 111320;
     const g = grid(f.polys, 4326, resDeg);
-    const r = await lerRasters(c.url(ano), { bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0, samples: [0] });
+    let r;
+    try {
+      if (mbFora) throw new Error('MapBiomas fora do ar');
+      r = await lerRasters(c.url(ano), { bbox: g.bbox, width: g.W, height: g.H, resampleMethod: 'nearest', fillValue: 0, samples: [0] });
+    } catch (e) {
+      // MapBiomas fora do ar (downloads suspensos): usa a base substituta, quando houver
+      if (/403|Request failed|fora do ar/.test(e.message)) mbFora = true;
+      if (!window.LULC_ALT) throw e;
+      console.warn('MapBiomas indisponível, usando base substituta:', e.message);
+      const alt = await window.LULC_ALT(colK, ano); cache.set(k, alt); return alt;
+    }
     const out = { g, cod: r[0], c, ano, colK };
     cache.set(k, out); return out;
   }
@@ -70,7 +81,7 @@
       if (!R.tot) throw new Error('sem dados do MapBiomas para esta área');
       const classes = Object.entries(R.porClasse).sort((a, b) => b[1] - a[1]).map(([v, n]) => ({ v: +v, n, nome: (CL[v] || ['Classe ' + v])[0], cor: (CL[v] || [, '#888'])[1], pct: n / R.tot * 100, ha: n * R.pxHa }));
       const grupos = Object.entries(R.porGrupo).sort((a, b) => b[1] - a[1]).map(([k, n]) => ({ nome: GRUPO[k][0], cor: GRUPO[k][1], pct: n / R.tot * 100, ha: n * R.pxHa }));
-      mostrarCamadaExtra(desenhar(m), m.g.bounds, { titulo: `Uso do solo ${ano} · MapBiomas ${m.c.res} m`, itens: classes.filter(c => c.pct >= 0.5).map(c => ({ cor: c.cor, nome: c.nome, valor: fmt(c.pct, 0) + '%' })) });
+      mostrarCamadaExtra(desenhar(m), m.g.bounds, { titulo: `Uso do solo ${m.ano} · ${m.alt ? 'Esri/IO' : 'MapBiomas'} ${m.c.res} m`, itens: classes.filter(c => c.pct >= 0.5).map(c => ({ cor: c.cor, nome: c.nome, valor: fmt(c.pct, 0) + '%' })) });
       let divHTML = '';
       if (f.divs && f.divs.length) {
         divHTML = '<h4 style="margin-top:12px">Por divisão</h4>' + tabelaHTML(['Divisão', 'Uso principal', 'Pasto', 'Nativa'], f.divs.map((dv, k) => {
@@ -79,11 +90,11 @@
           return [esc(dv.nome), `${GRUPO[top[0]][0]} (${fmt(top[1] / t * 100, 0)}%)`, fmt((d.pas || 0) / t * 100, 0) + '%', fmt((d.nat || 0) / t * 100, 0) + '%'];
         }));
       }
-      S.usoSolo = { ano, col: m.c.cit, grupos, classes };
+      S.usoSolo = { ano: m.ano, col: m.c.cit, grupos, classes };
       $('mbRes').hidden = false;
-      $('mbRes').innerHTML = `<h4>${esc(f.name)} · ${ano}</h4>${barrasHTML(grupos.map(g => ({ nome: g.nome, cor: g.cor, pct: g.pct })))}
+      $('mbRes').innerHTML = `${m.alt ? `<p class="hint" style="color:#f2c14e">O MapBiomas suspendeu os downloads de mapas. Mostrando a base substituta ${m.c.cit}, ano ${m.ano}. Nela, "Pastagem" é a classe campo/pasto (rangeland), que também inclui campos naturais.</p>` : ''}<h4>${esc(f.name)} · ${m.ano}</h4>${barrasHTML(grupos.map(g => ({ nome: g.nome, cor: g.cor, pct: g.pct })))}
         ${tabelaHTML(['Classe', 'ha', '%'], classes.filter(c => c.pct >= 0.2).map(c => [`<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${c.cor}"></span> ${c.nome}`, fmt(c.ha, c.ha < 10 ? 1 : 0), fmt(c.pct, 1)]))}
-        ${divHTML}<p class="hint">Fonte: ${m.c.cit} (${m.c.res} m). Classificação automática por satélite: confira em campo antes de usar em laudo.</p>`;
+        ${divHTML}<p class="hint">Fonte: ${m.c.cit}. Classificação automática por satélite: confira em campo antes de usar em laudo.</p>`;
     } catch (e) {
       console.error(e);
       $('mbRes').hidden = false;

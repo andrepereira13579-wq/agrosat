@@ -81,10 +81,13 @@ async function queimadasNaFazenda(f) {
       anos.push({ ano: a, ha: n * pxHa, meses: Object.entries(porMes).map(([m, c]) => ({ mes: +m, ha: c * pxHa })).sort((x, y) => x.mes - y.mes) });
     } catch (e) { falhas.push(a); }
   }));
-  if (!anos.length) throw new Error('não consegui ler os mapas do MapBiomas Fogo');
+  if (!anos.length) {
+    if (window.QUEIMADAS_ALT) return window.QUEIMADAS_ALT(f);   // MapBiomas fora do ar: MODIS (NASA)
+    throw new Error('não consegui ler os mapas do MapBiomas Fogo');
+  }
   anos.sort((x, y) => x.ano - y.ano);
   let unico = 0; for (let i = 0; i < queimado.length; i++) if (queimado[i]) unico++;
-  return { g, anos, falhas, queimado, unicoHa: unico * pxHa, somaHa: anos.reduce((s, a) => s + a.ha, 0) };
+  return { g, anos, falhas, queimado, unicoHa: unico * pxHa, somaHa: anos.reduce((s, a) => s + a.ha, 0), fonte: 'MapBiomas Fogo, Coleção 5 (30 m)' };
 }
 
 // ---------- Idade da pastagem (anos seguidos como pastagem no MapBiomas 30 m) ----------
@@ -92,7 +95,10 @@ const IDADE = [[1, 5, '1 a 5 anos', '#E4DF6E'], [6, 10, '6 a 10 anos', '#BDCA77'
 async function idadePastagem(f) {
   const [a0, a1] = MB.COL.m30.anos, anos = [];
   for (let a = a1; a >= a0; a--) anos.push(a);
-  const ms = await pool(anos, 6, a => MB.ler('m30', a));
+  let ms;
+  try { ms = await pool(anos, 6, a => MB.ler('m30', a)); }
+  catch (e) { throw new Error('a idade da pastagem precisa da série do MapBiomas desde 1985, e o MapBiomas suspendeu os downloads de mapas; volta a funcionar quando eles reabrirem'); }
+  if (ms.some(m => m.alt)) throw new Error('a idade da pastagem precisa da série do MapBiomas desde 1985, e o MapBiomas suspendeu os downloads de mapas');
   const g = ms[0].g, N = ms[0].cod.length, lat = (g.bbox[1] + g.bbox[3]) / 2;
   const pxHa = Math.pow(g.res * 111320, 2) * Math.cos(lat * Math.PI / 180) / 1e4;
   const idade = new Uint8Array(N), cont = IDADE.map(() => 0), vals = [];

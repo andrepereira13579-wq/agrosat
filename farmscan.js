@@ -227,8 +227,9 @@
     if (R.prodes) M.prodes = await mapa(f, { camadas: [{ feats: R.prodes, cor: '#ff9800', fill: 'rgba(255,152,0,.45)', larg: 1.5 }] });
     if (A.deter && A.deter.rows) M.deter = await mapa(f, { camadas: [{ feats: A.deter.rows.map(r => r.ft), cor: '#ff2d55', fill: 'rgba(255,45,85,.35)', larg: 1.5 }] });
     if (R.aq) {
-      const q = R.aq, cores = { 2021: '#ffe08a', 2022: '#ffb347', 2023: '#ff7f2a', 2024: '#e8452c', 2025: '#a8121c' };
-      const anos = FOGO_ANOS, classe = new Uint8Array(q.queimado.length); for (let i = 0; i < classe.length; i++) if (q.queimado[i]) classe[i] = anos.indexOf(q.queimado[i]) + 1;
+      const q = R.aq, paleta = ['#ffe08a', '#ffb347', '#ff7f2a', '#e8452c', '#a8121c', '#6b0a10'], cores = {};
+      q.anos.forEach((a, i) => cores[a.ano] = paleta[Math.min(paleta.length - 1, i)]);
+      const anos = q.anos.map(a => a.ano), classe = new Uint8Array(q.queimado.length); for (let i = 0; i < classe.length; i++) if (q.queimado[i]) classe[i] = anos.indexOf(q.queimado[i]) + 1;
       M.aq = await mapa(f, { rasters: [{ url: desenharClasse(q.g, classe, anos.map(a => cores[a])), bounds: q.g.bounds, alpha: .85 }] });
       M.aqCores = cores;
     }
@@ -336,7 +337,7 @@
     if (R.aq) {
       const q = R.aq, linhas = [];
       q.anos.forEach(a => a.meses.forEach(m => linhas.push([a.ano, MESES[m.mes - 1], ha(m.ha)])));
-      pg('Áreas queimadas (MapBiomas Fogo)', `Cicatrizes de fogo mapeadas mês a mês por satélite (Landsat, 30 m), de ${q.anos[0].ano} a ${q.anos[q.anos.length - 1].ano}.`, `
+      pg('Áreas queimadas', q.grosso ? `Cicatrizes de fogo do MODIS (NASA, 500 m), mês a mês, de ${q.anos[0].ano} a ${q.anos[q.anos.length - 1].ano}. O MapBiomas Fogo (30 m) está com downloads suspensos; o MODIS só enxerga queimadas maiores, de cerca de 20 ha ou mais.` : `Cicatrizes de fogo mapeadas mês a mês por satélite (MapBiomas Fogo, Landsat 30 m), de ${q.anos[0].ano} a ${q.anos[q.anos.length - 1].ano}.`, `
         ${fig(M.aq, `Cor = ano mais recente em que o pixel queimou: ${Object.entries(M.aqCores).map(([a, c]) => `<s style="background:${c}"></s>${a}`).join(' ')}.`)}
         <p>${selo(A.aq.nivel)} ${A.aq.resumo} Soma das áreas por ano: ${ha(q.somaHa)} (a mesma área pode queimar em mais de um ano).</p>
         ${G.aq ? `<img class="graf" src="${G.aq}" alt="">` : ''}
@@ -349,11 +350,12 @@
     if (A.uso) {
       const rl = A.rl;
       pg('Uso e cobertura do solo', `Classificação por satélite recortada no imóvel · ${A.uso.cit}, ${A.uso.ano} (${A.uso.res} m).`, `
-        ${fig(M.uso, 'Classes do MapBiomas dentro do limite analisado.')}
+        ${fig(M.uso, 'Classes de uso do solo dentro do limite analisado.')}
         ${barras(A.uso.classes.filter(c => c.pct >= 0.3))}
         <h3>Reserva Legal (estimativa)</h3>
         ${kpis([[`${rl.pct}%`, rl.regra], [ha(rl.exig), 'exigência mínima'], [ha(rl.nat), 'vegetação nativa hoje'], [Number.isFinite(A.nat08) ? ha(A.nat08) : '—', 'nativa em 2008 (MapBiomas 30 m)']])}
         <p>${selo(rl.nivel)} ${rl.resumo}</p>
+        ${A.uso.m.alt ? `<p class="nota"><b>Base substituta:</b> o MapBiomas suspendeu os downloads de mapas. Este uso do solo vem do ${CIT_IO}, ano ${A.uso.ano}; a classe "Pastagem" corresponde a campo/pasto (rangeland), que também inclui campos naturais, e "Formação florestal" a árvores. A vegetação de 2008 depende do MapBiomas e fica sem leitura até eles reabrirem.</p>` : ''}
         <p class="nota">Estimativa pela regra geral do Código Florestal (art. 12), sobre a área ${A.carDados ? 'declarada no CAR' : 'do perímetro'}. Não desconta APP nem considera compensação, servidão ou RL averbada fora do imóvel. A RL oficial é a declarada e aprovada no SICAR; a vegetação nativa aqui vem de imagens de satélite. Não substitui análise técnica do CAR.</p>`);
     }
 
@@ -365,7 +367,8 @@
           ${kpis([[ha(I.ha), 'de pastagem'], [`${fmt(I.media, 1)} anos`, 'idade média'], [`${I.mediana} anos`, 'mediana'], [`${fmt(I.classes[0].pct, 0)}%`, 'formada há até 5 anos']])}
           ${barras(I.classes)}
           <p class="nota">Calculada pela sequência de anos em que o pixel aparece como pastagem no MapBiomas (${MB.COL.m30.anos[0]}–${I.ano}). "Desde 1985 ou antes" reúne áreas que já eram pasto no início da série. Pasto recém-formado pode indicar abertura ou reforma; pasto muito antigo sem reforma tende a degradar.</p>` : ''}
-        ${V ? `<h3>Vigor da pastagem</h3>${fig(M.vigor, `NDVI do Sentinel-2 de ${dBR(V.data)} sobre as áreas de pastagem do MapBiomas.`)}
+        ${!(I && I.ha > 0) && D.E.idade ? `<p class="nota"><b>Idade da pastagem:</b> ${esc(D.E.idade)}.</p>` : ''}
+        ${V ? `<h3>Vigor da pastagem</h3>${fig(M.vigor, `NDVI do Sentinel-2 de ${dBR(V.data)} sobre as áreas de pastagem do mapa de uso do solo.`)}
           ${barras(V.classes)}
           <p>NDVI médio da pastagem: <b>${fmt(V.media, 2)}</b> (baixo < 0,35 · médio 0,35–0,55 · alto ≥ 0,55).</p>
           <p class="nota">Leitura de uma única data: no período seco o NDVI cai naturalmente. Use como triagem para priorizar vistoria; a condição real (cobertura, invasoras, cupins, erosão) se confirma em campo.</p>` : ''}`);
@@ -438,8 +441,8 @@
         ['Áreas protegidas', 'IBAMA/MMA, FUNAI, INCRA', `sobreposição e entorno de ${CONF.raioKm} km`],
         ['PRODES e DETER', 'INPE / TerraBrasilis', 'polígonos que tocam o imóvel'],
         ['Focos de queimada', 'INPE (Programa Queimadas)', `últimos ${CONF.diasFocos} dias, até ${CONF.raioKm} km`],
-        ['Áreas queimadas', 'MapBiomas Fogo, Coleção 5 (30 m)', 'pixels dentro do limite, por mês'],
-        ['Uso do solo e pastagem', 'MapBiomas (10 m e 30 m)', 'pixels dentro do limite'],
+        ['Áreas queimadas', R.aq && R.aq.fonte ? R.aq.fonte : 'MapBiomas Fogo, Coleção 5 (30 m); se fora do ar, MODIS MCD64A1 (NASA)', 'pixels dentro do limite, por mês'],
+        ['Uso do solo e pastagem', A.uso ? A.uso.cit + (A.uso.m.alt ? ' (MapBiomas com downloads suspensos)' : '') : 'MapBiomas (10 m e 30 m)', 'pixels dentro do limite'],
         ['Imagem e vigor', 'Sentinel-2 (ESA/Copernicus, Earth Search)', 'imagem mais limpa dos últimos 4 meses'],
         ['Bioma', 'IBGE via INPE/TerraBrasilis', 'centro do imóvel'],
         ['Relevo', 'SRTM (Terrain Tiles, ~30 m)', 'declividade de Horn, classes Embrapa'],
