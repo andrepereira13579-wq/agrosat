@@ -62,7 +62,8 @@ function analisarCredito(res, F) {
     const p = ft.properties, o = porOp.get(p.oid) || { p, oh: 0, ag: 0, fts: [] };
     o.oh += oh; o.ag += ag; o.fts.push(ft); porOp.set(p.oid, o);
   }
-  const ops = [...porOp.values()].map(o => ({ ...o, vigor: o.p.venc ? o.p.venc >= hoje : null }))
+  // dentro: a maior parte da área financiada está na fazenda; parcial: só encosta (pode ser de imóvel vizinho)
+  const ops = [...porOp.values()].map(o => ({ ...o, pct: o.ag > 0 ? Math.min(1, o.oh / o.ag) : 0, vigor: o.p.venc ? o.p.venc >= hoje : null }))
     .sort((a, b) => String(b.p.emissao || '').localeCompare(String(a.p.emissao || '')));
   const ativas = ops.filter(o => o.vigor), vencidas = ops.filter(o => o.vigor === false);
   const anos = res.meta.anos.length ? `${res.meta.anos[0]} a ${res.meta.anos[res.meta.anos.length - 1]}` : '';
@@ -72,10 +73,14 @@ function analisarCredito(res, F) {
   else {
     nivel = ativas.length ? 'alerta' : 'info';
     const soma = l => l.reduce((s, o) => s + (o.p.valor || 0), 0);
-    resumo = ativas.length
-      ? `<b>${ativas.length} operação(ões) de crédito rural com vencimento futuro</b> sobre a fazenda (${moeda(soma(ativas))}), a mais recente pelo ${esc(ativas[0].p.banco || 'banco não informado')}.`
-      : 'Nenhuma operação com vencimento futuro sobre a fazenda.';
-    if (vencidas.length) resumo += ` ${vencidas.length} operação(ões) já vencida(s) no histórico (${moeda(soma(vencidas))}).`;
+    const dentro = l => l.filter(o => o.pct >= 0.5), parcial = l => l.filter(o => o.pct < 0.5);
+    const at = dentro(ativas), atP = parcial(ativas);
+    if (at.length) resumo = `<b>${at.length} operação(ões) de crédito rural com vencimento futuro</b> com a área financiada dentro da fazenda (${moeda(soma(at))}), a mais recente pelo ${esc(at[0].p.banco || 'banco não informado')}.`;
+    else resumo = 'Nenhuma operação com vencimento futuro com a área financiada dentro da fazenda.';
+    if (atP.length) resumo += ` ${atP.length} outra(s) em vigor só encosta(m) no perímetro (menos da metade da gleba dentro): pode ser de imóvel vizinho ou diferença de desenho.`;
+    if (!at.length && !atP.length) nivel = 'info';
+    else if (!at.length) nivel = 'alerta';
+    if (vencidas.length) resumo += ` Histórico: ${vencidas.length} operação(ões) já vencida(s) (${moeda(soma(vencidas))}).`;
     resumo += ' O valor é o contratado; a base não mostra quanto já foi pago.';
   }
   const linhas = ops.map(o => [
@@ -84,7 +89,7 @@ function analisarCredito(res, F) {
     esc(o.p.banco || '—'),
     esc(creditoDescricao(o.p)) + (o.p.prog ? `<br><small>${esc(o.p.prog)}</small>` : ''),
     moeda(o.p.valor),
-    `${ha(Math.min(o.oh, areaF))}${o.p.area ? ` de ${ha(o.p.area)}` : ''}`,
+    `${ha(Math.min(o.oh, areaF))} (${fmt(o.pct * 100, 0)}% da gleba)${o.p.area ? `<br><small>financiado: ${ha(o.p.area)}</small>` : ''}`,
   ]);
   return {
     nivel, resumo, ops,
