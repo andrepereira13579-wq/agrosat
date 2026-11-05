@@ -1,0 +1,51 @@
+# Atualiza a base de crédito rural (Sicor / Banco Central) usada na aba Situação.
+# Roda todo dia 10, quando o gerador muda, ou pelo botão "Run workflow" em Actions.
+name: Base de crédito rural (Sicor)
+
+on:
+  schedule:
+    - cron: '17 9 10 * *'
+  push:
+    branches: [main]
+    paths:
+      - 'ferramentas/sicor_glebas.py'
+      - '.github/workflows/sicor.yml'
+  workflow_dispatch:
+    inputs:
+      ufs:
+        description: 'Estados (ex.: MA ou MA,PI,TO)'
+        default: 'MA'
+      ano_ini:
+        description: 'Primeiro ano'
+        default: '2016'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sicor
+  cancel-in-progress: false
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Baixar do Banco Central e recortar
+        env:
+          SICOR_UFS: ${{ github.event.inputs.ufs || 'MA' }}
+          SICOR_ANO_INI: ${{ github.event.inputs.ano_ini || '2016' }}
+        run: python3 ferramentas/sicor_glebas.py
+      - name: Salvar no repositório
+        run: |
+          git config user.name "agrosat-bot"
+          git config user.email "agrosat-bot@users.noreply.github.com"
+          git add -A data/sicor
+          if git diff --cached --quiet; then echo "Sem mudanças."; exit 0; fi
+          git commit -m "Base de crédito rural (Sicor) atualizada em $(date +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push

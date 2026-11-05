@@ -6,7 +6,7 @@
 <title>AgroSat — Monitoramento de fazendas por satélite</title>
 <link rel="stylesheet" href="lib/leaflet.css">
 <link rel="stylesheet" href="lib/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=202611051450">
+<link rel="stylesheet" href="style.css?v=202611051530">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0d1510">
 <link rel="apple-touch-icon" href="icone-192.png">
@@ -174,13 +174,13 @@
         <div class="stats" id="tdRes" hidden></div>
       </div>
       <div class="tab" id="tab-situacao" hidden>
-        <p class="hint">Cruza a fazenda com CAR, SIGEF/INCRA, embargos do IBAMA, desmatamento PRODES, terras indígenas, unidades de conservação, quilombolas, assentamentos, focos de queimada do INPE (área + 5 km ao redor) e clima.</p>
+        <p class="hint">Cruza a fazenda com CAR, SIGEF/INCRA, embargos do IBAMA, desmatamento PRODES, terras indígenas, unidades de conservação, quilombolas, assentamentos, focos de queimada do INPE (área + 5 km ao redor), crédito rural registrado no Banco Central e clima.</p>
         <button class="btn full" id="btnDiag">Verificar situação da fazenda</button>
         <div id="diagBox" class="diag"></div>
         <p class="hint">Dados públicos consultados na hora. Não substituem certidões oficiais.</p>
       </div>
     </div>
-    <footer class="foot">Imagens: Copernicus Sentinel‑2 (ESA), via catálogo Earth Search (AWS). Mapa base: Esri World Imagery. · versão 202611051450</footer>
+    <footer class="foot">Imagens: Copernicus Sentinel‑2 (ESA), via catálogo Earth Search (AWS). Mapa base: Esri World Imagery. · versão 202611051530</footer>
   </section>
 </main>
 
@@ -311,23 +311,24 @@
 <script src="lib/jszip.min.js"></script>
 <script src="lib/shp.min.js"></script>
 <script src="lib/turf.min.js"></script>
-<script src="config.js?v=202611051450"></script>
-<script src="app.js?v=202611051450"></script>
-<script src="dados.js?v=202611051450"></script>
-<script src="integracao.js?v=202611051450"></script>
-<script src="extras.js?v=202611051450"></script>
-<script src="kmls.js?v=202611051450"></script>
+<script src="config.js?v=202611051530"></script>
+<script src="app.js?v=202611051530"></script>
+<script src="dados.js?v=202611051530"></script>
+<script src="credito.js?v=202611051530"></script>
+<script src="integracao.js?v=202611051530"></script>
+<script src="extras.js?v=202611051530"></script>
+<script src="kmls.js?v=202611051530"></script>
 <script src="lib/maplibre-gl.js"></script>
-<script src="tresd.js?v=202611051450"></script>
-<script src="local.js?v=202611051450"></script>
-<script src="whats.js?v=202611051450"></script>
-<script src="camadas.js?v=202611051450"></script>
-<script src="mapbiomas.js?v=202611051450"></script>
-<script src="terreno.js?v=202611051450"></script>
-<script src="imagem.js?v=202611051450"></script>
-<script src="consultas2.js?v=202611051450"></script>
-<script src="alternativas.js?v=202611051450"></script>
-<script src="pdf.js?v=202611051450"></script>
-<script src="farmscan.js?v=202611051450"></script>
+<script src="tresd.js?v=202611051530"></script>
+<script src="local.js?v=202611051530"></script>
+<script src="whats.js?v=202611051530"></script>
+<script src="camadas.js?v=202611051530"></script>
+<script src="mapbiomas.js?v=202611051530"></script>
+<script src="terreno.js?v=202611051530"></script>
+<script src="imagem.js?v=202611051530"></script>
+<script src="consultas2.js?v=202611051530"></script>
+<script src="alternativas.js?v=202611051530"></script>
+<script src="pdf.js?v=202611051530"></script>
+<script src="farmscan.js?v=202611051530"></script>
 </body>
 </html>

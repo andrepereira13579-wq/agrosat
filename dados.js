@@ -245,6 +245,7 @@ async function rodarDiagnostico() {
     ['prodes', 'Desmatamento PRODES', () => prodesNaArea(fb)],
     ['prot', 'Áreas protegidas e territórios', () => protegidasNaArea(viz)],
     ['fogo', `Focos de queimada (${CONF.diasFocos} dias)`, () => focosNaArea(viz, CONF.diasFocos)],
+    ['credito', 'Crédito rural (Sicor / Banco Central)', () => creditoNaArea(fb)],
     ['clima', 'Clima', () => climaNoPonto(centro[0], centro[1])],
   ];
   box.innerHTML = secoes.map(([k, t]) => `<div class="dcard" id="d-${k}"><div class="dh"><span class="dot wait"></span><b>${t}</b></div><div class="db hint">Consultando…</div></div>`).join('');
@@ -466,7 +467,7 @@ async function gerarRelatorio(janela) {
   }
   const cor = { ok: '#1a9850', alerta: '#e0a800', grave: '#d73027', erro: '#888', info: '#2f6fb3' };
   const rot = { ok: 'Sem pendências', alerta: 'Atenção', grave: 'Crítico', erro: 'Não consultado', info: 'Informativo' };
-  const diag = S.diag ? ['car', 'sigef', 'emb', 'prodes', 'prot', 'fogo', 'clima'].map(k => S.diag.itens[k]).filter(Boolean) : [];
+  const diag = S.diag ? ['car', 'sigef', 'emb', 'prodes', 'prot', 'fogo', 'credito', 'clima'].map(k => S.diag.itens[k]).filter(Boolean) : [];
   const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório — ${esc(f.name)}</title>
 <style>
  body{font:13px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1b1b1b;margin:0;padding:24px 28px;max-width:900px}
@@ -495,7 +496,7 @@ ${S.usoSolo && S.usoSolo.grupos ? `<h2>Uso do solo — ${S.usoSolo.ano} (${S.uso
 ${S.usoSolo && S.usoSolo.desde2008 ? `<p><b>Desde 2008:</b> vegetação nativa ${fmt(S.usoSolo.desde2008.nat08, 1)} ha em 2008 e ${fmt(S.usoSolo.desde2008.natHoje, 1)} ha em ${S.usoSolo.desde2008.fim}; ${fmt(S.usoSolo.desde2008.perdida, 1)} ha convertidos (MapBiomas 30 m).</p>` : ''}
 ${S.terreno ? `<h2>Relevo</h2><div class="grid"><div class="k"><b>${fmt(S.terreno.media, 1)}%</b>declividade média</div><div class="k"><b>${fmt(S.terreno.altMin, 0)}–${fmt(S.terreno.altMax, 0)} m</b>altitude</div><div class="k"><b>${fmt(S.terreno.app, 1)} ha</b>acima de 45° (APP)</div></div><table><tr><th>Classe (Embrapa)</th><th>% da área</th></tr>${S.terreno.itens.filter(i => i.pct >= 0.5).map(i => `<tr><td>${i.nome}</td><td>${fmt(i.pct, 0)}%</td></tr>`).join('')}</table>` : ''}
 ${serieImg ? `<h2>Histórico de NDVI</h2><img src="${serieImg}"><p class="sub">${$('serieSum').textContent}</p>` : ''}
-<footer>Fontes: SICAR/SFB (CAR), INCRA (SIGEF, assentamentos, quilombolas), IBAMA/PAMGIA (embargos), FUNAI (terras indígenas), MMA/CNUC (unidades de conservação), MapBiomas (uso do solo), INPE/TerraBrasilis (PRODES), INPE/Programa Queimadas (focos), Open-Meteo (clima), Copernicus Sentinel-2/ESA (imagens). Dados públicos consultados na data de emissão; não substituem certidões oficiais.</footer>
+<footer>Fontes: SICAR/SFB (CAR), INCRA (SIGEF, assentamentos, quilombolas), IBAMA/PAMGIA (embargos), FUNAI (terras indígenas), MMA/CNUC (unidades de conservação), MapBiomas (uso do solo), INPE/TerraBrasilis (PRODES), INPE/Programa Queimadas (focos), Banco Central/Sicor (crédito rural), Open-Meteo (clima), Copernicus Sentinel-2/ESA (imagens). Dados públicos consultados na data de emissão; não substituem certidões oficiais.</footer>
 </body></html>`;
   mostrarDocumento(janela, html);
 }

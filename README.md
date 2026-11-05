@@ -19,6 +19,7 @@ Web app de monitoramento de fazendas: satélite + situação ambiental e fundiá
 - Terras indígenas, unidades de conservação, territórios quilombolas e assentamentos do INCRA
 - Desmatamento PRODES (INPE): área por ano, com destaque para o que é posterior a 2008
 - Focos de queimada INPE dos últimos 10 dias
+- Crédito rural (Sicor/Banco Central): operações com área financiada sobre a fazenda (banco, finalidade, valor, emissão e vencimento). A base é gerada todo mês pelo GitHub Actions (`ferramentas/sicor_glebas.py` → `data/sicor/`). Cobertura parcial: só operações com gleba georreferenciada; não mostra penhor nem hipoteca.
 - Clima: resumo (detalhes na aba Clima)
 
 **Clima**: chuva diária e acumulada em 7, 15, 30, 60 ou 90 dias, 12 meses ou período personalizado; dias com chuva; dias seguidos sem chuva; soma térmica (base 10 ou 15 °C); temperatura máxima e mínima; previsão de 7 dias.
