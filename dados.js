@@ -508,15 +508,47 @@ function abrirJanela(titulo) {
   if (w) { try { w.document.write(`<!DOCTYPE html><meta name="viewport" content="width=device-width"><title>${titulo}</title><p style="font:16px system-ui;padding:24px">Gerando ${titulo.toLowerCase()}…</p>`); } catch (e) { } }
   return w;
 }
-// Barra fixa "Voltar ao app" em todo documento (relatórios, memorial): no celular a janela nova não tem botão de voltar.
+// Barra fixa em todo documento (relatórios, memorial): Voltar, Compartilhar PDF e Baixar PDF.
+// O PDF é gerado no próprio aparelho (html2canvas + jsPDF), página por página.
 function comBarraVoltar(html) {
-  const app = location.href.split('#')[0];
-  const barra = `<div class="agv-barra"><button type="button" onclick="agvFechar()">← Voltar</button><button type="button" onclick="print()">🖨 Salvar PDF</button></div>
-<style>.agv-barra{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;gap:8px;padding:8px 10px;background:#14532d;margin:0 0 8px}
-.agv-barra button{border:0;border-radius:8px;padding:10px 14px;font:600 15px system-ui,sans-serif;background:#fff;color:#14532d}
-.agv-barra button+button{background:#2fd37a;color:#08240f}@media print{.agv-barra{display:none!important}}</style>
-<script>function agvFechar(){try{if(window.parent!==window){var o=window.parent.document.getElementById('docOverlay');if(o){o.hidden=true;return;}}}catch(e){}
-try{window.close();}catch(e){}setTimeout(function(){if(history.length>1)history.back();else location.href=${JSON.stringify(app)};},250);}</script>`;
+  const app = location.href.split('#')[0], base = app.replace(/[?].*$/, '').replace(/[^/]*$/, '');
+  const barra = `<div class="agv-barra"><button type="button" onclick="agvFechar()">← Voltar</button><span><button type="button" id="agvShare" onclick="agvPDF('share')">📤 Compartilhar</button><button type="button" id="agvBaixar" onclick="agvPDF('baixar')">⬇️ PDF</button></span></div><div id="agvMsg" class="agv-msg" hidden></div>
+<style>.agv-barra{position:sticky;top:0;z-index:99;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:#14532d;margin:0 0 8px}
+.agv-barra span{display:flex;gap:6px}.agv-barra button{border:0;border-radius:8px;padding:10px 12px;font:600 15px system-ui,sans-serif;background:#fff;color:#14532d;white-space:nowrap}
+.agv-barra span button{background:#2fd37a;color:#08240f}.agv-barra button:disabled{opacity:.6}
+.agv-msg{position:sticky;top:58px;z-index:98;margin:0 10px 8px;padding:10px 12px;border-radius:8px;background:#fff7d6;color:#5b4500;font:14px system-ui,sans-serif}
+body.agv-pdf .pg{width:794px!important;max-width:none!important;margin:0 auto!important;box-shadow:none!important}
+@media print{.agv-barra,.agv-msg{display:none!important}}</style>
+<script>
+function agvFechar(){try{if(window.parent!==window){var o=window.parent.document.getElementById('docOverlay');if(o){o.hidden=true;return;}}}catch(e){}
+try{window.close();}catch(e){}setTimeout(function(){if(history.length>1)history.back();else location.href=${JSON.stringify(app)};},250);}
+var agvArquivo=null;
+function agvAviso(t){var m=document.getElementById('agvMsg');if(!t){m.hidden=true;return;}m.hidden=false;m.textContent=t;}
+async function agvGerar(){
+  var host=null;try{if(window.opener&&!window.opener.closed&&window.opener.agvGerarPDF)host=window.opener;}catch(e){}
+  try{if(!host&&window.parent!==window&&window.parent.agvGerarPDF)host=window.parent;}catch(e){}
+  if(!host)throw new Error('abra o relatório de novo pelo app');
+  var r=await host.agvGerarPDF(document,agvAviso);
+  return new File([r.buf],r.nome,{type:'application/pdf'});
+}
+function agvBaixar(f){var u=URL.createObjectURL(f),a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},60000);}
+async function agvPDF(modo){
+  var bs=document.getElementById('agvShare'),bb=document.getElementById('agvBaixar');
+  try{
+    if(!agvArquivo){bs.disabled=bb.disabled=true;agvArquivo=await agvGerar();bs.disabled=bb.disabled=false;
+      if(modo==='share'&&navigator.canShare&&navigator.canShare({files:[agvArquivo]})){
+        // o celular só deixa compartilhar logo após um toque: pede um segundo toque
+        bs.textContent='📤 Enviar PDF agora';agvAviso('PDF pronto ('+Math.round(agvArquivo.size/1024)+' KB). Toque em "Enviar PDF agora" para escolher WhatsApp, e-mail ou Arquivos.');return;}
+    }
+    if(modo==='share'&&navigator.canShare&&navigator.canShare({files:[agvArquivo]})){
+      try{await navigator.share({files:[agvArquivo],title:agvArquivo.name});agvAviso('');}
+      catch(e){if(e.name!=='AbortError'){agvAviso('Não deu para compartilhar daqui; baixando o PDF.');agvBaixar(agvArquivo);}}
+      return;
+    }
+    agvBaixar(agvArquivo);agvAviso('PDF baixado ('+Math.round(agvArquivo.size/1024)+' KB). No iPhone ele abre na tela: use o botão de compartilhar do Safari para salvar em Arquivos ou enviar.');
+  }catch(e){bs.disabled=bb.disabled=false;agvAviso('Não consegui gerar o PDF: '+e.message+'. Use Compartilhar > Imprimir do Safari como alternativa.');}
+}
+</script>`;
   return /<body[^>]*>/i.test(html) ? html.replace(/<body([^>]*)>/i, `<body$1>${barra}`) : barra + html;
 }
 function mostrarDocumento(w, html) {
@@ -526,7 +558,7 @@ function mostrarDocumento(w, html) {
   let ov = $('docOverlay');
   if (!ov) {
     ov = document.createElement('div'); ov.id = 'docOverlay'; ov.className = 'docov';
-    ov.innerHTML = '<div class="docbar"><button class="btn sm" id="docPrint">Imprimir / salvar PDF</button><button class="btn ghost sm" id="docClose">✕ Fechar</button></div><iframe id="docFrame" title="Documento"></iframe>';
+    ov.innerHTML = '<div class="docbar"><button class="btn sm" id="docPrint">Imprimir / salvar PDF</button><button class="btn ghost sm" id="docClose">✕ Fechar</button></div><iframe id="docFrame" title="Documento" allow="web-share; clipboard-write"></iframe>';
     document.body.appendChild(ov);
     $('docClose').onclick = () => { ov.hidden = true; };
     $('docPrint').onclick = () => { try { $('docFrame').contentWindow.focus(); $('docFrame').contentWindow.print(); } catch (e) { toast('Não consegui imprimir daqui.'); } };
