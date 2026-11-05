@@ -216,21 +216,43 @@ def cruza(b, r):
 
 
 # ---------- tabelas auxiliares ----------
+DIAG = []   # amostras gravadas em data/sicor/diagnostico.txt para conferir os formatos
+
+
+def chave_norm(v):
+    v = (v or '').strip().strip('"')
+    return v.lstrip('0') or v
+
+
 def tabela(nome, chave):
+    """Lê uma tabela auxiliar; chave = nome da coluna (ou a 1ª coluna, se não existir)."""
     url, t = linhas_texto(nome)
     if not t:
         log('  não encontrei', nome); return {}
     cab, rd = leitor_csv(t)
-    out = {}
+    ik = cab.index(chave) if chave in cab else next((i for i, c in enumerate(cab) if c.startswith('cd_') or c.startswith('cod')), 0)
+    out, amostra = {}, []
     for l in rd:
-        if len(l) < len(cab):
+        if len(amostra) < 3:
+            amostra.append(l)
+        if len(l) <= ik:
             continue
-        d = {c: l[i].strip() for i, c in enumerate(cab)}
-        k = d.get(chave)
+        d = {c: (l[i].strip() if i < len(l) else '') for i, c in enumerate(cab)}
+        k = chave_norm(l[ik])
         if k:
             out[k] = d
-    log('  ', nome, len(out), 'linhas')
+    DIAG.append(f'{nome} ({url}) chave={cab[ik]} linhas={len(out)}\n  cabeçalho: {cab}\n' + ''.join(f'  {a}\n' for a in amostra))
+    log('  ', nome, len(out), 'linhas, chave', cab[ik])
     return out
+
+
+def campo(d, *partes):
+    """Valor da primeira coluna cujo nome contém uma das partes (ex.: 'finalidade')."""
+    for p in partes:
+        for k, v in d.items():
+            if p in k and v:
+                return v
+    return ''
 
 
 def num(v):
@@ -351,22 +373,19 @@ def main():
     fontes = tabela('FonteRecursos.csv', 'cd_fonte_recurso') or tabela('DadosBrutos/FonteRecursos.csv', 'cd_fonte_recurso')
 
     def desc_emp(cd):
-        e = emp.get(cd) or emp.get(cd.lstrip('0')) or {}
-        partes = [e.get(c, '') for c in ('finalidade', 'atividade', 'modalidade', 'produto')]
-        return [p.strip().lower() for p in partes]
+        e = emp.get(chave_norm(cd)) or {}
+        return [campo(e, c).strip().lower() for c in ('finalidade', 'atividade', 'modalidade', 'produto')]
 
     def nome_if(cnpj):
-        c = (cnpj or '').zfill(8)
-        d = ifs.get(c) or ifs.get(cnpj) or {}
-        return (d.get('nome_if') or BANCOS.get(c) or f'CNPJ {c}').strip()
+        c = (cnpj or '').strip().zfill(8)
+        d = ifs.get(chave_norm(c)) or {}
+        return (campo(d, 'nome') or BANCOS.get(c) or f'CNPJ {c}').strip()
 
     def fonte_desc(cd):
-        d = fontes.get(cd) or {}
-        return next((v for k, v in d.items() if k.startswith('desc') or k == 'nome'), '')
+        return campo(fontes.get(chave_norm(cd)) or {}, 'desc', 'nome').strip()
 
     def desc_prog(cd):
-        d = prog.get(cd) or prog.get((cd or '').zfill(4)) or {}
-        return (d.get('descricao') or d.get('descricao_programa') or '').strip()
+        return campo(prog.get(chave_norm(cd)) or {}, 'descri', 'nome').strip()
 
     # 4) blocos
     if os.path.isdir(SAIDA):
@@ -385,6 +404,7 @@ def main():
             'valor': num(o.get('vl_parc_credito')), 'area': num(o.get('vl_area_financ')), 'juros': num(o.get('vl_juros')),
             'fin': fin, 'ativ': ativ, 'mod': mod, 'prod': prod,
             'prog': desc_prog(o.get('cd_programa', '')), 'fonte': fonte_desc(o.get('cd_fonte_recurso', '')),
+            'cd_emp': o.get('cd_empreendimento', ''), 'cd_prog': o.get('cd_programa', ''),
         }
         op = {k: v for k, v in op.items() if v not in ('', None)}
         for ind, polys in lista:
@@ -404,6 +424,10 @@ def main():
         'glebas': n_g, 'operacoes': len(glebas), 'operacoes_com_dados': len(ops),
         'blocos': sorted(blocos),
     }
+    ex = list(ops.items())[:5]
+    DIAG.append('exemplos de operações: ' + json.dumps(ex, ensure_ascii=False))
+    with open(os.path.join(SAIDA, 'diagnostico.txt'), 'w', encoding='utf-8') as fh:
+        fh.write('\n'.join(DIAG))
     with open(os.path.join(SAIDA, 'meta.json'), 'w', encoding='utf-8') as fh:
         json.dump(meta, fh, ensure_ascii=False, indent=1)
     tam = sum(os.path.getsize(os.path.join(SAIDA, 't', f)) for f in os.listdir(os.path.join(SAIDA, 't')))
