@@ -82,7 +82,7 @@
   // ---------- Coleta de todas as consultas ----------
   const ETAPAS = [
     ['car', 'CAR (SICAR)'], ['sigef', 'SIGEF / INCRA'], ['emb', 'Embargos IBAMA'], ['prodes', 'PRODES (INPE)'], ['deter', 'Alertas DETER (INPE)'],
-    ['prot', 'Áreas protegidas e territórios'], ['fogo', 'Focos de queimada'], ['aq', 'Áreas queimadas (5 anos)'], ['bioma', 'Bioma'],
+    ['prot', 'Áreas protegidas e territórios'], ['fogo', 'Focos de queimada'], ['credito', 'Crédito rural (Sicor)'], ['aq', 'Áreas queimadas (5 anos)'], ['bioma', 'Bioma'],
     ['uso', 'Uso e cobertura do solo'], ['u08', 'Vegetação nativa em 2008'], ['idade', 'Idade da pastagem'], ['cena', 'Imagem de satélite recente'], ['cob', 'Condição da cobertura (12 meses)'],
     ['relevo', 'Relevo'], ['solo', 'Solo'], ['clima', 'Climatologia'],
   ];
@@ -98,7 +98,7 @@
     const gov = Promise.all([
       rodar('car', () => carNaArea(fb, uf)), rodar('sigef', () => sigefNaArea(fb, uf)), rodar('emb', () => embargosNaArea(viz)),
       rodar('prodes', () => prodesNaArea(fb)), rodar('deter', () => deterNaArea(fb)), rodar('prot', () => protegidasNaArea(viz)),
-      rodar('fogo', () => focosNaArea(viz, CONF.diasFocos)), rodar('bioma', () => biomaNoPonto(centro[0], centro[1])),
+      rodar('fogo', () => focosNaArea(viz, CONF.diasFocos)), rodar('credito', () => creditoNaArea(fb)), rodar('bioma', () => biomaNoPonto(centro[0], centro[1])),
       rodar('solo', () => soloNoPonto(centro[0], centro[1])), rodar('clima', () => climatologia(centro[0], centro[1])),
     ]);
     const mapas = (async () => {
@@ -119,8 +119,8 @@
     const { f, F, R } = D, A = {};
     limparDiag(); DL.group = L.layerGroup().addTo(map);
     S.diag = { data: new Date().toISOString(), itens: {} };
-    const tit = { car: 'CAR e sobreposições', sigef: 'SIGEF / INCRA', emb: 'Embargos IBAMA', prodes: 'Desmatamento PRODES', prot: 'Áreas protegidas e territórios', fogo: `Focos de queimada (${CONF.diasFocos} dias)` };
-    for (const k of ['car', 'sigef', 'emb', 'prodes', 'prot', 'fogo']) {
+    const tit = { car: 'CAR e sobreposições', sigef: 'SIGEF / INCRA', emb: 'Embargos IBAMA', prodes: 'Desmatamento PRODES', prot: 'Áreas protegidas e territórios', fogo: `Focos de queimada (${CONF.diasFocos} dias)`, credito: 'Crédito rural (Sicor / Banco Central)' };
+    for (const k of ['car', 'sigef', 'emb', 'prodes', 'prot', 'fogo', 'credito']) {
       if (R[k] === undefined) { A[k] = { nivel: 'erro', resumo: 'Não consegui consultar agora: ' + esc(D.E[k] || ''), detalhes: '' }; continue; }
       try { A[k] = RENDER[k](R[k], F, f); } catch (e) { A[k] = { nivel: 'erro', resumo: 'Erro ao analisar: ' + esc(e.message), detalhes: '' }; }
       S.diag.itens[k] = { titulo: tit[k], ...A[k] };
@@ -307,7 +307,7 @@
     // ---- Sumário ----
     const S_ = [
       ['CAR (SICAR)', A.car], ['SIGEF / INCRA', A.sigef], ['Embargos IBAMA', A.emb], ['Desmatamento PRODES', A.prodes], ['Alertas DETER', A.deter],
-      ['Áreas queimadas (5 anos)', A.aq], [`Focos de queimada (${CONF.diasFocos} dias)`, A.fogo], ['Áreas protegidas e territórios', A.prot], ['Reserva Legal', A.rl],
+      ['Áreas queimadas (5 anos)', A.aq], [`Focos de queimada (${CONF.diasFocos} dias)`, A.fogo], ['Áreas protegidas e territórios', A.prot], ['Crédito rural (Sicor)', A.credito], ['Reserva Legal', A.rl],
       ['Uso do solo', A.uso ? { nivel: 'info', resumo: A.uso.grupos.slice(0, 3).map(g => `${g.nome} ${fmt(g.pct, 0)}%`).join(' · ') } : { nivel: 'erro', resumo: esc(D.E.uso || '') }],
       ['Condição da cobertura', R.cob ? (() => { const c = k => (R.cob.classes.find(x => x.k === k) || { pct: 0 }).pct; const sujo = c(2) + c(3), deg = c(5) + c(6); return { nivel: sujo + deg >= 25 ? 'alerta' : 'info', resumo: `Pasto formado ${fmt(c(4), 0)}% · degradado/solo ${fmt(deg, 0)}% · juquira ${fmt(sujo, 0)}%${c(3) >= 1 ? ` (${fmt(c(3), 0)}% avançou sobre pasto desde ${R.cob.anoAntigo})` : ''} · mata ${fmt(c(1), 0)}%` }; })() : { nivel: 'erro', resumo: esc(D.E.cob || '') }],
       ['Pastagem (idade e vigor)', A.pasto],
@@ -326,6 +326,16 @@
       <h3>Embargos IBAMA</h3><p>${selo(A.emb.nivel)} ${A.emb.resumo}</p>${A.emb.detalhes || ''}
       <h3>Áreas protegidas e territórios</h3><p>${selo(A.prot.nivel)} ${A.prot.resumo}</p>${A.prot.detalhes || ''}
       <h3>Focos de queimada (INPE)</h3><p>${selo(A.fogo.nivel)} ${A.fogo.resumo}</p>${A.fogo.detalhes || ''}`);
+
+    // ---- Crédito rural ----
+    if (A.credito) {
+      const glebasF = R.credito && R.credito.feats ? R.credito.feats.filter(ft => interHa(D.F, ft) >= 0.5) : [];
+      const mCred = glebasF.length ? await mapa(f, { camadas: [{ feats: glebasF, cor: '#0288d1', fill: 'rgba(2,136,209,.25)', larg: 2, tracejado: [6, 4] }] }) : null;
+      pg('Crédito rural registrado (Sicor)', 'Áreas financiadas com crédito rural que os bancos georreferenciaram no Sicor, do Banco Central, e que se sobrepõem ao imóvel.', `
+      ${fig(mCred, 'Azul tracejado: glebas financiadas registradas no Sicor.')}
+      <p>${selo(A.credito.nivel)} ${A.credito.resumo}</p>${A.credito.detalhes || ''}
+      <p class="nota">Cobertura parcial: só aparecem operações com a área informada em coordenadas (sobretudo custeio agrícola). Ausência de registro não comprova que o imóvel está livre de financiamento. Para garantias (penhor, hipoteca, alienação), consulte a certidão de ônus reais da matrícula no cartório.</p>`);
+    }
 
     // ---- PRODES e DETER ----
     pg('Desmatamento: PRODES e DETER (INPE)', 'Supressão anual de vegetação nativa (PRODES) e alertas quase diários (DETER) que tocam o imóvel.', `
@@ -455,6 +465,7 @@
         ['Áreas protegidas', 'IBAMA/MMA, FUNAI, INCRA', `sobreposição e entorno de ${CONF.raioKm} km`],
         ['PRODES e DETER', 'INPE / TerraBrasilis', 'polígonos que tocam o imóvel'],
         ['Focos de queimada', 'INPE (Programa Queimadas)', `últimos ${CONF.diasFocos} dias, até ${CONF.raioKm} km`],
+        ['Crédito rural', 'Banco Central do Brasil (Sicor, dados abertos)', 'glebas financiadas que se sobrepõem ao limite'],
         ['Áreas queimadas', R.aq && R.aq.fonte ? R.aq.fonte : 'MapBiomas Fogo, Coleção 5 (30 m); se fora do ar, MODIS MCD64A1 (NASA)', 'pixels dentro do limite, por mês'],
         ['Uso do solo e pastagem', A.uso ? A.uso.cit + (A.uso.m.alt ? ' (MapBiomas com downloads suspensos)' : '') : 'MapBiomas (10 m e 30 m)', 'pixels dentro do limite'],
         ['Imagem e vigor', 'Sentinel-2 (ESA/Copernicus, Earth Search)', 'imagem mais limpa dos últimos 4 meses'],

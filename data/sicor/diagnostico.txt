@@ -1,0 +1,25 @@
+Empreendimento.csv (https://www.bcb.gov.br/htms/sicor/Empreendimento.csv) chave=codigo linhas=3318
+  cabeçalho: ['codigo', 'data_inicio', 'data_fim', 'finalidade', 'atividade', 'modalidade', 'produto', 'variedade', 'cesta', 'zoneamento', 'unidade_medida', 'unidade_medida_previsao', 'consorcio', 'cedula_mae', 'cd_tipo_cultura']
+  ['12018888000002', '07/01/2020', '', 'Custeio', 'Agrícola', 'LAVOURA', 'CITRONELA (CYMBOPOGON NARDUS)', 'NÃO SE APLICA', 'Ano Civil / Ano de Exploração', 'Não zoneado', 'Hectare', 'Tonelada', 'Não consorciado', '0', '2']
+  ['12017340000043', '16/03/2017', '', 'Custeio', 'Agrícola', 'LAVOURA', 'VIME', 'NÃO SE APLICA', 'Fruticultura / Olericultura', '', 'Hectare', 'Tonelada', 'Não consorciado', '0', '2']
+  ['12017340000042', '01/01/1984', '', 'Custeio', 'Agrícola', 'LAVOURA', 'VIME', 'NÃO SE APLICA', 'Fruticultura / Olericultura', 'Não zoneado', 'Hectare', 'Tonelada', 'Não consorciado', '0', '2']
+
+Programa.csv (https://www.bcb.gov.br/htms/sicor/Programa.csv) chave=codigo linhas=40
+  cabeçalho: ['codigo', 'descricao', 'data_inicio', 'data_fim', 'financiamento']
+  ['0001', 'PRONAF - PROGRAMA NACIONAL DE FORTALECIMENTO DA AGRICULTURA FAMILIAR', '01/11/2011', '31/12/2099', 'Pode ser utilizado em financiamentos']
+  ['0100', 'PRLC-BA (PROG RECUP LAVOURA CACAUEIRA BAIANA) ENCERRADO', '01/11/2011', '30/09/2022', 'Pode ser utilizado em financiamentos']
+  ['0110', 'PRODECER III - PROG COOP NIPO-BRASILEIRA P DESENV DOS CERRADOS - ENCERRADO', '01/11/2011', '30/09/2022', 'Pode ser utilizado em financiamentos']
+
+DadosBrutos/SICOR_LISTA_IFS.csv (https://www.bcb.gov.br/htms/sicor/DadosBrutos/SICOR_LISTA_IFS.csv) chave=cnpj_if linhas=652
+  cabeçalho: ['cnpj_if', 'nome_if', 'segmento_if']
+  ['00000000', 'BCO DO BRASIL S.A.', 'BANCO PÚBLICO']
+  ['00000208', 'BRB - BCO DE BRASILIA S.A.', 'BANCO PÚBLICO']
+  ['00058338', 'BOM CREDI', 'COOPERATIVA DE CRÉDITO']
+
+FonteRecursos.csv (https://www.bcb.gov.br/htms/sicor/FonteRecursos.csv) chave=codigo linhas=37
+  cabeçalho: ['codigo', 'descricao', 'data_inicio', 'data_fim']
+  ['0403', 'RECURSOS LIVRES - EQUALIZADA - LIVRE/CONTROLADA', '01/11/2011', '31/12/2099']
+  ['0250', 'FACULDADE DE APLICAÇÃO - COMPULSÓRIO', '23/01/2012', '30/09/2012']
+  ['0100', 'TESOURO NACIONAL - DIRECIONADA/CONTROLADA', '01/11/2011', '31/12/2099']
+
+exemplos de operações: [[["7412342", "1"], {"cnpj_if": "07237373", "dt_emissao": "03/02/2016", "dt_vencimento": "03/10/2016", "cd_empreendimento": "12022020000002", "cd_programa": "0999", "cd_subprograma": "", "cd_fonte_recurso": "0502", "vl_parc_credito": "314364.00", "vl_area_financ": "0.00", "vl_juros": "8.82", "cd_estado": "PI"}], [["7421517", "1"], {"cnpj_if": "00000000", "dt_emissao": "05/02/2016", "dt_vencimento": "25/11/2016", "cd_empreendimento": "12015080000021", "cd_programa": "0999", "cd_subprograma": "", "cd_fonte_recurso": "0300", "vl_parc_credito": "584992.06", "vl_area_financ": "367.14", "vl_juros": "8.75", "cd_estado": "MA"}], [["7429024", "3"], {"cnpj_if": "07237373", "dt_emissao": "11/02/2016", "dt_vencimento": "11/02/2026", "cd_empreendimento": "23135760168002", "cd_programa": "0999", "cd_subprograma": "", "cd_fonte_recurso": "0502", "vl_parc_credito": "220000.00", "vl_area_financ": "200.00", "vl_juros": "7.65", "cd_estado": "MA"}], [["7432691", "1"], {"cnpj_if": "00000000", "dt_emissao": "11/02/2016", "dt_vencimento": "10/12/2016", "cd_empreendimento": "12015080000022", "cd_programa": "0999", "cd_subprograma": "", "cd_fonte_recurso": "0300", "vl_parc_credito": "798960.30", "vl_area_financ": "513.00", "vl_juros": "8.75", "cd_estado": "TO"}], [["7432866", "1"], {"cnpj_if": "00000000", "dt_emissao": "11/02/2016", "dt_vencimento": "20/10/2017", "cd_empreendimento": "12016720000011", "cd_programa": "0999", "cd_subprograma": "", "cd_fonte_recurso": "0300", "vl_parc_credito": "1198634.13", "vl_area_financ": "770.00", "vl_juros": "8.75", "cd_estado": "MA"}]]
