@@ -113,14 +113,25 @@ nav svg{width:22px;height:22px}
 </header>
 
 <div class="login hide" id="v-login">
+  <div class="seg" id="lg-tabs" style="margin-bottom:12px"><button type="button" data-t="entrar" class="on">Entrar</button><button type="button" data-t="criar">Criar conta</button></div>
   <form class="card" id="login-form">
     <h2>Entrar</h2>
-    <p>Use o mesmo e-mail e senha do AgroGestor.</p>
+    <p>Já tem conta no AgroGestor? Use o mesmo e-mail e senha.</p>
     <div class="f" style="margin-bottom:10px"><input type="email" id="lg-email" placeholder="E-mail" autocomplete="username" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
     <div class="f" style="margin-bottom:12px"><input type="password" id="lg-senha" placeholder="Senha" autocomplete="current-password" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
     <button class="btn" type="submit" id="lg-btn">Entrar</button>
     <button class="btn ghost" type="button" id="lg-reset" style="margin-top:8px">Esqueci a senha</button>
     <div class="err" id="lg-err"></div>
+  </form>
+  <form class="card hide" id="signup-form">
+    <h2>Criar conta</h2>
+    <p>Crie seu acesso ao AgroGestor Finanças. Seus lançamentos ficam visíveis só para você.</p>
+    <div style="margin-bottom:10px"><input type="text" id="cd-nome" placeholder="Seu nome" autocomplete="name" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+    <div style="margin-bottom:10px"><input type="email" id="cd-email" placeholder="E-mail" autocomplete="email" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+    <div style="margin-bottom:10px"><input type="password" id="cd-senha" placeholder="Senha (mínimo 6 caracteres)" autocomplete="new-password" minlength="6" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+    <div style="margin-bottom:12px"><input type="password" id="cd-senha2" placeholder="Repita a senha" autocomplete="new-password" minlength="6" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+    <button class="btn" type="submit" id="cd-btn">Criar conta</button>
+    <div class="err" id="cd-err"></div>
   </form>
 </div>
 
@@ -270,6 +281,20 @@ $("#login-form").onsubmit=async e=>{e.preventDefault();$("#lg-err").textContent=
   $("#lg-btn").disabled=false;
   if(error){$("#lg-err").textContent=/invalid/i.test(error.message)?"E-mail ou senha incorretos.":"Não foi possível entrar: "+error.message;return}
   iniciar()};
+function abaLogin(t){document.querySelectorAll("#lg-tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  $("#login-form").classList.toggle("hide",t!=="entrar");$("#signup-form").classList.toggle("hide",t!=="criar");$("#lg-err").textContent="";$("#cd-err").textContent=""}
+document.querySelectorAll("#lg-tabs button").forEach(b=>b.onclick=()=>abaLogin(b.dataset.t));
+$("#signup-form").onsubmit=async e=>{e.preventDefault();const err=$("#cd-err");err.style.color="";err.textContent="";
+  const nome=$("#cd-nome").value.trim(),email=$("#cd-email").value.trim(),s1=$("#cd-senha").value,s2=$("#cd-senha2").value;
+  if(s1.length<6){err.textContent="A senha precisa ter pelo menos 6 caracteres.";return}
+  if(s1!==s2){err.textContent="As senhas não são iguais.";return}
+  $("#cd-btn").disabled=true;
+  const {data,error}=await sb.auth.signUp({email,password:s1,options:{data:{full_name:nome,name:nome},emailRedirectTo:location.href.split("#")[0]}});
+  $("#cd-btn").disabled=false;
+  if(error){err.textContent=/already|registered|exists/i.test(error.message)?"Este e-mail já tem conta. Use a aba Entrar (ou Esqueci a senha).":"Não foi possível criar: "+error.message;return}
+  if(data.session){iniciar();return}
+  if(data.user&&Array.isArray(data.user.identities)&&!data.user.identities.length){err.textContent="Este e-mail já tem conta. Use a aba Entrar (ou Esqueci a senha).";return}
+  err.style.color="var(--green)";err.textContent="Conta criada! Enviamos um e-mail para "+email+". Abra o link de confirmação e depois entre pela aba Entrar."};
 $("#lg-reset").onclick=async()=>{const email=$("#lg-email").value.trim();if(!email){$("#lg-err").textContent="Digite seu e-mail acima primeiro.";return}
   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href.split("#")[0]});
   $("#lg-err").textContent=error?"Não foi possível enviar: "+error.message:"Enviamos um link para "+email+" criar uma nova senha."};
@@ -286,9 +311,9 @@ async function iniciar(){
   const {data:{session}}=await sb.auth.getSession();
   if(!session){mostrarLogin();return}
   mostrarApp();
-  const {data,error}=await sb.from("pf_wallet_members").select("wallet_id").limit(1);
-  if(error||!data?.length){status("Esta conta ("+session.user.email+") ainda não tem acesso às finanças. Entre com a sua conta principal do AgroGestor.");return}
-  walletId=data[0].wallet_id;await carregar()}
+  const {data,error}=await sb.rpc("pf_my_wallet");
+  if(error||!data){status("Não foi possível abrir sua carteira: "+(error?.message||"tente novamente"));return}
+  walletId=data;await carregar()}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)carregar(true)});
 setInterval(()=>{if(!document.hidden)carregar(true)},60000);
 sb.auth.onAuthStateChange((ev)=>{if(ev==="PASSWORD_RECOVERY")mostrarNovaSenha()});
