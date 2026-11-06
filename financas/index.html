@@ -227,10 +227,33 @@ nav svg{width:22px;height:22px}
   </section>
 </div>
 
+  <!-- WHATSAPP -->
+  <section id="v-whats" class="hide">
+    <div class="card">
+      <h2>Números do WhatsApp</h2>
+      <p style="color:var(--muted);font-size:13.5px;margin:0 0 10px">Só os números cadastrados aqui podem lançar e consultar suas finanças pelo robô.</p>
+      <div id="tel-lista"></div>
+    </div>
+    <form class="card" id="tel-form" autocomplete="off">
+      <h2>Cadastrar número</h2>
+      <div style="margin-bottom:10px"><label style="display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px">Número com DDD</label><input type="tel" id="tel-num" inputmode="tel" placeholder="(99) 98494-7626" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+      <div style="margin-bottom:12px"><label style="display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px">Nome (opcional)</label><input type="text" id="tel-nome" placeholder="Ex.: Meu celular" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+      <button class="btn" type="submit" id="tel-btn">Cadastrar número</button>
+      <div class="err" id="tel-err"></div>
+    </form>
+    <div class="card wa-card">
+      <h2>Como usar</h2>
+      <div style="font-size:13.5px;line-height:1.7">Do número cadastrado, mande mensagem para o robô do AgroGestor começando pela área:<br>
+      <code>senar 150 diesel reembolsável</code><br><code>milho 320 adubo</code><br><code>bovino 1.200 sal mineral pix</code><br><code>pessoal 45 almoço</code><br>
+      Foto do comprovante com a legenda da área e áudio começando pela área também funcionam.<br>
+      <code>contas</code> resumo do mês · <code>reembolsos</code> SENAR a receber · <code>desfazer</code> apaga o último · <code>contas ajuda</code> exemplos.</div>
+    </div>
+  </section>
 </div>
 <nav class="hide" id="nav">
   <button data-v="resumo" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Resumo</button>
   <button data-v="lancar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Lançar</button>
+  <button data-v="whats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-13.4 7.8L3 21l1.3-4.4A9 9 0 1 1 21 12z"/><path d="M9 10c.5 2 2 3.5 4 4"/></svg>WhatsApp</button>
   <button data-v="lista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Lançamentos</button>
 </nav>
 
@@ -424,6 +447,24 @@ function renderLista(){const l=filtrados(),d=soma(l,"despesa"),r=soma(l,"receita
 $("#l-csv").onclick=async()=>{const l=filtrados();const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
   const csv=["Data;Tipo;Área;Categoria;Descrição;Valor;Pagamento;Local;Reembolso;Origem"].concat(l.map(i=>[fmtData(i.data),i.tipo,AREAS[i.area]?.nome,i.categoria,i.descricao,String(i.valor).replace(".",","),i.pagamento,i.local,i.reemb?(i.reemb_ok?"reembolsado":"a reembolsar"):"",i.origem].map(q).join(";"))).join("\n");
   try{await navigator.clipboard.writeText(csv);toast("CSV copiado — cole no Excel/Planilhas")}catch(e){toast("Não foi possível copiar.")}};
+
+/* ---------- WhatsApp ---------- */
+const fmtTel=e=>{const d=String(e).replace(/\D/g,"").replace(/^55/,"");return d.length===11?`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`:d.length===10?`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`:e};
+async function carregarTelefones(){
+  const {data,error}=await sb.rpc("pf_my_phones");
+  const el=$("#tel-lista");
+  if(error){el.innerHTML=`<div class="empty">Erro ao carregar: ${esc(error.message)}</div>`;return}
+  el.innerHTML=data.length?data.map(t=>`<div class="item"><span class="dot" style="--c:#25d366"></span><div class="mid"><div class="t">${fmtTel(t.phone_e164)}</div><div class="s">${esc(t.label||"")}</div></div><div class="acts"><button data-tel="${t.id}" style="color:var(--red)">remover</button></div></div>`).join("")
+    :`<div class="empty">Nenhum número cadastrado ainda.</div>`;
+  document.querySelectorAll("#tel-lista [data-tel]").forEach(b=>b.onclick=async()=>{
+    if(!await confirmar("Remover este número? Ele não poderá mais lançar suas finanças pelo WhatsApp."))return;
+    const {error}=await sb.rpc("pf_remove_phone",{target:b.dataset.tel});if(error){toast("Não foi possível remover.");return}toast("Número removido");carregarTelefones()})}
+$("#tel-form").onsubmit=async e=>{e.preventDefault();const err=$("#tel-err");err.style.color="";err.textContent="";
+  const num=$("#tel-num").value.replace(/\D/g,"");if(num.length<10){err.textContent="Digite o número com DDD.";return}
+  $("#tel-btn").disabled=true;const {error}=await sb.rpc("pf_register_phone",{phone:num,label:$("#tel-nome").value.trim()||null});$("#tel-btn").disabled=false;
+  if(error){err.textContent=error.message;return}
+  $("#tel-num").value="";$("#tel-nome").value="";err.style.color="var(--green)";err.textContent="Número cadastrado! Mande \"contas ajuda\" para o robô para testar.";carregarTelefones()};
+document.querySelector('nav button[data-v="whats"]').addEventListener("click",carregarTelefones);
 
 function renderTudo(){preencherPeriodos();renderResumo();renderLista()}
 
