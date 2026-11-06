@@ -321,7 +321,7 @@ $("#signup-form").onsubmit=async e=>{e.preventDefault();const err=$("#cd-err");e
 $("#lg-reset").onclick=async()=>{const email=$("#lg-email").value.trim();if(!email){$("#lg-err").textContent="Digite seu e-mail acima primeiro.";return}
   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href.split("#")[0]});
   $("#lg-err").textContent=error?"Não foi possível enviar: "+error.message:"Enviamos um link para "+email+" criar uma nova senha."};
-$("#sair").onclick=async()=>{await sb.auth.signOut();itens=[];walletId=null;mostrarLogin()};
+$("#sair").onclick=async()=>{if(canal){sb.removeChannel(canal);canal=null}await sb.auth.signOut();itens=[];walletId=null;mostrarLogin()};
 
 /* ---------- Dados ---------- */
 async function carregar(silencioso){
@@ -336,9 +336,17 @@ async function iniciar(){
   mostrarApp();
   const {data,error}=await sb.rpc("pf_my_wallet");
   if(error||!data){status("Não foi possível abrir sua carteira: "+(error?.message||"tente novamente"));return}
-  walletId=data;await carregar()}
+  walletId=data;await carregar();ouvirMudancas()}
+let canal=null,recarregarT=null;
+function ouvirMudancas(){
+  if(canal)sb.removeChannel(canal);
+  canal=sb.channel("pf-"+walletId).on("postgres_changes",{event:"*",schema:"public",table:"pf_entries",filter:"wallet_id=eq."+walletId},(msg)=>{
+    clearTimeout(recarregarT);recarregarT=setTimeout(()=>carregar(true),400);
+    if(msg.eventType==="INSERT"&&msg.new?.origem==="whatsapp"){const v=Number(msg.new.valor);toast("📱 Novo lançamento do WhatsApp: "+(msg.new.categoria||"")+" "+brl(v))}
+  }).subscribe();
+}
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)carregar(true)});
-setInterval(()=>{if(!document.hidden)carregar(true)},60000);
+setInterval(()=>{if(!document.hidden)carregar(true)},20000);
 sb.auth.onAuthStateChange((ev)=>{if(ev==="PASSWORD_RECOVERY")mostrarNovaSenha()});
 function mostrarNovaSenha(){mostrarLogin();$("#login-form").innerHTML=`<h2>Nova senha</h2><p>Digite a nova senha da sua conta.</p><input type="password" id="ns" placeholder="Nova senha (mín. 6)" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;margin-bottom:12px"><button class="btn" type="button" id="ns-ok">Salvar senha</button><div class="err" id="ns-err"></div>`;
   $("#ns-ok").onclick=async()=>{const {error}=await sb.auth.updateUser({password:$("#ns").value});if(error){$("#ns-err").textContent=error.message;return}location.hash="";location.reload()}}
