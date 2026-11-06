@@ -254,3 +254,20 @@ async function climatologia(lon, lat) {
     piorVeranico, maiorMedio, chuvosos: chuvosos.map(x => x.nome),
   };
 }
+
+// ---------- Imagem de alta resolução: CBERS-4A WPM (INPE), 2 m em cor real ----------
+async function cenaCBERS(f) {
+  if (f.area > 3000) throw new Error('área grande demais para a imagem de 2 m no celular');
+  const hoje = new Date(), ini = new Date(hoje - 365 * 864e5);
+  const cenas = await stacSearch(f.polys, isoDay(ini), isoDay(hoje), 30, 30, 'cb');
+  if (!cenas.length) throw new Error('nenhuma imagem CBERS-4A de 2 m com pouca nuvem no último ano');
+  const ord = cenas.slice().sort((a, b) => b.properties.datetime.localeCompare(a.properties.datetime));
+  for (const it of ord.slice(0, 4)) {
+    try {
+      const r = await processScene(it), d = r.rgb.data; let n = 0, t = 0;
+      for (let i = 0; i < r.g.mask.length; i++) if (r.g.mask[i]) { t++; if (d[0][i] + d[1][i] + d[2][i] > 0) n++; }
+      if (t && n / t > 0.9) return r;
+    } catch (e) { console.warn('CBERS', it.id, e.message); }
+  }
+  throw new Error('as imagens CBERS-4A recentes não cobrem a área inteira');
+}

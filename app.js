@@ -490,7 +490,27 @@ function ramp(stops, v) {
 }
 const cssGrad = stops => `linear-gradient(90deg,${stops.map(([v, c], i) => `rgb(${c}) ${(i / (stops.length - 1) * 100).toFixed(0)}%`).join(',')})`;
 
-function renderCanvas(res, layer, suave) {
+// Cor real com contraste ajustado: corta 2% dos extremos de cada canal (dentro da área), gama leve e um pouco mais de saturação.
+// A imagem "visual" pronta do Sentinel-2 sai lavada e avermelhada em áreas pequenas.
+function esticarRGB(res) {
+  if (res._est) return res._est;
+  const { g } = res, N = g.W * g.H, cr = res.rgb;
+  const bruto = (c, i) => cr.tci ? cr.data[c][i] / 255 : Math.max(0, cr[['r', 'g', 'b'][c]].data[0][i] * cr[['r', 'g', 'b'][c]].so[0] + cr[['r', 'g', 'b'][c]].so[1]);
+  const est = [0, 1, 2].map(c => {
+    const v = [];
+    for (let i = 0; i < N; i += 1) { if (!g.mask[i]) continue; const x = bruto(c, i); if (x > 0) v.push(x); }
+    if (v.length < 20) for (let i = 0; i < N; i++) { const x = bruto(c, i); if (x > 0) v.push(x); }
+    v.sort((a, b) => a - b);
+    const q = p => v.length ? v[Math.min(v.length - 1, Math.floor(p * v.length))] : 0;
+    return [q(0.02), Math.max(q(0.98), q(0.02) + 1e-3)];
+  });
+  // mesma escala nos 3 canais (mantém a cor natural), com o pior caso de cada ponta
+  const lo = Math.min(...est.map(e => e[0])), hi = Math.max(...est.map(e => e[1]));
+  res._est = { bruto, lo, hi };
+  return res._est;
+}
+function renderCanvas(res, layer, suave) { return renderCanvasEl(res, layer, suave).toDataURL('image/png'); }
+function renderCanvasEl(res, layer, suave) {
   const { g } = res, cv = document.createElement('canvas'); cv.width = g.W; cv.height = g.H;
   const ctx = cv.getContext('2d'), img = ctx.createImageData(g.W, g.H), d = img.data;
   const st = res.stats, thr = st ? zoneThr(st) : -1;
@@ -498,13 +518,13 @@ function renderCanvas(res, layer, suave) {
     const o = i * 4;
     if (layer === 'rgb') {
       if (!res.rgb) continue;
-      let r, gg, b;
-      if (res.rgb.tci) { r = res.rgb.data[0][i]; gg = res.rgb.data[1][i]; b = res.rgb.data[2][i]; }
-      else {
-        const s = (x, so) => Math.max(0, Math.min(255, Math.pow(Math.max(0, x * so[0] + so[1]) / 0.3, 0.8) * 255));
-        r = s(res.rgb.r.data[0][i], res.rgb.r.so); gg = s(res.rgb.g.data[0][i], res.rgb.g.so); b = s(res.rgb.b.data[0][i], res.rgb.b.so);
-      }
-      if (r + gg + b === 0) continue;
+      const E = esticarRGB(res);
+      const r0 = E.bruto(0, i), g0 = E.bruto(1, i), b0 = E.bruto(2, i);
+      if (r0 + g0 + b0 === 0) continue;
+      const t = x => Math.pow(Math.max(0, Math.min(1, (x - E.lo) / (E.hi - E.lo))), 0.9);
+      let r = t(r0), gg = t(g0), b = t(b0);
+      const lum = 0.3 * r + 0.59 * gg + 0.11 * b, sat = 1.2;
+      r = Math.max(0, Math.min(255, (lum + (r - lum) * sat) * 255)); gg = Math.max(0, Math.min(255, (lum + (gg - lum) * sat) * 255)); b = Math.max(0, Math.min(255, (lum + (b - lum) * sat) * 255));
       d[o] = r; d[o + 1] = gg; d[o + 2] = b; d[o + 3] = g.mask[i] ? 255 : 110;
       continue;
     }
@@ -524,6 +544,7 @@ function renderCanvas(res, layer, suave) {
     const c = ramp(layer === 'ndre' ? RAMP_NDRE : RAMP_NDVI, v);
     d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
   }
+  if (layer === 'rgb') realcar(d, g.W, g.H, 0.6);
   ctx.putImageData(img, 0, 0);
   if (suave === undefined ? S.suave : suave) {
     // amplia com interpolação: mesma informação de 10 m, sem os quadrados
@@ -532,10 +553,22 @@ function renderCanvas(res, layer, suave) {
       const big = document.createElement('canvas'); big.width = g.W * k; big.height = g.H * k;
       const bx = big.getContext('2d'); bx.imageSmoothingEnabled = true; bx.imageSmoothingQuality = 'high';
       bx.drawImage(cv, 0, 0, big.width, big.height);
-      return big.toDataURL('image/png');
+      return big;
     }
   }
-  return cv.toDataURL('image/png');
+  return cv;
+}
+// realce de bordas (máscara de nitidez 3x3) feito na resolução original, antes de ampliar
+function realcar(d, W, H, q) {
+  const src = new Uint8ClampedArray(d);
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+    const o = (y * W + x) * 4; if (!src[o + 3]) continue;
+    for (let c = 0; c < 3; c++) {
+      const v = src[o + c], viz = src[o - 4 + c] + src[o + 4 + c] + src[o - W * 4 + c] + src[o + W * 4 + c];
+      if (!src[o - 4 + 3] || !src[o + 4 + 3] || !src[o - W * 4 + 3] || !src[o + W * 4 + 3]) continue;
+      d[o + c] = v + q * (4 * v - viz);
+    }
+  }
 }
 function showLayer() {
   const res = S.result; if (!res) return;

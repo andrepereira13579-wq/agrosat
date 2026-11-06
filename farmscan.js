@@ -83,7 +83,7 @@
   const ETAPAS = [
     ['car', 'CAR (SICAR)'], ['sigef', 'SIGEF / INCRA'], ['emb', 'Embargos IBAMA'], ['prodes', 'PRODES (INPE)'], ['deter', 'Alertas DETER (INPE)'],
     ['prot', 'Áreas protegidas e territórios'], ['fogo', 'Focos de queimada'], ['credito', 'Crédito rural (Sicor)'], ['aq', 'Áreas queimadas (5 anos)'], ['bioma', 'Bioma'],
-    ['uso', 'Uso e cobertura do solo'], ['u08', 'Vegetação nativa em 2008'], ['idade', 'Idade da pastagem'], ['cena', 'Imagem de satélite recente'], ['cob', 'Condição da cobertura (12 meses)'],
+    ['uso', 'Uso e cobertura do solo'], ['u08', 'Vegetação nativa em 2008'], ['idade', 'Idade da pastagem'], ['cena', 'Imagem de satélite recente'], ['cbers', 'Imagem de 2 m (CBERS-4A)'], ['cob', 'Condição da cobertura (12 meses)'],
     ['relevo', 'Relevo'], ['solo', 'Solo'], ['clima', 'Climatologia'],
   ];
   async function coletar(f, aviso) {
@@ -107,6 +107,7 @@
       await rodar('idade', () => idadePastagem(f));
       await rodar('aq', () => queimadasNaFazenda(f));
       await rodar('cena', () => cenaRecente(f));
+      await rodar('cbers', () => cenaCBERS(f));
       await rodar('cob', () => classificarCobertura(f));
       await rodar('relevo', () => TD.calcular());
     })();
@@ -238,7 +239,7 @@
     if (A.idade && A.idade.ha > 0) M.idade = await mapa(f, { escurecer: .15, rasters: [{ url: desenharIdade(A.idade), bounds: A.idade.g.bounds, alpha: .9 }] });
     if (A.vigor) M.vigor = await mapa(f, { escurecer: .15, rasters: [{ url: desenharClasse(A.vigor.g, A.vigor.classe, VIGOR.map(v => v[3])), bounds: A.vigor.g.bounds, alpha: .9 }] });
     if (R.cena) {
-      try { M.rgb = await mapa(f, { rasters: [{ url: renderCanvas(R.cena, 'rgb', true), bounds: R.cena.g.bounds, alpha: 1, suave: true }] }); } catch (e) { }
+      try { M.rgb = await mapa(f, { W: 1200, H: 760, rasters: [{ url: renderCanvas(R.cena, 'rgb', true), bounds: R.cena.g.bounds, alpha: 1, suave: true }] }); } catch (e) { }
       try { M.ndvi = await mapa(f, { rasters: [{ url: renderCanvas(R.cena, 'ndvi', true), bounds: R.cena.g.bounds, alpha: 1, suave: true }] }); } catch (e) { }
     }
     if (A.relevo) {
@@ -402,9 +403,18 @@
     if (R.cena) {
       const c = R.cena, st = c.stats || {};
       pg('Imagem de satélite recente', `Sentinel-2 de ${dBR(c.it.properties.datetime)} · ${fmt((c.nCloud / Math.max(1, c.nIn)) * 100, 0)}% da área com nuvem.`, `
-        <div class="duas">${fig(M.rgb, 'Cor real.')}${fig(M.ndvi, 'NDVI: vermelho = pouca vegetação ativa; verde = vegetação vigorosa.')}</div>
+        ${fig(M.rgb, 'Cor real (contraste ajustado e bordas realçadas; pixel original de 10 m).')}
+        ${fig(M.ndvi, 'NDVI: vermelho = pouca vegetação ativa; verde = vegetação vigorosa.')}
         ${kpis([[n1(st.mean, 2), 'NDVI médio'], [c.statsRE ? n1(c.statsRE.mean, 2) : '—', 'NDRE médio'], [n1(st.p10, 2), 'pior 10%'], [n1(st.p90, 2), 'melhor 10%']])}
         ${c.divStats ? tab(['Divisão', 'Área', 'NDVI', 'NDRE', 'Nuvem'], c.divStats.map(d => [esc(d.nome), ha(d.area), n1(d.ndvi, 2), n1(d.ndre, 2), fmt(d.nuvem * 100, 0) + '%'])) : ''}`);
+    }
+
+    // ---- Imagem de 2 m (CBERS-4A) ----
+    if (R.cbers) {
+      const mc = await mapa(f, { rasters: [{ url: renderCanvas(R.cbers, 'rgb', true), bounds: R.cbers.g.bounds, alpha: 1, suave: true }] });
+      pg('Imagem de alta resolução (CBERS-4A)', `Satélite brasileiro CBERS-4A (INPE), câmera WPM, 2 m em cor real · ${dBR(R.cbers.it.properties.datetime)}.`, `
+        ${fig(mc, 'Cinco vezes mais detalhe que o Sentinel-2: dá para ver estradas, cercas largas, aguadas, manchas de juquira e babaçu.')}
+        <p class="nota">O CBERS-4A passa a cada 31 dias e não tem máscara de nuvem: a imagem pode ser mais antiga que a do Sentinel-2 e ter nuvens. Serve para ver detalhes; os índices de vigor (NDVI) continuam vindo do Sentinel-2.</p>`);
     }
 
     // ---- Relevo ----
@@ -469,6 +479,7 @@
         ['Áreas queimadas', R.aq && R.aq.fonte ? R.aq.fonte : 'MapBiomas Fogo, Coleção 5 (30 m); se fora do ar, MODIS MCD64A1 (NASA)', 'pixels dentro do limite, por mês'],
         ['Uso do solo e pastagem', A.uso ? A.uso.cit + (A.uso.m.alt ? ' (MapBiomas com downloads suspensos)' : '') : 'MapBiomas (10 m e 30 m)', 'pixels dentro do limite'],
         ['Imagem e vigor', 'Sentinel-2 (ESA/Copernicus, Earth Search)', 'imagem mais limpa dos últimos 4 meses'],
+        ['Imagem de 2 m', 'CBERS-4A WPM (INPE, Brazil Data Cube)', 'imagem mais recente com pouca nuvem que cobre a área'],
         ['Condição da cobertura', 'Sentinel-2, série de 12 meses (10 m)', 'NDVI na seca e nas águas, por pixel; comparação com 3 anos antes'],
         ['Bioma', 'IBGE via INPE/TerraBrasilis', 'centro do imóvel'],
         ['Relevo', 'SRTM (Terrain Tiles, ~30 m)', 'declividade de Horn, classes Embrapa'],
