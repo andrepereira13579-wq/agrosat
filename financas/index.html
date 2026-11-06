@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgroGestor Finanças</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f6f1;--card:#fff;--ink:#1d2a1f;--muted:#6b7a6d;--line:#e2e8df;
+  --green:#2f6b34;--green2:#4c9a52;--greenbg:#e7f2e5;
+  --red:#b3412f;--redbg:#fbeae6;--blue:#2d6aa3;
+  --pessoal:#7b5ea7;--senar:#2d6aa3;--milho:#c99a12;--bovino:#8a4b2a;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#121712;--card:#1b221c;--ink:#e6efe5;--muted:#9aab9b;--line:#2c372d;
+  --greenbg:#1f3321;--redbg:#3a201b;--green:#6cbf72;--green2:#6cbf72;--red:#ef8a76;
+}}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;padding-bottom:84px}
+header{background:linear-gradient(135deg,#24552a,#3f8a45);color:#fff;padding:18px 16px 16px}
+header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.2px}
+header p{margin:3px 0 0;font-size:12.5px;opacity:.85}
+.wrap{max-width:760px;margin:0 auto;padding:14px}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+select,input,textarea,button{font:inherit;color:inherit}
+select,input[type=text],input[type=date],input[type=month],textarea{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.bar select,.bar input{width:auto;flex:1;min-width:120px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.kpi small{color:var(--muted);font-size:11.5px;display:block}
+.kpi b{font-size:16px;display:block;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.neg{color:var(--red)}.pos{color:var(--green)}
+.areas{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.area{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;cursor:pointer;border-left:5px solid var(--c);text-align:left;width:100%}
+.area.sel{outline:2px solid var(--c)}
+.area h3{margin:0 0 6px;font-size:14px;display:flex;align-items:center;gap:6px}
+.area .row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-top:2px}
+.area .row span:last-child{color:var(--ink);font-weight:600}
+h2{font-size:15px;margin:0 0 10px}
+.cat{margin:9px 0}
+.cat .l{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+.track{height:9px;background:var(--line);border-radius:6px;overflow:hidden}
+.fill{height:100%;border-radius:6px;background:var(--c,var(--green2))}
+.months{display:flex;align-items:flex-end;gap:6px;height:130px;padding-top:6px}
+.mcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.mbars{display:flex;gap:2px;align-items:flex-end;height:100px;width:100%;justify-content:center}
+.mbars div{width:42%;border-radius:4px 4px 0 0;min-height:2px}
+.mcol small{font-size:10.5px;color:var(--muted)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+form .f{margin-bottom:12px}
+form label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;font-weight:500}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;padding:9px 6px;border-radius:8px;cursor:pointer;font-weight:500;font-size:13.5px}
+.seg button.on{background:var(--green);color:#fff}
+.seg.tipo button.on[data-v=despesa]{background:var(--red)}
+.chips{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.chips button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 8px;cursor:pointer;font-size:13.5px;font-weight:500;border-left:4px solid var(--c)}
+.chips button.on{background:var(--c);color:#fff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{background:var(--green);color:#fff;border:0;border-radius:12px;padding:13px 16px;font-weight:600;cursor:pointer;width:100%;font-size:15px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.sm{width:auto;padding:8px 12px;font-size:13px;border-radius:9px}
+.chk{display:flex;align-items:center;gap:8px;font-size:14px}
+.chk input{width:18px;height:18px}
+.item{display:flex;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.item .mid{flex:1;min-width:0}
+.item .t{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .s{font-size:12px;color:var(--muted);margin-top:2px}
+.item .v{font-weight:700;font-size:14px;white-space:nowrap;text-align:right}
+.item .acts{display:flex;gap:4px;margin-top:4px;justify-content:flex-end}
+.item .acts button{border:0;background:transparent;color:var(--muted);font-size:12px;cursor:pointer;padding:2px 4px}
+.tag{display:inline-block;font-size:10.5px;padding:1px 6px;border-radius:6px;background:var(--greenbg);color:var(--green);margin-left:4px;font-weight:600}
+.tag.warn{background:#fff3d6;color:#8a6200}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav button{flex:1;border:0;background:transparent;padding:8px 4px;cursor:pointer;color:var(--muted);font-size:11.5px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button.on{color:var(--green)}
+nav svg{width:22px;height:22px}
+.hide{display:none!important}
+.empty{color:var(--muted);text-align:center;padding:24px 8px;font-size:14px}
+.status{font-size:12.5px;padding:9px 12px;border-radius:10px;margin-bottom:10px;background:#fff3d6;color:#7a5600}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#1d2a1f;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:8;padding:20px}
+.modal .card{max-width:340px;width:100%}
+.modal .acts{display:flex;gap:8px;margin-top:12px}
+
+.login{max-width:380px;margin:40px auto;padding:0 16px}
+.login .card{padding:20px}
+.login p{color:var(--muted);font-size:13.5px}
+.err{color:var(--red);font-size:13px;margin-top:8px;min-height:18px}
+.tag.wa{background:#e3f6e8;color:#1f7a3a}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.hdr-row button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
+.wa-card{border-left:5px solid #25d366}
+.wa-card code{background:var(--greenbg);padding:1px 6px;border-radius:5px;font-size:13px}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header>
+  <div class="hdr-row"><div><h1>AgroGestor Finanças</h1>
+  <p>Pessoal · SENAR · Milho Verde · Bovino de Corte</p></div>
+  <button id="sair" class="hide" type="button">Sair</button></div>
+</header>
+
+<div class="login hide" id="v-login">
+  <form class="card" id="login-form">
+    <h2>Entrar</h2>
+    <p>Use o mesmo e-mail e senha do AgroGestor.</p>
+    <div class="f" style="margin-bottom:10px"><input type="email" id="lg-email" placeholder="E-mail" autocomplete="username" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+    <div class="f" style="margin-bottom:12px"><input type="password" id="lg-senha" placeholder="Senha" autocomplete="current-password" required style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+    <button class="btn" type="submit" id="lg-btn">Entrar</button>
+    <button class="btn ghost" type="button" id="lg-reset" style="margin-top:8px">Esqueci a senha</button>
+    <div class="err" id="lg-err"></div>
+  </form>
+</div>
+
+<div id="app" class="hide">
+
+<div class="wrap">
+  <div id="status" class="status hide"></div>
+
+  <!-- RESUMO -->
+  <section id="v-resumo">
+    <div class="bar">
+      <select id="r-periodo"></select>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><small>Despesas</small><b id="k-desp" class="neg">R$ 0,00</b></div>
+      <div class="kpi"><small>Receitas</small><b id="k-rec" class="pos">R$ 0,00</b></div>
+      <div class="kpi"><small>Saldo</small><b id="k-saldo">R$ 0,00</b></div>
+    </div>
+    <div class="areas" id="areas"></div>
+    <div class="card">
+      <h2 id="cat-title">Despesas por categoria</h2>
+      <div id="cats"></div>
+    </div>
+    <div class="card">
+      <h2 id="mes-title">Últimos 6 meses</h2>
+      <div class="months" id="months"></div>
+      <div class="legend"><span><i style="background:var(--red)"></i>Despesas</span><span><i style="background:var(--green2)"></i>Receitas</span></div>
+    </div>
+    <div class="card wa-card">
+      <h2>Lançar pelo WhatsApp</h2>
+      <div style="font-size:13.5px;line-height:1.7">Mande para o robô do AgroGestor começando pela área:<br>
+      <code>senar 150 diesel reembolsável</code><br><code>milho 320 adubo</code><br><code>bovino 1.200 sal mineral pix</code><br><code>pessoal 45 almoço</code><br>
+      Foto do comprovante com a legenda da área também funciona. <code>contas</code> mostra o resumo e <code>desfazer</code> apaga o último.</div>
+    </div>
+  </section>
+
+  <!-- LANÇAR -->
+  <section id="v-lancar" class="hide">
+    <form id="form" class="card" autocomplete="off">
+      <h2 id="form-title">Novo lançamento</h2>
+      <div class="f">
+        <div class="seg tipo" id="f-tipo">
+          <button type="button" data-v="despesa" class="on">Despesa</button>
+          <button type="button" data-v="receita">Receita</button>
+        </div>
+      </div>
+      <div class="f">
+        <label>Área</label>
+        <div class="chips" id="f-area"></div>
+      </div>
+      <div class="f">
+        <label for="f-cat">Categoria</label>
+        <select id="f-cat"></select>
+      </div>
+      <div class="two f">
+        <div><label for="f-valor">Valor (R$)</label><input type="text" id="f-valor" inputmode="decimal" placeholder="0,00"></div>
+        <div><label for="f-data">Data</label><input type="date" id="f-data"></div>
+      </div>
+      <div class="f">
+        <label for="f-desc">Descrição</label>
+        <input type="text" id="f-desc" placeholder="Ex.: 20 sacos de sal mineral">
+      </div>
+      <div class="two f">
+        <div><label for="f-pag">Pagamento</label>
+          <select id="f-pag"><option>Pix</option><option>Dinheiro</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Boleto</option><option>Transferência</option><option>Fiado / a pagar</option></select>
+        </div>
+        <div><label for="f-local">Local / fornecedor</label><input type="text" id="f-local" placeholder="Opcional"></div>
+      </div>
+      <div class="f" id="f-reemb-wrap">
+        <label class="chk"><input type="checkbox" id="f-reemb"> Reembolsável pelo SENAR</label>
+        <label class="chk" style="margin-top:8px"><input type="checkbox" id="f-reembok"> Já reembolsado</label>
+      </div>
+      <button class="btn" type="submit" id="f-salvar">Salvar lançamento</button>
+      <button class="btn ghost hide" type="button" id="f-cancelar" style="margin-top:8px">Cancelar edição</button>
+    </form>
+  </section>
+
+  <!-- LISTA -->
+  <section id="v-lista" class="hide">
+    <div class="bar">
+      <select id="l-periodo"></select>
+      <select id="l-area"></select>
+      <select id="l-tipo"><option value="">Tudo</option><option value="despesa">Despesas</option><option value="receita">Receitas</option></select>
+    </div>
+    <div class="bar">
+      <input type="text" id="l-busca" placeholder="Buscar descrição, categoria, local…">
+      <button class="btn ghost sm" id="l-csv" type="button">Copiar CSV</button>
+    </div>
+    <div class="card" style="padding:4px 14px">
+      <div class="item" style="border-bottom:1px solid var(--line)"><div class="mid s" id="l-resumo" style="font-size:12.5px;color:var(--muted)"></div></div>
+      <div id="lista"></div>
+    </div>
+  </section>
+</div>
+
+</div>
+<nav class="hide" id="nav">
+  <button data-v="resumo" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Resumo</button>
+  <button data-v="lancar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Lançar</button>
+  <button data-v="lista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Lançamentos</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+<div class="modal hide" id="modal"><div class="card"><div id="modal-msg"></div><div class="acts"><button class="btn ghost sm" id="modal-no" style="flex:1">Cancelar</button><button class="btn sm" id="modal-yes" style="flex:1;background:var(--red)">Excluir</button></div></div></div>
+
+<script>
+const SUPABASE_URL="https://qtzlxzkoxwyhbakfdpma.supabase.co";
+const SUPABASE_KEY="sb_publishable_-z455JqAWKfjHDjwiAM2og_ybjcKQ_Q";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+
+const AREAS = {
+  pessoal:{nome:"Pessoal",cor:"var(--pessoal)",
+    despesa:["Alimentação / mercado","Moradia / aluguel","Energia e água","Internet e celular","Combustível","Veículo / manutenção","Saúde / farmácia","Educação","Lazer","Vestuário","Família","Impostos e taxas","Outros"],
+    receita:["Salário / pró-labore","Serviços André Zootec","Outras receitas"]},
+  senar:{nome:"SENAR",cor:"var(--senar)",
+    despesa:["Combustível","Alimentação","Hospedagem","Manutenção do veículo","Pedágio / transporte","Material de campo","Telefone / internet","Impressões / material didático","Outros"],
+    receita:["Pagamento ATeG","Pagamento instrutoria","Tutoria e-Tec","Reembolso / diárias","Outras receitas"]},
+  milho:{nome:"Milho Verde",cor:"var(--milho)",
+    despesa:["Preparo do solo / gradagem","Sementes","Adubos e corretivos","Defensivos","Irrigação / energia","Mão de obra / diárias","Colheita","Sacaria / embalagem","Frete / transporte","Arrendamento","Outros"],
+    receita:["Venda de milho verde","Venda de palhada / silagem","Outras receitas"]},
+  bovino:{nome:"Bovino de Corte",cor:"var(--bovino)",
+    despesa:["Compra de animais","Sal mineral","Suplemento / ração","Medicamentos e vacinas","Pastagem / adubação","Mão de obra","Cerca / infraestrutura","Combustível / máquinas","Frete","Arrendamento de pasto","Impostos / GTA","Outros"],
+    receita:["Venda de animais","Venda de esterco","Outras receitas"]}
+};
+const MESES=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const $=s=>document.querySelector(s);
+const brl=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const hoje=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const ym=d=>d.slice(0,7);
+const parseValor=s=>{s=String(s).trim().replace(/[R$\s]/g,"");if(!s)return NaN;if(s.includes(","))s=s.replace(/\./g,"").replace(",",".");else if(/^\d{1,3}(\.\d{3})+$/.test(s))s=s.replace(/\./g,"");return Number(s)};
+const fmtData=d=>d?d.split("-").reverse().join("/"):"";
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+let walletId=null,itens=[],areaSel="",editId=null;
+let fTipo="despesa",fArea="pessoal";
+
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2400)}
+function status(m){const s=$("#status");if(m){s.textContent=m;s.classList.remove("hide")}else s.classList.add("hide")}
+function confirmar(msg){return new Promise(r=>{$("#modal-msg").textContent=msg;$("#modal").classList.remove("hide");
+  $("#modal-yes").onclick=()=>{$("#modal").classList.add("hide");r(true)};$("#modal-no").onclick=()=>{$("#modal").classList.add("hide");r(false)}})}
+
+/* ---------- Login ---------- */
+function mostrarLogin(){$("#v-login").classList.remove("hide");$("#app").classList.add("hide");$("#nav").classList.add("hide");$("#sair").classList.add("hide")}
+function mostrarApp(){$("#v-login").classList.add("hide");$("#app").classList.remove("hide");$("#nav").classList.remove("hide");$("#sair").classList.remove("hide")}
+$("#login-form").onsubmit=async e=>{e.preventDefault();$("#lg-err").textContent="";$("#lg-btn").disabled=true;
+  const {error}=await sb.auth.signInWithPassword({email:$("#lg-email").value.trim(),password:$("#lg-senha").value});
+  $("#lg-btn").disabled=false;
+  if(error){$("#lg-err").textContent=/invalid/i.test(error.message)?"E-mail ou senha incorretos.":"Não foi possível entrar: "+error.message;return}
+  iniciar()};
+$("#lg-reset").onclick=async()=>{const email=$("#lg-email").value.trim();if(!email){$("#lg-err").textContent="Digite seu e-mail acima primeiro.";return}
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.href.split("#")[0]});
+  $("#lg-err").textContent=error?"Não foi possível enviar: "+error.message:"Enviamos um link para "+email+" criar uma nova senha."};
+$("#sair").onclick=async()=>{await sb.auth.signOut();itens=[];walletId=null;mostrarLogin()};
+
+/* ---------- Dados ---------- */
+async function carregar(silencioso){
+  if(!walletId)return;
+  if(!silencioso)status("Carregando lançamentos…");
+  const {data,error}=await sb.from("pf_entries").select("*").eq("wallet_id",walletId).order("data",{ascending:false}).order("created_at",{ascending:false}).limit(10000);
+  if(error){status("Erro ao carregar: "+error.message);return}
+  itens=data.map(r=>({...r,valor:Number(r.valor)}));status("");renderTudo()}
+async function iniciar(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){mostrarLogin();return}
+  mostrarApp();
+  const {data,error}=await sb.from("pf_wallet_members").select("wallet_id").limit(1);
+  if(error||!data?.length){status("Esta conta ("+session.user.email+") ainda não tem acesso às finanças. Entre com a sua conta principal do AgroGestor.");return}
+  walletId=data[0].wallet_id;await carregar()}
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)carregar(true)});
+setInterval(()=>{if(!document.hidden)carregar(true)},60000);
+sb.auth.onAuthStateChange((ev)=>{if(ev==="PASSWORD_RECOVERY")mostrarNovaSenha()});
+function mostrarNovaSenha(){mostrarLogin();$("#login-form").innerHTML=`<h2>Nova senha</h2><p>Digite a nova senha da sua conta.</p><input type="password" id="ns" placeholder="Nova senha (mín. 6)" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;margin-bottom:12px"><button class="btn" type="button" id="ns-ok">Salvar senha</button><div class="err" id="ns-err"></div>`;
+  $("#ns-ok").onclick=async()=>{const {error}=await sb.auth.updateUser({password:$("#ns").value});if(error){$("#ns-err").textContent=error.message;return}location.hash="";location.reload()}}
+
+/* ---------- Navegação ---------- */
+function ir(v){document.querySelectorAll("#app section").forEach(s=>s.classList.toggle("hide",s.id!=="v-"+v));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));window.scrollTo(0,0)}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{if(b.dataset.v==="lancar"&&editId)cancelarEdicao();ir(b.dataset.v)});
+
+/* ---------- Períodos ---------- */
+function preencherPeriodos(){
+  const meses=new Set([ym(hoje())]);itens.forEach(i=>i.data&&meses.add(ym(i.data)));
+  const anos=new Set([...meses].map(m=>m.slice(0,4)));
+  const ops=[];[...meses].sort().reverse().forEach(m=>{const[a,mm]=m.split("-");ops.push([m,MESES[+mm-1]+"/"+a])});
+  [...anos].sort().reverse().forEach(a=>ops.push([a,"Ano "+a]));ops.push(["","Todo o período"]);
+  ["#r-periodo","#l-periodo"].forEach(id=>{const el=$(id),v=el.dataset.v??ym(hoje());
+    el.innerHTML=ops.map(([k,t])=>`<option value="${k}">${t}</option>`).join("");el.value=ops.some(o=>o[0]===v)?v:ym(hoje())})}
+["#r-periodo","#l-periodo"].forEach(id=>$(id).addEventListener("change",e=>e.target.dataset.v=e.target.value));
+const noPeriodo=(i,p)=>!p||(i.data||"").startsWith(p);
+
+/* ---------- Resumo ---------- */
+function soma(lista,tipo){return lista.filter(i=>i.tipo===tipo).reduce((a,i)=>a+(+i.valor||0),0)}
+function renderResumo(){
+  const p=$("#r-periodo").value,doPer=itens.filter(i=>noPeriodo(i,p));
+  const base=areaSel?doPer.filter(i=>i.area===areaSel):doPer;
+  const d=soma(base,"despesa"),r=soma(base,"receita"),s=r-d;
+  $("#k-desp").textContent=brl(d);$("#k-rec").textContent=brl(r);
+  const ks=$("#k-saldo");ks.textContent=brl(s);ks.className=s<0?"neg":"pos";
+  $("#areas").innerHTML=Object.entries(AREAS).map(([k,a])=>{const l=doPer.filter(i=>i.area===k),dd=soma(l,"despesa"),rr=soma(l,"receita");
+    let extra="";if(k==="senar"){const pend=l.filter(i=>i.tipo==="despesa"&&i.reemb&&!i.reemb_ok).reduce((x,i)=>x+(+i.valor||0),0);if(pend)extra=`<div class="row"><span>A reembolsar</span><span>${brl(pend)}</span></div>`}
+    return `<button class="area ${areaSel===k?"sel":""}" style="--c:${a.cor}" data-a="${k}"><h3>${a.nome}</h3>
+      <div class="row"><span>Despesas</span><span>${brl(dd)}</span></div>
+      <div class="row"><span>Receitas</span><span>${brl(rr)}</span></div>
+      <div class="row"><span>Saldo</span><span class="${rr-dd<0?"neg":"pos"}">${brl(rr-dd)}</span></div>${extra}</button>`}).join("");
+  document.querySelectorAll(".area").forEach(b=>b.onclick=()=>{areaSel=areaSel===b.dataset.a?"":b.dataset.a;renderResumo()});
+  const cats={};base.filter(i=>i.tipo==="despesa").forEach(i=>{const key=(areaSel?"":AREAS[i.area]?.nome+" · ")+i.categoria;cats[key]=cats[key]||{v:0,c:AREAS[i.area]?.cor};cats[key].v+=+i.valor||0});
+  const arr=Object.entries(cats).sort((a,b)=>b[1].v-a[1].v),max=arr[0]?.[1].v||1;
+  $("#cat-title").textContent="Despesas por categoria"+(areaSel?" — "+AREAS[areaSel].nome:"");
+  $("#cats").innerHTML=arr.length?arr.map(([k,o])=>`<div class="cat"><div class="l"><span>${esc(k)}</span><b>${brl(o.v)} <small style="color:var(--muted);font-weight:500">${d?Math.round(o.v/d*100):0}%</small></b></div><div class="track"><div class="fill" style="width:${o.v/max*100}%;--c:${o.c}"></div></div></div>`).join(""):`<div class="empty">Nenhuma despesa neste período.</div>`;
+  const ref=new Date();const ms=[];for(let k=5;k>=0;k--){const dt=new Date(ref.getFullYear(),ref.getMonth()-k,1);ms.push(dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0"))}
+  const fonte=areaSel?itens.filter(i=>i.area===areaSel):itens;
+  const vals=ms.map(m=>{const l=fonte.filter(i=>(i.data||"").startsWith(m));return[soma(l,"despesa"),soma(l,"receita")]});
+  const mx=Math.max(1,...vals.flat());
+  $("#mes-title").textContent="Últimos 6 meses"+(areaSel?" — "+AREAS[areaSel].nome:"");
+  $("#months").innerHTML=ms.map((m,j)=>`<div class="mcol"><div class="mbars"><div title="Despesas ${brl(vals[j][0])}" style="height:${vals[j][0]/mx*100}%;background:var(--red)"></div><div title="Receitas ${brl(vals[j][1])}" style="height:${vals[j][1]/mx*100}%;background:var(--green2)"></div></div><small>${MESES[+m.slice(5)-1]}</small></div>`).join("");
+}
+$("#r-periodo").addEventListener("change",renderResumo);
+
+/* ---------- Formulário ---------- */
+function renderAreasForm(){$("#f-area").innerHTML=Object.entries(AREAS).map(([k,a])=>`<button type="button" data-a="${k}" style="--c:${a.cor}" class="${fArea===k?"on":""}">${a.nome}</button>`).join("");
+  document.querySelectorAll("#f-area button").forEach(b=>b.onclick=()=>{fArea=b.dataset.a;renderAreasForm();renderCats()})}
+function renderCats(sel){const l=[...AREAS[fArea][fTipo]];if(sel&&!l.includes(sel))l.push(sel);$("#f-cat").innerHTML=l.map(c=>`<option>${esc(c)}</option>`).join("");if(sel)$("#f-cat").value=sel;
+  $("#f-reemb-wrap").classList.toggle("hide",!(fArea==="senar"&&fTipo==="despesa"))}
+document.querySelectorAll("#f-tipo button").forEach(b=>b.onclick=()=>{fTipo=b.dataset.v;document.querySelectorAll("#f-tipo button").forEach(x=>x.classList.toggle("on",x===b));renderCats()});
+function limparForm(){$("#f-valor").value="";$("#f-desc").value="";$("#f-local").value="";$("#f-data").value=hoje();$("#f-reemb").checked=false;$("#f-reembok").checked=false}
+function cancelarEdicao(){editId=null;$("#form-title").textContent="Novo lançamento";$("#f-salvar").textContent="Salvar lançamento";$("#f-cancelar").classList.add("hide");limparForm()}
+$("#f-cancelar").onclick=()=>{cancelarEdicao();ir("lista")};
+
+$("#form").onsubmit=async e=>{e.preventDefault();
+  if(!walletId){toast("Entre na sua conta primeiro.");return}
+  const valor=parseValor($("#f-valor").value);
+  if(!(valor>0)){toast("Informe um valor válido.");$("#f-valor").focus();return}
+  const data=$("#f-data").value||hoje();
+  const senarDesp=fArea==="senar"&&fTipo==="despesa";
+  const reg={wallet_id:walletId,tipo:fTipo,area:fArea,categoria:$("#f-cat").value,valor:Math.round(valor*100)/100,data,
+    descricao:$("#f-desc").value.trim().slice(0,200),pagamento:$("#f-pag").value,local:$("#f-local").value.trim().slice(0,120)||null,
+    reemb:senarDesp&&$("#f-reemb").checked,reemb_ok:senarDesp&&$("#f-reembok").checked};
+  const btn=$("#f-salvar");btn.disabled=true;
+  const {error}=editId?await sb.from("pf_entries").update(reg).eq("id",editId):await sb.from("pf_entries").insert({...reg,origem:"app"});
+  btn.disabled=false;
+  if(error){toast("Não foi possível salvar: "+error.message);return}
+  if(editId){toast("Lançamento atualizado");cancelarEdicao();await carregar(true);ir("lista")}
+  else{toast("Lançamento salvo ✓");limparForm();$("#f-data").value=data;carregar(true)}};
+
+function editar(id){const i=itens.find(x=>x.id===id);if(!i)return;editId=id;fTipo=i.tipo;fArea=i.area;
+  document.querySelectorAll("#f-tipo button").forEach(x=>x.classList.toggle("on",x.dataset.v===fTipo));renderAreasForm();renderCats(i.categoria);
+  $("#f-valor").value=String(i.valor).replace(".",",");$("#f-data").value=i.data;$("#f-desc").value=i.descricao||"";$("#f-local").value=i.local||"";
+  $("#f-pag").value=i.pagamento||"Pix";$("#f-reemb").checked=!!i.reemb;$("#f-reembok").checked=!!i.reemb_ok;
+  $("#form-title").textContent="Editar lançamento";$("#f-salvar").textContent="Salvar alterações";$("#f-cancelar").classList.remove("hide");ir("lancar")}
+async function excluir(id){const i=itens.find(x=>x.id===id);if(!i)return;
+  if(!await confirmar(`Excluir "${i.categoria}" de ${brl(+i.valor)} (${fmtData(i.data)})?`))return;
+  const {error}=await sb.from("pf_entries").delete().eq("id",id);if(error){toast("Não foi possível excluir.");return}toast("Excluído");carregar(true)}
+async function marcarReemb(id){const i=itens.find(x=>x.id===id);if(!i)return;
+  const {error}=await sb.from("pf_entries").update({reemb_ok:!i.reemb_ok}).eq("id",id);if(error){toast("Não foi possível atualizar.");return}
+  toast(i.reemb_ok?"Marcado como pendente":"Marcado como reembolsado");carregar(true)}
+
+/* ---------- Lista ---------- */
+$("#l-area").innerHTML=`<option value="">Todas as áreas</option>`+Object.entries(AREAS).map(([k,a])=>`<option value="${k}">${a.nome}</option>`).join("");
+function filtrados(){const p=$("#l-periodo").value,a=$("#l-area").value,t=$("#l-tipo").value,q=$("#l-busca").value.trim().toLowerCase();
+  return itens.filter(i=>noPeriodo(i,p)&&(!a||i.area===a)&&(!t||i.tipo===t)&&(!q||[i.descricao,i.categoria,i.local,i.pagamento,AREAS[i.area]?.nome].join(" ").toLowerCase().includes(q)))}
+function renderLista(){const l=filtrados(),d=soma(l,"despesa"),r=soma(l,"receita");
+  $("#l-resumo").innerHTML=`${l.length} lançamento(s) · Despesas <b class="neg">${brl(d)}</b> · Receitas <b class="pos">${brl(r)}</b>`;
+  $("#lista").innerHTML=l.length?l.slice(0,500).map(i=>{const a=AREAS[i.area]||{nome:"?",cor:"var(--muted)"};
+    const tag=(i.reemb?`<span class="tag ${i.reemb_ok?"":"warn"}">${i.reemb_ok?"reembolsado":"a reembolsar"}</span>`:"")+(i.origem==="whatsapp"?`<span class="tag wa">WhatsApp</span>`:"");
+    return `<div class="item" style="--c:${a.cor}"><span class="dot"></span><div class="mid"><div class="t">${esc(i.categoria)}${tag}</div>
+      <div class="s">${a.nome} · ${fmtData(i.data)}${i.descricao?" · "+esc(i.descricao):""}${i.local?" · "+esc(i.local):""}${i.pagamento?" · "+esc(i.pagamento):""}</div></div>
+      <div><div class="v ${i.tipo==="despesa"?"neg":"pos"}">${i.tipo==="despesa"?"−":"+"} ${brl(+i.valor||0)}</div>
+      <div class="acts">${i.reemb?`<button data-r="${i.id}">${i.reemb_ok?"pendente":"reembolsado"}</button>`:""}<button data-e="${i.id}">editar</button><button data-x="${i.id}">excluir</button></div></div></div>`}).join("")
+    :`<div class="empty">Nenhum lançamento encontrado.<br><br><button class="btn sm" type="button" id="primeiro">Fazer primeiro lançamento</button></div>`;
+  $("#primeiro")&&($("#primeiro").onclick=()=>ir("lancar"));
+  document.querySelectorAll("#lista [data-e]").forEach(b=>b.onclick=()=>editar(b.dataset.e));
+  document.querySelectorAll("#lista [data-x]").forEach(b=>b.onclick=()=>excluir(b.dataset.x));
+  document.querySelectorAll("#lista [data-r]").forEach(b=>b.onclick=()=>marcarReemb(b.dataset.r));
+}
+["#l-periodo","#l-area","#l-tipo"].forEach(s=>$(s).addEventListener("change",renderLista));$("#l-busca").oninput=renderLista;
+$("#l-csv").onclick=async()=>{const l=filtrados();const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+  const csv=["Data;Tipo;Área;Categoria;Descrição;Valor;Pagamento;Local;Reembolso;Origem"].concat(l.map(i=>[fmtData(i.data),i.tipo,AREAS[i.area]?.nome,i.categoria,i.descricao,String(i.valor).replace(".",","),i.pagamento,i.local,i.reemb?(i.reemb_ok?"reembolsado":"a reembolsar"):"",i.origem].map(q).join(";"))).join("\n");
+  try{await navigator.clipboard.writeText(csv);toast("CSV copiado — cole no Excel/Planilhas")}catch(e){toast("Não foi possível copiar.")}};
+
+function renderTudo(){preencherPeriodos();renderResumo();renderLista()}
+
+renderAreasForm();renderCats();limparForm();
+if(location.hash.includes("type=recovery")){mostrarNovaSenha()}else iniciar();
+</script>
+</body>
+</html>
