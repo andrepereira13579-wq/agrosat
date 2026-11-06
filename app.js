@@ -423,13 +423,14 @@ async function processScene(it, res, withRGB = true) {
   res = res || F.res;
   const f = farm(); const epsg = itemEPSG(it) || utmEPSG(...bboxCenter(f.polys));
   const g = grid(f.polys, epsg, res);
-  const [red, nir, re1, scl] = await Promise.all([
+  const [red, nir, re1, scl, blue] = await Promise.all([
     readBand(it, F.red, g, [0]), readBand(it, F.nir, g, [0]),
     F.re ? readBand(it, F.re, g, [0]).catch(() => null) : null, readBand(it, F.qa, g, [0]).catch(() => null),
+    F.b ? readBand(it, F.b, g, [0]).catch(() => null) : null,   // azul: acha nuvem clara e névoa que o filtro do satélite deixa passar
   ]);
   const inval = qaInvalido[F.qaTipo];
   const N = g.W * g.H, ndvi = new Float32Array(N).fill(NaN), ndre = new Float32Array(N).fill(NaN), cloud = new Uint8Array(N);
-  const R = red.data[0], NI = nir.data[0], RE = re1 ? re1.data[0] : null, SC = scl ? scl.data[0] : null;
+  const R = red.data[0], NI = nir.data[0], RE = re1 ? re1.data[0] : null, SC = scl ? scl.data[0] : null, BL = blue ? blue.data[0] : null;
   // Calibração: imagens Sentinel-2 mais novas somam +1000 aos valores (offset de -0,1 na reflectância),
   // mas nem todas as cenas do catálogo vêm assim, e os metadados nem sempre batem.
   // Decide pela própria imagem: com offset, o vermelho quase nunca fica abaixo de 1000.
@@ -444,6 +445,8 @@ async function processScene(it, res, withRGB = true) {
     const v = (n - r) / (n + r), w = e > 0 ? (n - e) / (n + e) : NaN;
     // sombra de nuvem que o filtro do satélite deixou passar: tudo escuro (vermelho e infravermelho baixos), mas não é água
     if (v > 0.05 && n < 0.13 && r < 0.035) { cloud[i] = 1; nCloud++; continue; }
+    // nuvem clara ou névoa: azul alto (vegetação e solo quase nunca passam de 0,10 no azul) com o azul encostando no vermelho
+    if (BL) { const bl = so(BL[i], blue.so); if ((bl > 0.18 && v < 0.4) || (bl > 0.10 && bl >= r * 0.9 && v < 0.5)) { cloud[i] = 1; nCloud++; continue; } }
     ndvi[i] = v > 1 || v < -1 ? NaN : v;
     ndre[i] = w > 1 || w < -1 ? NaN : w;
   }

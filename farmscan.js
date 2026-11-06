@@ -396,7 +396,7 @@
         ${V ? `<h3>Vigor da pastagem</h3>${fig(M.vigor, `NDVI do Sentinel-2 (${R.cena && R.cena.composto ? `imagem limpa até ${dBR(V.data)}` : dBR(V.data)}) sobre as áreas de pastagem do mapa de uso do solo.`)}
           ${barras(V.classes)}
           <p>NDVI médio da pastagem: <b>${fmt(V.media, 2)}</b> (baixo < 0,35 · médio 0,35–0,55 · alto ≥ 0,55).</p>
-          <p class="nota">Leitura de uma única data: no período seco o NDVI cai naturalmente. Use como triagem para priorizar vistoria; a condição real (cobertura, invasoras, cupins, erosão) se confirma em campo.</p>` : ''}`);
+          <p class="nota">${R.cena && R.cena.composto ? 'Leitura dos últimos 90 dias (mediana das passagens sem nuvem)' : 'Leitura de uma única data'}: no período seco o NDVI cai naturalmente. Use como triagem para priorizar vistoria; a condição real (cobertura, invasoras, cupins, erosão) se confirma em campo.</p>` : ''}`);
     }
 
     // ---- Imagem recente ----
@@ -404,7 +404,7 @@
       const c = R.cena, st = c.stats || {};
       pg('Imagem de satélite recente', `${c.composto ? `Imagem limpa do Sentinel-2: ${c.composto.n} passagens de ${dBR(c.composto.de)} a ${dBR(c.composto.ate)}, usando em cada ponto só as passagens sem nuvem e sem sombra` : `Sentinel-2 de ${dBR(c.it.properties.datetime)}`} · ${fmt((c.nCloud / Math.max(1, c.nIn)) * 100, 0)}% da área sem imagem limpa.`, `
         ${fig(M.rgb, 'Cor real (contraste ajustado e bordas realçadas; pixel original de 10 m).')}
-        ${fig(M.ndvi, 'NDVI: vermelho = pouca vegetação ativa; verde = vegetação vigorosa.')}
+        ${fig(M.ndvi, 'NDVI: vermelho = pouca vegetação ativa; verde = vegetação vigorosa; cinza = nenhuma passagem sem nuvem no período.')}
         ${kpis([[n1(st.mean, 2), 'NDVI médio'], [c.statsRE ? n1(c.statsRE.mean, 2) : '—', 'NDRE médio'], [n1(st.p10, 2), 'pior 10%'], [n1(st.p90, 2), 'melhor 10%']])}
         ${c.divStats ? tab(['Divisão', 'Área', 'NDVI', 'NDRE', 'Nuvem'], c.divStats.map(d => [esc(d.nome), ha(d.area), n1(d.ndvi, 2), n1(d.ndre, 2), fmt(d.nuvem * 100, 0) + '%'])) : ''}`);
     }

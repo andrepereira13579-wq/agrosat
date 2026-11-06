@@ -3,7 +3,7 @@
    Some com nuvem e sombra que aparecem em uma data só. */
 'use strict';
 
-async function compostoLimpo(f, dias = 60, maxCenas = 8, aviso) {
+async function compostoLimpo(f, dias = 90, maxCenas = 12, aviso) {
   const hoje = new Date(), ini = new Date(hoje - dias * 864e5);
   const cenas = (await stacSearch(f.polys, isoDay(ini), isoDay(hoje), 80, 100, 's2'))
     .sort((a, b) => b.properties.datetime.localeCompare(a.properties.datetime)).slice(0, maxCenas);
@@ -27,9 +27,8 @@ async function compostoLimpo(f, dias = 60, maxCenas = 8, aviso) {
     cand.length = 0;
     for (const r of rs) if (!r.cloud[i] && !Number.isNaN(r.ndvi[i])) cand.push(r);
     if (!cand.length) {
+      // sem nenhuma passagem limpa: fica transparente (aparece o mapa de fundo), em vez de mostrar a nuvem
       if (g.mask[i]) { cloud[i] = 1; nCloud++; }
-      // fora da fazenda (ou sem passagem limpa): mostra a cor da imagem mais recente que tiver
-      if (rgb) { const r = comRGB.find(x => x.rgb.data[0][i] + x.rgb.data[1][i] + x.rgb.data[2][i] > 0); if (r) for (let c = 0; c < 3; c++) rgb.data[c][i] = r.rgb.data[c][i]; }
       continue;
     }
     cand.sort((a, b) => a.ndvi[i] - b.ndvi[i]);
@@ -54,7 +53,7 @@ async function compostoLimpo(f, dias = 60, maxCenas = 8, aviso) {
     const f = farm(); if (!f) return;
     btn.disabled = true;
     try {
-      const r = await compostoLimpo(f, 60, 8, t => busy(true, t));
+      const r = await compostoLimpo(f, 90, 12, t => busy(true, t));
       S.result = r; S.scene = null; renderScenes();
       if (S.layer === 'diff') S.layer = 'ndvi';
       showLayer(); renderStats(r);

@@ -131,8 +131,8 @@ function desenharIdade(I) {
 // ---------- Imagem recente e vigor da pastagem (NDVI do Sentinel-2 sobre a pastagem do MapBiomas) ----------
 const VIGOR = [[-1, 0.35, 'Baixo', '#fa6970'], [0.35, 0.55, 'Médio', '#f7b47e'], [0.55, 2, 'Alto', '#44b160']];
 async function cenaRecente(f) {
-  // preferência: imagem limpa (mediana das passagens sem nuvem/sombra dos últimos 60 dias)
-  try { const r = await compostoLimpo(f, 60, 6); if (r.nIn && r.nCloud / r.nIn < 0.3) return r; } catch (e) { console.warn('imagem limpa', e.message); }
+  // preferência: imagem limpa (mediana das passagens sem nuvem/sombra dos últimos 90 dias)
+  try { const r = await compostoLimpo(f, 90, 10); if (r.nIn && r.nCloud / r.nIn < 0.4) return r; } catch (e) { console.warn('imagem limpa', e.message); }
   return cenaUnica(f);
 }
 async function cenaUnica(f) {
