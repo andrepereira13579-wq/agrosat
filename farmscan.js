@@ -393,7 +393,7 @@
           ${barras(I.classes)}
           <p class="nota">Calculada pela sequência de anos em que o pixel aparece como pastagem no MapBiomas (${MB.COL.m30.anos[0]}–${I.ano}). "Desde 1985 ou antes" reúne áreas que já eram pasto no início da série. Pasto recém-formado pode indicar abertura ou reforma; pasto muito antigo sem reforma tende a degradar.</p>` : ''}
         ${!(I && I.ha > 0) && D.E.idade ? `<p class="nota"><b>Idade da pastagem:</b> ${esc(D.E.idade)}.</p>` : ''}
-        ${V ? `<h3>Vigor da pastagem</h3>${fig(M.vigor, `NDVI do Sentinel-2 de ${dBR(V.data)} sobre as áreas de pastagem do mapa de uso do solo.`)}
+        ${V ? `<h3>Vigor da pastagem</h3>${fig(M.vigor, `NDVI do Sentinel-2 (${R.cena && R.cena.composto ? `imagem limpa até ${dBR(V.data)}` : dBR(V.data)}) sobre as áreas de pastagem do mapa de uso do solo.`)}
           ${barras(V.classes)}
           <p>NDVI médio da pastagem: <b>${fmt(V.media, 2)}</b> (baixo < 0,35 · médio 0,35–0,55 · alto ≥ 0,55).</p>
           <p class="nota">Leitura de uma única data: no período seco o NDVI cai naturalmente. Use como triagem para priorizar vistoria; a condição real (cobertura, invasoras, cupins, erosão) se confirma em campo.</p>` : ''}`);
@@ -402,7 +402,7 @@
     // ---- Imagem recente ----
     if (R.cena) {
       const c = R.cena, st = c.stats || {};
-      pg('Imagem de satélite recente', `Sentinel-2 de ${dBR(c.it.properties.datetime)} · ${fmt((c.nCloud / Math.max(1, c.nIn)) * 100, 0)}% da área com nuvem.`, `
+      pg('Imagem de satélite recente', `${c.composto ? `Imagem limpa do Sentinel-2: ${c.composto.n} passagens de ${dBR(c.composto.de)} a ${dBR(c.composto.ate)}, usando em cada ponto só as passagens sem nuvem e sem sombra` : `Sentinel-2 de ${dBR(c.it.properties.datetime)}`} · ${fmt((c.nCloud / Math.max(1, c.nIn)) * 100, 0)}% da área sem imagem limpa.`, `
         ${fig(M.rgb, 'Cor real (contraste ajustado e bordas realçadas; pixel original de 10 m).')}
         ${fig(M.ndvi, 'NDVI: vermelho = pouca vegetação ativa; verde = vegetação vigorosa.')}
         ${kpis([[n1(st.mean, 2), 'NDVI médio'], [c.statsRE ? n1(c.statsRE.mean, 2) : '—', 'NDRE médio'], [n1(st.p10, 2), 'pior 10%'], [n1(st.p90, 2), 'melhor 10%']])}

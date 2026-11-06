@@ -436,9 +436,13 @@ async function processScene(it, res, withRGB = true) {
     const r = so(R[i], red.so), n = so(NI[i], nir.so), e = RE ? so(RE[i], re1.so) : NaN;
     if (r <= 0 || n <= 0) continue;
     const v = (n - r) / (n + r), w = e > 0 ? (n - e) / (n + e) : NaN;
+    // sombra de nuvem que o filtro do satélite deixou passar: tudo escuro (vermelho e infravermelho baixos), mas não é água
+    if (v > 0.05 && n < 0.13 && r < 0.035) { cloud[i] = 1; nCloud++; continue; }
     ndvi[i] = v > 1 || v < -1 ? NaN : v;
     ndre[i] = w > 1 || w < -1 ? NaN : w;
   }
+  // as bordas de nuvem e sombra escapam da máscara: alarga 20 m (2 pixels de 10 m; 1 pixel no Landsat)
+  nCloud += alargarMascara(cloud, ndvi, ndre, g, res <= 10 ? 2 : 1);
   let rgb = null;
   if (withRGB) {
     const vis = F.vis && asset(it, ...F.vis);
@@ -447,7 +451,11 @@ async function processScene(it, res, withRGB = true) {
       else { const [gr, bl] = await Promise.all([readBand(it, F.g, g, [0]), readBand(it, F.b, g, [0])]); rgb = { tci: false, r: red, g: gr, b: bl }; }
     } catch (e) { rgb = null; }
   }
-  let divStats = null;
+  const divStats = calcDivStats(f, g, ndvi, ndre, cloud);
+  return { it, g, ndvi, ndre, cloud, rgb, nIn, nCloud, stats: statsOf(ndvi, g.mask), statsRE: statsOf(ndre, g.mask), divStats };
+}
+function calcDivStats(f, g, ndvi, ndre, cloud) {
+  let divStats = null; const N = g.W * g.H;
   if (g.div) {
     const nd = f.divs.length, acc = Array.from({ length: nd + 1 }, () => ({ n: 0, s: 0, sr: 0, nr: 0, nub: 0, tot: 0 }));
     for (let i = 0; i < N; i++) {
@@ -462,7 +470,18 @@ async function processScene(it, res, withRGB = true) {
     const foraHa = acc[nd].tot * g.res * g.res / 1e4;
     if (foraHa >= 0.5) divStats.push(linha('Fora das divisões', foraHa, acc[nd], true));
   }
-  return { it, g, ndvi, ndre, cloud, rgb, nIn, nCloud, stats: statsOf(ndvi, g.mask), statsRE: statsOf(ndre, g.mask), divStats };
+  return divStats;
+}
+function alargarMascara(cloud, ndvi, ndre, g, r) {
+  if (r < 1) return 0;
+  const W = g.W, H = g.H, orig = cloud.slice(); let novos = 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const k = y * W + x; if (orig[k] || !g.mask[k]) continue;
+    let perto = false;
+    for (let dy = -r; dy <= r && !perto; dy++) for (let dx = -r; dx <= r; dx++) { const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; if (orig[yy * W + xx]) { perto = true; break; } }
+    if (perto) { cloud[k] = 1; ndvi[k] = NaN; ndre[k] = NaN; novos++; }
+  }
+  return novos;
 }
 function bboxCenter(polys) { const b = bboxOf(polys); return [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2]; }
 const zoneThr = st => st.mean - 1.2 * st.sd; // bem abaixo da média da própria área
@@ -584,11 +603,12 @@ function showLayer() {
 }
 function legend() {
   const L_ = $('legend'), res = S.result; L_.hidden = false;
-  if (S.layer === 'rgb') { L_.innerHTML = `<b>Cor real · ${fonteDe(res.it).curto} ${fonteDe(res.it).res} m</b><div class="ends"><span>${dBR(res.it.properties.datetime)}</span></div>`; return; }
+  const quando = res.composto ? `imagem limpa: ${res.composto.n} passagens, ${dBR(res.composto.de)} a ${dBR(res.composto.ate)}` : dBR(res.it.properties.datetime);
+  if (S.layer === 'rgb') { L_.innerHTML = `<b>Cor real · ${fonteDe(res.it).curto} ${fonteDe(res.it).res} m</b><div class="ends"><span>${quando}</span></div>`; return; }
   if (S.layer === 'diff') { L_.innerHTML = `<b>Variação do NDVI</b><div class="grad" style="background:${cssGrad(RAMP_DIFF)}"></div><div class="ends"><span>caiu −0,3</span><span>0</span><span>subiu +0,3</span></div>`; return; }
   if (S.layer === 'zonas') { L_.innerHTML = `<b>Zonas de atenção</b><div class="ends"><span><i style="display:inline-block;width:10px;height:10px;background:#ff28c8;border-radius:2px"></i> NDVI bem abaixo da média da área</span></div><div class="ends"><span>Limite: NDVI &lt; ${fmt(zoneThr(res.stats))}</span></div>`; return; }
   const ndre = S.layer === 'ndre', st = ndre ? RAMP_NDRE : RAMP_NDVI;
-  L_.innerHTML = `<b>${ndre ? 'NDRE' : 'NDVI'} — vigor da vegetação</b><div class="grad" style="background:${cssGrad(st)}"></div><div class="ends"><span>pouca (${fmt(st[0][0], 1)})</span><span>muita (${fmt(st[st.length - 1][0], 1)})</span></div><div class="ends"><span><i style="display:inline-block;width:10px;height:10px;background:#c8c8c8;border-radius:2px"></i> nuvem/sombra</span></div>`;
+  L_.innerHTML = `<b>${ndre ? 'NDRE' : 'NDVI'} — vigor da vegetação</b><div class="grad" style="background:${cssGrad(st)}"></div><div class="ends"><span>pouca (${fmt(st[0][0], 1)})</span><span>muita (${fmt(st[st.length - 1][0], 1)})</span></div><div class="ends"><span><i style="display:inline-block;width:10px;height:10px;background:#c8c8c8;border-radius:2px"></i> nuvem/sombra</span></div>${res.composto ? `<div class="ends"><span>${quando}</span></div>` : ''}`;
 }
 
 // ---------- Painéis ----------
@@ -643,7 +663,7 @@ function renderStats(res) {
   }).join('');
   const thr = zoneThr(st);
   const zonasHa = st.vals.filter(v => v < thr).length * pxHa;
-  el.innerHTML = `<h4>${dBR(res.it.properties.datetime)} · ${esc(f.name)}</h4>
+  el.innerHTML = `<h4>${res.composto ? `Imagem limpa · ${res.composto.n} passagens de ${dBR(res.composto.de)} a ${dBR(res.composto.ate)}` : dBR(res.it.properties.datetime)} · ${esc(f.name)}</h4>
     <div class="kpis">
       <div class="kpi"><b>${fmt(st.mean)}</b><span>NDVI médio</span></div>
       <div class="kpi"><b>${res.statsRE ? fmt(res.statsRE.mean) : '—'}</b><span>NDRE médio</span></div>
