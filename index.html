@@ -6,7 +6,7 @@
 <title>AgroSat — Monitoramento de fazendas por satélite</title>
 <link rel="stylesheet" href="lib/leaflet.css">
 <link rel="stylesheet" href="lib/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=202611061419">
+<link rel="stylesheet" href="style.css?v=202611062010">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0d1510">
 <link rel="apple-touch-icon" href="icone-192.png">
@@ -69,6 +69,7 @@
         <button data-tab="clima">Clima</button>
         <button data-tab="uso">Uso do solo</button>
         <button data-tab="terreno">Terreno</button>
+        <button data-tab="lotacao">Lotação</button>
       </nav>
 
       <div class="tab" id="tab-imagens">
@@ -178,6 +179,18 @@
         <button class="btn full" id="tdBtn">Calcular declividade</button>
         <div class="stats" id="tdRes" hidden></div>
       </div>
+      <div class="tab" id="tab-lotacao" hidden>
+        <p class="hint">Quantas cabeças a fazenda sustenta (UA/ha) e o balanço de capim mês a mês. Usa a condição do pasto vista pelo satélite em cada piquete e a chuva de 35 anos da fazenda.</p>
+        <div id="lotForm">
+          <div class="row"><label>Capim predominante<select id="lotCapim"></select></label><label>Adubação<select id="lotAdub"></select></label></div>
+          <div class="row"><label>Sistema<select id="lotSistema"></select></label><label>Cenário de chuva<select id="lotCenario"></select></label></div>
+          <h4 style="margin:12px 0 4px">Rebanho atual</h4>
+          <div class="lotcat lotcab"><span></span><small>Cabeças</small><small>Peso médio (kg)</small></div>
+          <div id="lotRebanho"></div>
+        </div>
+        <button class="btn full" id="lotBtn">Calcular capacidade e balanço</button>
+        <div class="stats" id="lotRes" hidden></div>
+      </div>
       <div class="tab" id="tab-situacao" hidden>
         <p class="hint">Cruza a fazenda com CAR, SIGEF/INCRA, embargos do IBAMA, desmatamento PRODES, terras indígenas, unidades de conservação, quilombolas, assentamentos, focos de queimada do INPE (área + 5 km ao redor), crédito rural registrado no Banco Central e clima.</p>
         <button class="btn full" id="btnDiag">Verificar situação da fazenda</button>
@@ -185,7 +198,7 @@
         <p class="hint">Dados públicos consultados na hora. Não substituem certidões oficiais.</p>
       </div>
     </div>
-    <footer class="foot">Imagens: Copernicus Sentinel‑2 (ESA), via catálogo Earth Search (AWS). Mapa base: Esri World Imagery. · versão 202611061419</footer>
+    <footer class="foot">Imagens: Copernicus Sentinel‑2 (ESA), via catálogo Earth Search (AWS). Mapa base: Esri World Imagery. · versão 202611062010</footer>
   </section>
 </main>
 
@@ -316,26 +329,27 @@
 <script src="lib/jszip.min.js"></script>
 <script src="lib/shp.min.js"></script>
 <script src="lib/turf.min.js"></script>
-<script src="config.js?v=202611061419"></script>
-<script src="app.js?v=202611061419"></script>
-<script src="dados.js?v=202611061419"></script>
-<script src="credito.js?v=202611061419"></script>
-<script src="integracao.js?v=202611061419"></script>
-<script src="extras.js?v=202611061419"></script>
-<script src="kmls.js?v=202611061419"></script>
+<script src="config.js?v=202611062010"></script>
+<script src="app.js?v=202611062010"></script>
+<script src="dados.js?v=202611062010"></script>
+<script src="credito.js?v=202611062010"></script>
+<script src="integracao.js?v=202611062010"></script>
+<script src="extras.js?v=202611062010"></script>
+<script src="kmls.js?v=202611062010"></script>
 <script src="lib/maplibre-gl.js"></script>
-<script src="tresd.js?v=202611061419"></script>
-<script src="local.js?v=202611061419"></script>
-<script src="whats.js?v=202611061419"></script>
-<script src="camadas.js?v=202611061419"></script>
-<script src="mapbiomas.js?v=202611061419"></script>
-<script src="terreno.js?v=202611061419"></script>
-<script src="imagem.js?v=202611061419"></script>
-<script src="consultas2.js?v=202611061419"></script>
-<script src="alternativas.js?v=202611061419"></script>
-<script src="limpa.js?v=202611061419"></script>
-<script src="cobertura.js?v=202611061419"></script>
-<script src="pdf.js?v=202611061419"></script>
-<script src="farmscan.js?v=202611061419"></script>
+<script src="tresd.js?v=202611062010"></script>
+<script src="local.js?v=202611062010"></script>
+<script src="whats.js?v=202611062010"></script>
+<script src="camadas.js?v=202611062010"></script>
+<script src="mapbiomas.js?v=202611062010"></script>
+<script src="terreno.js?v=202611062010"></script>
+<script src="imagem.js?v=202611062010"></script>
+<script src="consultas2.js?v=202611062010"></script>
+<script src="alternativas.js?v=202611062010"></script>
+<script src="limpa.js?v=202611062010"></script>
+<script src="cobertura.js?v=202611062010"></script>
+<script src="lotacao.js?v=202611062010"></script>
+<script src="pdf.js?v=202611062010"></script>
+<script src="farmscan.js?v=202611062010"></script>
 </body>
 </html>

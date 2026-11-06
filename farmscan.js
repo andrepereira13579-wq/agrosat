@@ -273,7 +273,7 @@
     if (R.aq) G.aq = grafico({ type: 'bar', data: { labels: R.aq.anos.map(a => a.ano), datasets: [{ label: 'Área queimada no imóvel (ha)', data: R.aq.anos.map(a => +a.ha.toFixed(2)), backgroundColor: R.aq.anos.map(a => M.aqCores[a.ano]) }] }, options: { scales: { y: eixo, x: eixo }, plugins: { legend: { display: false } } } }, 900, 240);
 
     // ---- Capa ----
-    const chips = ['Fundiário', 'Ambiental', 'Desmatamento', 'Fogo', 'Uso do solo', 'Cobertura', 'Pastagem', 'Relevo', 'Solo', 'Clima'];
+    const chips = ['Fundiário', 'Ambiental', 'Desmatamento', 'Fogo', 'Uso do solo', 'Cobertura', 'Lotação', 'Pastagem', 'Relevo', 'Solo', 'Clima'];
     pags.push({ capa: true, corpo: `
       <div class="capa">
         <div class="marca">AgroSat · Relatório da Propriedade</div>
@@ -311,6 +311,7 @@
       ['Áreas queimadas (5 anos)', A.aq], [`Focos de queimada (${CONF.diasFocos} dias)`, A.fogo], ['Áreas protegidas e territórios', A.prot], ['Crédito rural (Sicor)', A.credito], ['Reserva Legal', A.rl],
       ['Uso do solo', A.uso ? { nivel: 'info', resumo: A.uso.grupos.slice(0, 3).map(g => `${g.nome} ${fmt(g.pct, 0)}%`).join(' · ') } : { nivel: 'erro', resumo: esc(D.E.uso || '') }],
       ['Condição da cobertura', R.cob ? (() => { const c = k => (R.cob.classes.find(x => x.k === k) || { pct: 0 }).pct; const sujo = c(2) + c(3), deg = c(5) + c(6); return { nivel: sujo + deg >= 25 ? 'alerta' : 'info', resumo: `Pasto formado ${fmt(c(4), 0)}% · degradado/solo ${fmt(deg, 0)}% · juquira ${fmt(sujo, 0)}%${c(3) >= 1 ? ` (${fmt(c(3), 0)}% avançou sobre pasto desde ${R.cob.anoAntigo})` : ''} · mata ${fmt(c(1), 0)}%` }; })() : { nivel: 'erro', resumo: esc(D.E.cob || '') }],
+      ['Capacidade de suporte', (R.cob && R.clima) ? (() => { try { const L = calcularLotacao(f, R.cob, R.clima, f.lot); return { nivel: L.ua && L.ua > L.capAno * 1.05 ? 'alerta' : 'info', resumo: `Sustenta cerca de ${fmt(L.capAno, 0)} UA no ano (${fmt(L.capAno / Math.max(L.haPasto, 0.01), 2)} UA/ha de pasto)${L.ua ? ` · rebanho ${fmt(L.ua, 0)} UA` : ''}${L.deficitT > 0 ? ` · déficit de ${fmt(L.deficitT, 1)} t MS em ${L.mesesDeficit.join(', ')}` : ''}` }; } catch (e) { return { nivel: 'erro', resumo: esc(e.message) }; } })() : { nivel: 'erro', resumo: 'depende da condição da cobertura e do clima' }],
       ['Pastagem (idade e vigor)', A.pasto],
       ['Relevo', A.relevo ? { nivel: 'info', resumo: `Declividade média ${fmt(A.relevo.media, 1)}% · predomínio ${A.relevo.dom.nome.toLowerCase()} · altitude ${fmt(A.relevo.altMin, 0)}–${fmt(A.relevo.altMax, 0)} m` } : { nivel: 'erro', resumo: esc(D.E.relevo || '') }],
       ['Solo', R.solo ? { nivel: 'info', resumo: `Textura ${R.solo.textura.toLowerCase()} · argila ${fmt(R.solo.argila, 0)}% · pH ${n1(R.solo.ph)}${R.solo.wrb && R.solo.wrb[0] ? ' · ' + R.solo.wrb[0].sibcs : ''}` } : { nivel: 'erro', resumo: esc(D.E.solo || '') }],
@@ -382,6 +383,26 @@
         ${barras(vis)}
         ${m.divs.length ? `<h3>Por divisão</h3>${tab(['Divisão', 'Área', ...cols.map(([, n]) => n)], m.divs.map(d => [esc(d.nome), ha(d.ha), ...cols.map(([k]) => fmt(d.pct[COB.findIndex(c => c[0] === k)], 0) + '%')]))}` : ''}
         <p class="nota">${NOTA_COBERTURA}</p>`);
+    }
+
+    // ---- Capacidade de suporte e balanço forrageiro ----
+    let LOT = null;
+    if (R.cob && R.clima) { try { LOT = calcularLotacao(f, R.cob, R.clima, f.lot); } catch (e) { console.warn('lotação', e); } }
+    if (LOT) {
+      const L = LOT, { sit, eq, fmtT } = lotacaoHTML(L), por = v => fmt(v / Math.max(L.haPasto, 0.01), 2);
+      const gl = grafico({ data: { labels: MESES, datasets: [
+        { type: 'bar', label: 'Capim disponível (t MS)', data: L.meses.map(x => +x.ofertaT.toFixed(2)), backgroundColor: '#5cb85c' },
+        ...(L.ua ? [{ type: 'line', label: 'Consumo do rebanho (t MS)', data: L.meses.map(x => +x.demT.toFixed(2)), borderColor: '#14532d', borderWidth: 3, pointRadius: 0 },
+                    { type: 'bar', label: 'Déficit (t MS)', data: L.meses.map(x => +x.deficitT.toFixed(2)), backgroundColor: '#e8452c' }] : []),
+      ] }, options: { scales: { y: { ticks: { color: '#555' }, grid: { color: '#e6e9e7' }, title: { display: true, text: 't de matéria seca', color: '#555' } }, x: { ticks: { color: '#555' }, grid: { display: false } } } } });
+      pg('Capacidade de suporte e balanço forrageiro', `${CAPINS[L.op.capim][0]} · ${ADUB[L.op.adub][0].toLowerCase()} · ${SISTEMA[L.op.sistema][0].toLowerCase()} · ${CENARIO[L.op.cenario][0].toLowerCase()}${f.lot ? '' : ' (valores padrão: informe capim e rebanho na aba Lotação)'}.`, `
+        ${kpis([[`${fmt(L.capAno, 0)} UA`, `sustenta no ano (${por(L.capAno)} UA/ha)`], [por(L.capAguas), 'UA/ha no pico das águas'], [por(L.capSeca), 'UA/ha no pior mês da seca'], [L.ua ? `${fmt(L.ua, 0)} UA` : '—', L.ua ? `rebanho atual (${por(L.ua)} UA/ha)` : 'rebanho não informado']])}
+        <p>${sit}. Pasto: ${fmt(L.haPasto, 1)} ha (${fmt(L.haEf, 1)} ha efetivos pela condição vista no satélite); produção estimada de ${fmt(L.kgHaAno / 1000, 1)} t de MS/ha/ano.</p>
+        ${gl ? `<img class="graf" src="${gl}" alt="">` : ''}
+        ${eq}
+        ${tab(['Mês', 'Chuva', 'Produção', 'Aproveitável', 'Consumo', 'Déficit'], L.meses.map(x => [x.nome, fmt(x.chuva, 0) + ' mm', fmtT(x.prodT) + ' t', fmtT(x.ofertaT) + ' t', L.ua ? fmtT(x.demT) + ' t' : '—', x.deficitT > 0.05 ? `<b>${fmtT(x.deficitT)} t</b>` : '—']))}
+        ${L.divs.length ? `<h3>Por piquete</h3>${tab(['Divisão', 'Pasto', 'Pasto efetivo', 'UA nas águas', 'UA na seca'], L.divs.map(d => [esc(d.nome), ha(d.pasto), ha(d.ef), fmt(d.uaAguas, 1), fmt(d.uaSeca, 1)]))}` : ''}
+        <p class="nota">${NOTA_LOTACAO}</p>`);
     }
 
     // ---- Pastagem ----

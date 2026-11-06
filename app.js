@@ -823,7 +823,7 @@ async function doCompare() {
 // ---------- Abas e eventos ----------
 function switchTab(t) {
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  ['imagens', 'serie', 'comparar', 'situacao', 'clima', 'uso', 'terreno'].forEach(k => $('tab-' + k).hidden = k !== t);
+  ['imagens', 'serie', 'comparar', 'situacao', 'clima', 'uso', 'terreno', 'lotacao'].forEach(k => $('tab-' + k).hidden = k !== t);
   if (['imagens', 'serie', 'comparar'].includes(t) && typeof voltarParaSatelite === 'function') voltarParaSatelite();
   if (t !== 'comparar' && S.result && S.result.isDiff && S.scene) openScene(S.scene);
 }
