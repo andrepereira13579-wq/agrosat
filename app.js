@@ -312,9 +312,12 @@ class ClienteTiff {
     return { ok: false, status: 0, getHeader: () => null, getData: async () => new ArrayBuffer(0) };
   }
 }
+// memória do celular: cada arquivo aberto guarda no máximo ~1,5 MB de pedaços, e só os 12 arquivos mais recentes ficam abertos
 function abrirGeoTIFF(href) {
-  return GeoTIFF.fromCustomClient ? GeoTIFF.fromCustomClient(new ClienteTiff(href), { allowFullFile: false }) : GeoTIFF.fromUrl(href, { allowFullFile: false });
+  const op = { allowFullFile: false, blockSize: 65536, cacheSize: 24 };
+  return GeoTIFF.fromCustomClient ? GeoTIFF.fromCustomClient(new ClienteTiff(href), op) : GeoTIFF.fromUrl(href, op);
 }
+const TIFF_MAX = 12;
 function openTiff(href) {
   if (!tiffCache.has(href)) tiffCache.set(href, (async () => {
     try { const t = await abrirGeoTIFF(href); await t.getImage(); return t; }
@@ -326,6 +329,9 @@ function openTiff(href) {
     }
   })());
   const p = tiffCache.get(href); p.catch(() => tiffCache.delete(href));
+  // mais recente no fim; descarta os mais antigos
+  tiffCache.delete(href); tiffCache.set(href, p);
+  while (tiffCache.size > TIFF_MAX) tiffCache.delete(tiffCache.keys().next().value);
   return p;
 }
 // Lê um recorte; se a leitura direta falhar (servidor que recusa parte dos pedidos do navegador), refaz pelo servidor-ponte.

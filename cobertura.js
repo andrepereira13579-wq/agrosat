@@ -25,7 +25,7 @@ async function serieNDVI(f, ini, fim, porMes, maxCenas, aviso, rotulo) {
   esc = esc.sort((a, b) => a.properties.datetime.localeCompare(b.properties.datetime)).slice(-maxCenas);
   if (!esc.length) throw new Error('nenhuma imagem do Sentinel-2 no período');
   let g = null, feitas = 0; const camadas = [], datas = [];
-  await pool(esc, 3, async it => {
+  await pool(esc, 2, async it => {
     try {
       const r = await processScene(it, 10, false);
       feitas++; aviso && aviso(`${rotulo}: ${feitas} de ${esc.length} imagens`);
