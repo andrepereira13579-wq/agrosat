@@ -83,7 +83,7 @@
   const ETAPAS = [
     ['car', 'CAR (SICAR)'], ['sigef', 'SIGEF / INCRA'], ['emb', 'Embargos IBAMA'], ['prodes', 'PRODES (INPE)'], ['deter', 'Alertas DETER (INPE)'],
     ['prot', 'Áreas protegidas e territórios'], ['fogo', 'Focos de queimada'], ['aq', 'Áreas queimadas (5 anos)'], ['bioma', 'Bioma'],
-    ['uso', 'Uso e cobertura do solo'], ['u08', 'Vegetação nativa em 2008'], ['idade', 'Idade da pastagem'], ['cena', 'Imagem de satélite recente'],
+    ['uso', 'Uso e cobertura do solo'], ['u08', 'Vegetação nativa em 2008'], ['idade', 'Idade da pastagem'], ['cena', 'Imagem de satélite recente'], ['cob', 'Condição da cobertura (12 meses)'],
     ['relevo', 'Relevo'], ['solo', 'Solo'], ['clima', 'Climatologia'],
   ];
   async function coletar(f, aviso) {
@@ -107,6 +107,7 @@
       await rodar('idade', () => idadePastagem(f));
       await rodar('aq', () => queimadasNaFazenda(f));
       await rodar('cena', () => cenaRecente(f));
+      await rodar('cob', () => classificarCobertura(f));
       await rodar('relevo', () => TD.calcular());
     })();
     await Promise.all([gov, mapas]);
@@ -271,7 +272,7 @@
     if (R.aq) G.aq = grafico({ type: 'bar', data: { labels: R.aq.anos.map(a => a.ano), datasets: [{ label: 'Área queimada no imóvel (ha)', data: R.aq.anos.map(a => +a.ha.toFixed(2)), backgroundColor: R.aq.anos.map(a => M.aqCores[a.ano]) }] }, options: { scales: { y: eixo, x: eixo }, plugins: { legend: { display: false } } } }, 900, 240);
 
     // ---- Capa ----
-    const chips = ['Fundiário', 'Ambiental', 'Desmatamento', 'Fogo', 'Uso do solo', 'Pastagem', 'Relevo', 'Solo', 'Clima'];
+    const chips = ['Fundiário', 'Ambiental', 'Desmatamento', 'Fogo', 'Uso do solo', 'Cobertura', 'Pastagem', 'Relevo', 'Solo', 'Clima'];
     pags.push({ capa: true, corpo: `
       <div class="capa">
         <div class="marca">AgroSat · Relatório da Propriedade</div>
@@ -308,6 +309,7 @@
       ['CAR (SICAR)', A.car], ['SIGEF / INCRA', A.sigef], ['Embargos IBAMA', A.emb], ['Desmatamento PRODES', A.prodes], ['Alertas DETER', A.deter],
       ['Áreas queimadas (5 anos)', A.aq], [`Focos de queimada (${CONF.diasFocos} dias)`, A.fogo], ['Áreas protegidas e territórios', A.prot], ['Reserva Legal', A.rl],
       ['Uso do solo', A.uso ? { nivel: 'info', resumo: A.uso.grupos.slice(0, 3).map(g => `${g.nome} ${fmt(g.pct, 0)}%`).join(' · ') } : { nivel: 'erro', resumo: esc(D.E.uso || '') }],
+      ['Condição da cobertura', R.cob ? (() => { const c = k => (R.cob.classes.find(x => x.k === k) || { pct: 0 }).pct; const sujo = c(2) + c(3), deg = c(5) + c(6); return { nivel: sujo + deg >= 25 ? 'alerta' : 'info', resumo: `Pasto formado ${fmt(c(4), 0)}% · degradado/solo ${fmt(deg, 0)}% · juquira ${fmt(sujo, 0)}%${c(3) >= 1 ? ` (${fmt(c(3), 0)}% avançou sobre pasto desde ${R.cob.anoAntigo})` : ''} · mata ${fmt(c(1), 0)}%` }; })() : { nivel: 'erro', resumo: esc(D.E.cob || '') }],
       ['Pastagem (idade e vigor)', A.pasto],
       ['Relevo', A.relevo ? { nivel: 'info', resumo: `Declividade média ${fmt(A.relevo.media, 1)}% · predomínio ${A.relevo.dom.nome.toLowerCase()} · altitude ${fmt(A.relevo.altMin, 0)}–${fmt(A.relevo.altMax, 0)} m` } : { nivel: 'erro', resumo: esc(D.E.relevo || '') }],
       ['Solo', R.solo ? { nivel: 'info', resumo: `Textura ${R.solo.textura.toLowerCase()} · argila ${fmt(R.solo.argila, 0)}% · pH ${n1(R.solo.ph)}${R.solo.wrb && R.solo.wrb[0] ? ' · ' + R.solo.wrb[0].sibcs : ''}` } : { nivel: 'erro', resumo: esc(D.E.solo || '') }],
@@ -357,6 +359,18 @@
         <p>${selo(rl.nivel)} ${rl.resumo}</p>
         ${A.uso.m.alt ? `<p class="nota"><b>Base substituta:</b> o MapBiomas suspendeu os downloads de mapas. Este uso do solo vem do ${CIT_IO}, ano ${A.uso.ano}; a classe "Pastagem" corresponde a campo/pasto (rangeland), que também inclui campos naturais, e "Formação florestal" a árvores. A vegetação de 2008 depende do MapBiomas e fica sem leitura até eles reabrirem.</p>` : ''}
         <p class="nota">Estimativa pela regra geral do Código Florestal (art. 12), sobre a área ${A.carDados ? 'declarada no CAR' : 'do perímetro'}. Não desconta APP nem considera compensação, servidão ou RL averbada fora do imóvel. A RL oficial é a declarada e aprovada no SICAR; a vegetação nativa aqui vem de imagens de satélite. Não substitui análise técnica do CAR.</p>`);
+    }
+
+    // ---- Condição da cobertura ----
+    if (R.cob) {
+      const m = R.cob, vis = m.classes.filter(c => c.pct >= 0.3);
+      const mc = await mapa(f, { rasters: [{ url: desenharCobertura(m), bounds: m.g.bounds, alpha: .88 }] });
+      const cols = COB.filter(([k]) => vis.some(v => v.k === k));
+      pg('Condição da cobertura do solo', `Classificação pela série de ${m.nCenas} imagens Sentinel-2 (10 m) de ${dBR(m.datas[0])} a ${dBR(m.datas[m.datas.length - 1])}${m.anoAntigo ? `, comparada com ${m.anoAntigo}` : ''}.`, `
+        ${fig(mc, vis.map(c => `<s style="background:${c.cor}"></s>${c.nome}`).join(' '))}
+        ${barras(vis)}
+        ${m.divs.length ? `<h3>Por divisão</h3>${tab(['Divisão', 'Área', ...cols.map(([, n]) => n)], m.divs.map(d => [esc(d.nome), ha(d.ha), ...cols.map(([k]) => fmt(d.pct[COB.findIndex(c => c[0] === k)], 0) + '%')]))}` : ''}
+        <p class="nota">${NOTA_COBERTURA}</p>`);
     }
 
     // ---- Pastagem ----
@@ -444,6 +458,7 @@
         ['Áreas queimadas', R.aq && R.aq.fonte ? R.aq.fonte : 'MapBiomas Fogo, Coleção 5 (30 m); se fora do ar, MODIS MCD64A1 (NASA)', 'pixels dentro do limite, por mês'],
         ['Uso do solo e pastagem', A.uso ? A.uso.cit + (A.uso.m.alt ? ' (MapBiomas com downloads suspensos)' : '') : 'MapBiomas (10 m e 30 m)', 'pixels dentro do limite'],
         ['Imagem e vigor', 'Sentinel-2 (ESA/Copernicus, Earth Search)', 'imagem mais limpa dos últimos 4 meses'],
+        ['Condição da cobertura', 'Sentinel-2, série de 12 meses (10 m)', 'NDVI na seca e nas águas, por pixel; comparação com 3 anos antes'],
         ['Bioma', 'IBGE via INPE/TerraBrasilis', 'centro do imóvel'],
         ['Relevo', 'SRTM (Terrain Tiles, ~30 m)', 'declividade de Horn, classes Embrapa'],
         ['Solo', 'SoilGrids 2.0 (ISRIC, 250 m)', 'centro do imóvel'],
