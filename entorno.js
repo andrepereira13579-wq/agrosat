@@ -11,18 +11,23 @@ const RAIZ = {
   anm: 'https://geo.anm.gov.br/arcgis/rest/services',
   ana: 'https://portal1.snirh.gov.br/server/rest/services',
   ibama: 'https://pamgia.ibama.gov.br/server/rest/services',
+  infrasa: 'https://geo.infrasa.gov.br/server/rest/services',   // Infra S.A.: bases de logística e energia da EPE
+  ana2: 'https://www.snirh.gov.br/arcgis/rest/services',
 };
 const TEMAS_ENTORNO = [
-  { k: 'solar', nome: 'Usinas solares (UFV)', raiz: 'aneel', re: /fotovolt|\bUFV\b|solar/i, raio: 50 },
-  { k: 'hidro', nome: 'Hidrelétricas (UHE, PCH, CGH)', raiz: 'aneel', re: /\bUHE\b|\bPCH\b|\bCGH\b|hidrel/i, raio: 50 },
-  { k: 'termo', nome: 'Termelétricas (UTE)', raiz: 'aneel', re: /\bUTE\b|termel/i, raio: 50 },
-  { k: 'lt', nome: 'Linhas de transmissão', raiz: 'aneel', re: /linhas? de transmiss|\bLT\b/i, raio: 20 },
-  { k: 'se', nome: 'Subestações', raiz: 'aneel', re: /subesta/i, raio: 30 },
+  { k: 'solar', nome: 'Usinas solares (UFV)', raiz: ['aneel', 'infrasa'], re: /fotovolt|\bUFV\b|solar/i, raio: 50 },
+  { k: 'hidro', nome: 'Hidrelétricas (UHE, PCH, CGH)', raiz: ['aneel', 'infrasa'], re: /\bUHE\b|\bPCH\b|\bCGH\b|hidrel/i, raio: 50 },
+  { k: 'termo', nome: 'Termelétricas (UTE)', raiz: ['aneel', 'infrasa'], re: /\bUTE\b|termel/i, raio: 50 },
+  { k: 'lt', nome: 'Linhas de transmissão', raiz: ['aneel', 'infrasa'], re: /linhas? de transmiss|\bLT\b/i, raio: 20 },
+  { k: 'se', nome: 'Subestações', raiz: ['aneel', 'infrasa'], re: /subesta/i, raio: 30 },
   { k: 'min', nome: 'Processos minerários (ANM)', raiz: 'anm', re: /processo|sigmine|brasil/i, raio: 10, dentro: 'alerta' },
-  { k: 'outorga', nome: 'Outorgas de água (ANA)', raiz: 'ana', re: /outorg/i, raio: 10 },
-  { k: 'pivo', nome: 'Pivôs centrais', raiz: 'ana', re: /piv[oô]/i, raio: 20 },
-  { k: 'barragem', nome: 'Barragens (SNISB)', raiz: 'ana', re: /barrag|snisb/i, raio: 20 },
+  { k: 'outorga', nome: 'Outorgas de água (ANA)', raiz: ['ana', 'ana2'], re: /outorg/i, raio: 10 },
+  { k: 'pivo', nome: 'Pivôs centrais', raiz: ['ana', 'ana2'], re: /piv[oô]/i, raio: 20 },
+  { k: 'barragem', nome: 'Barragens (SNISB)', raiz: ['ana', 'ana2', 'infrasa'], re: /barrag|snisb/i, raio: 20 },
   { k: 'flopub', nome: 'Florestas públicas (SFB)', raiz: 'ibama', re: /floresta.{0,4}p[uú]blica|cnfp/i, raio: 5, dentro: 'alerta' },
+  { k: 'armazem', nome: 'Armazéns e silos', raiz: ['infrasa'], re: /armaz|silo|conab/i, raio: 50 },
+  { k: 'porto', nome: 'Portos e terminais', raiz: ['infrasa'], re: /porto|terminal/i, raio: 50 },
+  { k: 'ferrovia', nome: 'Ferrovias', raiz: ['infrasa'], re: /ferrovi/i, raio: 30 },
 ];
 
 // ---------- descoberta de camadas nos catálogos ArcGIS ----------
@@ -84,9 +89,14 @@ function distKmFeicao(F, ft) {
 }
 
 async function consultarTema(T, F) {
-  const idx = await indiceCatalogo(T.raiz);
-  const alvo = idx.filter(c => T.re.test(c.nome)).slice(0, 4);
-  if (!alvo.length) throw new Error('camada não encontrada no catálogo do órgão');
+  // tenta cada órgão da lista até achar a camada (ex.: ANEEL; se recusar, Infra S.A./EPE)
+  const raizes = Array.isArray(T.raiz) ? T.raiz : [T.raiz];
+  let alvo = [], erro = null;
+  for (const rz of raizes) {
+    try { alvo = (await indiceCatalogo(rz)).filter(c => T.re.test(c.nome)).slice(0, 4); if (alvo.length) break; }
+    catch (e) { erro = e; }
+  }
+  if (!alvo.length) throw erro || new Error('camada não encontrada no catálogo do órgão');
   const b = turf.bbox(turf.buffer(F, T.raio, { units: 'kilometers' }));
   const feats = [];
   for (const c of alvo) { try { feats.push(...(await arcgisNaArea(c.url, b)).map(f => (f.properties._camada = c.nome, f))); } catch (e) { console.warn(T.k, c.url, e.message); } }
@@ -109,23 +119,34 @@ async function sitiosArqueologicos(F) {
 
 // ---------- OpenStreetMap: rios, nascentes, energia, pistas ----------
 async function overpass(q) {
-  const urls = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+  const urls = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
   let erro;
   for (const u of urls) {
-    try { const r = await fetch(u, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }); if (r.ok) return await r.json(); erro = new Error('OpenStreetMap respondeu ' + r.status); }
-    catch (e) { erro = e; }
+    try {
+      const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 30000);
+      const r = await fetch(u, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctl.signal }); clearTimeout(t);
+      if (r.ok) return await r.json(); erro = new Error('OpenStreetMap respondeu ' + r.status + ' (servidor ocupado)');
+    } catch (e) { erro = erro || e; }
   }
   throw erro;
 }
 const bb = b => `${b[1]},${b[0]},${b[3]},${b[2]}`;
 async function osmEntorno(F) {
   const b1 = turf.bbox(turf.buffer(F, 1, { units: 'kilometers' })), b5 = turf.bbox(turf.buffer(F, 5, { units: 'kilometers' })), b20 = turf.bbox(turf.buffer(F, 20, { units: 'kilometers' }));
-  const j = await overpass(`[out:json][timeout:40];(way["waterway"~"^(river|stream|canal|ditch|drain)$"](${bb(b1)});node["natural"="spring"](${bb(b1)});way["natural"="water"](${bb(b1)});way["power"~"^(line|minor_line)$"](${bb(b5)});node["aeroway"="aerodrome"](${bb(b20)});way["aeroway"~"^(aerodrome|runway)$"](${bb(b20)}););out geom;`);
+  // três consultas pequenas (uma grande costuma estourar o tempo do servidor); a de água é a essencial
+  const j = { elements: [] }, falhas = [];
+  for (const q of [
+    `[out:json][timeout:25];(way["waterway"~"^(river|stream|canal|ditch|drain)$"](${bb(b1)});node["natural"="spring"](${bb(b1)});way["natural"="water"](${bb(b1)}););out geom;`,
+    `[out:json][timeout:25];way["power"~"^(line|minor_line)$"](${bb(b5)});out geom;`,
+    `[out:json][timeout:25];(node["aeroway"="aerodrome"](${bb(b20)});way["aeroway"="aerodrome"](${bb(b20)}););out center;`,
+  ]) { try { j.elements.push(...((await overpass(q)).elements || [])); } catch (e) { falhas.push(e); } }
+  if (falhas.length === 3) throw falhas[0];
   const agua = [], nasc = [], lagos = [], energia = [], pistas = [];
   for (const el of j.elements || []) {
     const t = el.tags || {};
     let g = null;
     if (el.type === 'node') g = { type: 'Point', coordinates: [el.lon, el.lat] };
+    else if (el.center) g = { type: 'Point', coordinates: [el.center.lon, el.center.lat] };
     else if (el.geometry) { const c = el.geometry.map(p => [p.lon, p.lat]); const fechado = c.length > 3 && c[0][0] === c[c.length - 1][0] && c[0][1] === c[c.length - 1][1]; g = fechado && (t.natural === 'water' || t.aeroway === 'aerodrome') ? { type: 'Polygon', coordinates: [c] } : { type: 'LineString', coordinates: c }; }
     if (!g) continue;
     const ft = { type: 'Feature', properties: t, geometry: g };

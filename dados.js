@@ -31,7 +31,11 @@ async function buscarTexto(url) {
   }
   if (!CONF.proxy) throw new Error('esta base não aceita consulta direta do navegador. Configure o servidor-ponte em ⚙ Configurações.');
   const r = await fetch(viaPonte(url));
-  if (!r.ok) throw new Error(`base respondeu ${r.status}`);
+  if (!r.ok) {
+    let det = ''; try { det = (await r.text()).slice(0, 200); } catch (e) { }
+    if (/não permitido/.test(det)) throw new Error(`a ponte ainda não libera ${host} (cole a versão nova da ponte no Cloudflare)`);
+    throw new Error(`base respondeu ${r.status}${r.status === 403 ? ' (o órgão recusou a consulta)' : ''}`);
+  }
   return r.text();
 }
 async function getGeo(url) {

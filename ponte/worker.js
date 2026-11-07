@@ -25,13 +25,15 @@ const PERMITIDOS = [
   'modiseuwest.blob.core.windows.net',    // Áreas queimadas MODIS (Planetary Computer)
   'overpass-api.de',               // OpenStreetMap (rios, energia, pistas)
   'overpass.kumi.systems',         // OpenStreetMap (espelho)
+  'overpass.private.coffee',       // OpenStreetMap (espelho)
+  'maps.mail.ru',                  // OpenStreetMap (espelho)
+  'www.snirh.gov.br',              // ANA (segundo servidor)
   'rest.isric.org',                // Solo (SoilGrids / ISRIC)
   'files.isric.org',               // Solo (mapas SoilGrids)
   'geoservicos.ibge.gov.br',       // IBGE (biomas, limites, fronteira)
   'sigel.aneel.gov.br',            // ANEEL (usinas, linhas de transmissão)
   'dadosabertos.aneel.gov.br',     // ANEEL (geração distribuída)
   'metadados.snirh.gov.br',        // ANA (hidrografia, outorgas, pivôs)
-  'www.snirh.gov.br',              // ANA
   'portal1.snirh.gov.br',          // ANA (ArcGIS)
   'geoservicos.sgb.gov.br',        // Serviço Geológico do Brasil
   'geo.anm.gov.br',                // ANM (processos minerários)
