@@ -30,24 +30,32 @@ const TEMAS_ENTORNO = [
   { k: 'ferrovia', nome: 'Ferrovias', raiz: ['infrasa'], re: /ferrovi/i, raio: 30 },
 ];
 
+// limite de tempo: uma base lenta não pode segurar o relatório
+const comLimite = (p, ms, msg) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error(msg || `não respondeu em ${Math.round(ms / 1000)} s`)), ms))]);
+
 // ---------- descoberta de camadas nos catálogos ArcGIS ----------
 const CHAVE_IDX = 'agrosat.catalogos';
-async function indiceCatalogo(nomeRaiz) {
+const catalogoEmLeitura = {};
+function indiceCatalogo(nomeRaiz) {
+  // vários temas usam o mesmo órgão: lê o catálogo uma vez só
+  if (!catalogoEmLeitura[nomeRaiz]) { catalogoEmLeitura[nomeRaiz] = lerCatalogo(nomeRaiz); catalogoEmLeitura[nomeRaiz].catch(() => delete catalogoEmLeitura[nomeRaiz]); }
+  return catalogoEmLeitura[nomeRaiz];
+}
+async function lerCatalogo(nomeRaiz) {
   const cache = store(CHAVE_IDX) || {}, c = cache[nomeRaiz];
   if (c && Date.now() - c.t < 30 * 864e5 && c.camadas.length) return c.camadas;
   const raiz = RAIZ[nomeRaiz], camadas = [];
-  const j = JSON.parse(await buscarTexto(`${raiz}?f=json`));
+  const ler = u => comLimite(buscarTexto(u), 12000);
+  const j = JSON.parse(await ler(`${raiz}?f=json`));
   let servicos = (j.services || []).slice();
-  for (const fo of (j.folders || []).slice(0, 25)) {
-    try { const jf = JSON.parse(await buscarTexto(`${raiz}/${fo}?f=json`)); servicos.push(...(jf.services || [])); } catch (e) { }
-  }
+  await pool((j.folders || []).slice(0, 25), 6, async fo => { try { const jf = JSON.parse(await ler(`${raiz}/${fo}?f=json`)); servicos.push(...(jf.services || [])); } catch (e) { } });
   servicos = servicos.filter(s => /MapServer|FeatureServer/.test(s.type));
   // FeatureServer e MapServer do mesmo serviço repetem as camadas: fica com um só
   const vistos = new Set();
   servicos = servicos.filter(s => { if (vistos.has(s.name)) return false; vistos.add(s.name); return true; }).slice(0, 80);
-  await pool(servicos, 4, async s => {
+  await pool(servicos, 6, async s => {
     try {
-      const js = JSON.parse(await buscarTexto(`${raiz}/${s.name}/${s.type}?f=json`));
+      const js = JSON.parse(await ler(`${raiz}/${s.name}/${s.type}?f=json`));
       (js.layers || []).forEach(L => { if (!L.subLayerIds || !L.subLayerIds.length) camadas.push({ url: `${raiz}/${s.name}/${s.type}/${L.id}`, nome: `${s.name} › ${L.name}` }); });
     } catch (e) { }
   });
@@ -119,11 +127,12 @@ async function sitiosArqueologicos(F) {
 
 // ---------- OpenStreetMap: rios, nascentes, energia, pistas ----------
 async function overpass(q) {
-  const urls = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'];
+  // sorteia a ordem entre os espelhos para dividir a carga; tenta no máximo dois
+  const urls = ['https://overpass-api.de/api/interpreter', 'https://overpass.private.coffee/api/interpreter', 'https://maps.mail.ru/osm/tools/overpass/api/interpreter', 'https://overpass.kumi.systems/api/interpreter'].sort(() => Math.random() - 0.5).slice(0, 2);
   let erro;
   for (const u of urls) {
     try {
-      const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 30000);
+      const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 15000);
       const r = await fetch(u, { method: 'POST', body: 'data=' + encodeURIComponent(q), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, signal: ctl.signal }); clearTimeout(t);
       if (r.ok) return await r.json(); erro = new Error('OpenStreetMap respondeu ' + r.status + ' (servidor ocupado)');
     } catch (e) { erro = erro || e; }
@@ -135,11 +144,12 @@ async function osmEntorno(F) {
   const b1 = turf.bbox(turf.buffer(F, 1, { units: 'kilometers' })), b5 = turf.bbox(turf.buffer(F, 5, { units: 'kilometers' })), b20 = turf.bbox(turf.buffer(F, 20, { units: 'kilometers' }));
   // três consultas pequenas (uma grande costuma estourar o tempo do servidor); a de água é a essencial
   const j = { elements: [] }, falhas = [];
-  for (const q of [
+  const qs = [
     `[out:json][timeout:25];(way["waterway"~"^(river|stream|canal|ditch|drain)$"](${bb(b1)});node["natural"="spring"](${bb(b1)});way["natural"="water"](${bb(b1)}););out geom;`,
     `[out:json][timeout:25];way["power"~"^(line|minor_line)$"](${bb(b5)});out geom;`,
     `[out:json][timeout:25];(node["aeroway"="aerodrome"](${bb(b20)});way["aeroway"="aerodrome"](${bb(b20)}););out center;`,
-  ]) { try { j.elements.push(...((await overpass(q)).elements || [])); } catch (e) { falhas.push(e); } }
+  ];
+  await Promise.all(qs.map(async q => { try { j.elements.push(...((await overpass(q)).elements || [])); } catch (e) { falhas.push(e); } }));
   if (falhas.length === 3) throw falhas[0];
   const agua = [], nasc = [], lagos = [], energia = [], pistas = [];
   for (const el of j.elements || []) {
@@ -211,7 +221,7 @@ const CERTIDOES = [
 async function consultarEntorno(f, F, opcoes = {}) {
   const centro = turf.centroid(F).geometry.coordinates;
   const R = {}, E = {};
-  const rodar = async (k, fn) => { try { R[k] = await fn(); } catch (e) { E[k] = e.message || String(e); console.warn('entorno', k, e); } opcoes.aviso && opcoes.aviso(k); };
+  const rodar = async (k, fn) => { try { R[k] = await comLimite(fn(), opcoes.limite || 60000, 'demorou demais (base lenta ou fora do ar); tente de novo mais tarde'); } catch (e) { E[k] = e.message || String(e); console.warn('entorno', k, e); } opcoes.aviso && opcoes.aviso(k); };
   await Promise.all([
     ...TEMAS_ENTORNO.map(T => rodar(T.k, () => consultarTema(T, F))),
     rodar('iphan', () => sitiosArqueologicos(F)),

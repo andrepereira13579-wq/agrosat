@@ -92,7 +92,7 @@
     const D = { f, F, centro, uf, R: {}, E: {} };
     const rodar = async (k, fn) => {
       aviso(k, 'wait');
-      try { D.R[k] = await fn(); aviso(k, 'ok'); }
+      try { D.R[k] = await (typeof comLimite === 'function' ? comLimite(fn(), k === 'cob' || k === 'idade' ? 240000 : 120000, 'demorou demais (base lenta ou fora do ar)') : fn()); aviso(k, 'ok'); }
       catch (e) { console.warn(k, e); D.E[k] = e.message || String(e); aviso(k, 'erro'); }
     };
     const gov = Promise.all([
