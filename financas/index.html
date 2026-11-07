@@ -160,6 +160,22 @@ nav svg{width:22px;height:22px}
       <div class="months" id="months"></div>
       <div class="legend"><span><i style="background:var(--red)"></i>Despesas</span><span><i style="background:var(--green2)"></i>Receitas</span></div>
     </div>
+    <div class="card" id="rel-card">
+      <h2>Relatório em PDF</h2>
+      <p style="color:var(--muted);font-size:13px;margin:-4px 0 10px">Com gráficos, totais por área e categoria e todos os lançamentos, no timbrado da André Zootec.</p>
+      <div class="two" style="margin-bottom:10px">
+        <select id="rel-periodo" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%">
+          <option value="mes">Mês atual</option><option value="mes-passado">Mês passado</option>
+          <option value="semana">Semana atual</option><option value="semana-passada">Semana passada</option>
+          <option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option>
+          <option value="ano">Ano atual</option><option value="custom">Escolher datas…</option>
+        </select>
+        <select id="rel-area" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"><option value="">Todas as áreas</option><option value="pessoal">Pessoal</option><option value="senar">SENAR</option><option value="milho">Milho Verde</option><option value="bovino">Bovino de Corte</option></select>
+      </div>
+      <div class="two hide" id="rel-datas" style="margin-bottom:10px"><input type="date" id="rel-ini" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"><input type="date" id="rel-fim" style="background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%"></div>
+      <div class="two"><button class="btn" type="button" id="rel-pdf">Gerar PDF</button><button class="btn ghost" type="button" id="rel-wa">Enviar no WhatsApp</button></div>
+      <div id="rel-out" style="margin-top:10px;font-size:13.5px"></div>
+    </div>
     <div class="card wa-card">
       <h2>Lançar pelo WhatsApp</h2>
       <div style="font-size:13.5px;line-height:1.7">Mande para o robô do AgroGestor começando pela área:<br>
@@ -241,12 +257,19 @@ nav svg{width:22px;height:22px}
       <button class="btn" type="submit" id="tel-btn">Cadastrar número</button>
       <div class="err" id="tel-err"></div>
     </form>
+    <div class="card">
+      <h2>Relatórios automáticos</h2>
+      <label class="chk" style="margin-bottom:10px"><input type="checkbox" id="auto-sem"> Toda segunda às 7h: relatório da semana anterior</label>
+      <label class="chk"><input type="checkbox" id="auto-mes"> Todo dia 1º às 7h: relatório do mês anterior</label>
+      <p style="color:var(--muted);font-size:12.5px;margin:10px 0 0">Enviados para os números cadastrados acima.</p>
+    </div>
     <div class="card wa-card">
       <h2>Como usar</h2>
       <div style="font-size:13.5px;line-height:1.7">Do número cadastrado, mande mensagem para o robô do AgroGestor começando pela área:<br>
       <code>senar 150 diesel reembolsável</code><br><code>milho 320 adubo</code><br><code>bovino 1.200 sal mineral pix</code><br><code>pessoal 45 almoço</code><br>
       Foto do comprovante com a legenda da área e áudio começando pela área também funcionam.<br>
-      <code>contas</code> resumo do mês · <code>reembolsos</code> SENAR a receber · <code>desfazer</code> apaga o último · <code>contas ajuda</code> exemplos.</div>
+      <code>contas</code> resumo do mês · <code>reembolsos</code> SENAR a receber · <code>desfazer</code> apaga o último · <code>contas ajuda</code> exemplos.<br>
+      Relatório em PDF: <code>relatório do mês</code> · <code>relatório da semana</code> · <code>relatório dos últimos 5 dias</code> · <code>relatório senar de outubro</code></div>
     </div>
   </section>
 </div>
@@ -473,6 +496,43 @@ $("#tel-form").onsubmit=async e=>{e.preventDefault();const err=$("#tel-err");err
   if(error){err.textContent=error.message;return}
   $("#tel-num").value="";$("#tel-nome").value="";err.style.color="var(--green)";err.textContent="Número cadastrado! Mande \"contas ajuda\" para o robô para testar.";carregarTelefones()};
 document.querySelector('nav button[data-v="whats"]').addEventListener("click",carregarTelefones);
+
+/* ---------- Relatório ---------- */
+const FN_REL=SUPABASE_URL+"/functions/v1/financas-relatorio";
+const addD=(iso,n)=>{const d=new Date(iso+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+function periodoRel(){const h=hoje(),v=$("#rel-periodo").value,y=+h.slice(0,4),m=+h.slice(5,7);
+  const seg=iso=>{const w=new Date(iso+"T12:00:00Z").getUTCDay();return addD(iso,-((w+6)%7))};
+  const nomeMes=(yy,mm)=>["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][mm-1]+" de "+yy;
+  if(v==="mes")return{ini:h.slice(0,8)+"01",fim:h,label:nomeMes(y,m)};
+  if(v==="mes-passado"){const pm=m===1?12:m-1,py=m===1?y-1:y;return{ini:`${py}-${String(pm).padStart(2,"0")}-01`,fim:new Date(Date.UTC(py,pm,0)).toISOString().slice(0,10),label:nomeMes(py,pm)}}
+  if(v==="semana"){const s=seg(h);return{ini:s,fim:h,label:"Semana atual"}}
+  if(v==="semana-passada"){const s=addD(seg(h),-7);return{ini:s,fim:addD(s,6),label:"Semana passada"}}
+  if(v==="7"||v==="30"){const n=+v;return{ini:addD(h,-(n-1)),fim:h,label:`Últimos ${n} dias`}}
+  if(v==="ano")return{ini:`${y}-01-01`,fim:h,label:`Ano de ${y}`};
+  const ini=$("#rel-ini").value,fim=$("#rel-fim").value;return ini&&fim&&ini<=fim?{ini,fim,label:""}:null}
+$("#rel-periodo").onchange=()=>$("#rel-datas").classList.toggle("hide",$("#rel-periodo").value!=="custom");
+async function chamarRel(extra){const p=periodoRel();if(!p){toast("Escolha as duas datas.");return null}
+  const {data:{session}}=await sb.auth.getSession();if(!session){mostrarLogin();return null}
+  return fetch(FN_REL,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+session.access_token,apikey:SUPABASE_KEY},body:JSON.stringify({mode:"app",...p,area:$("#rel-area").value,...extra})})}
+let ultimoPdf=null;
+$("#rel-pdf").onclick=async()=>{const b=$("#rel-pdf"),out=$("#rel-out");b.disabled=true;b.textContent="Gerando…";out.textContent="";
+  try{const r=await chamarRel({});if(!r)return;
+    if(!r.ok){const j=await r.json().catch(()=>({}));out.textContent="Erro: "+(j.error||r.status);return}
+    const blob=await r.blob();const nome=r.headers.get("x-filename")||"relatorio.pdf";
+    if(ultimoPdf)URL.revokeObjectURL(ultimoPdf);ultimoPdf=URL.createObjectURL(blob);
+    out.innerHTML=`<a class="btn" style="display:block;text-align:center;text-decoration:none" href="${ultimoPdf}" target="_blank" download="${esc(nome)}">📄 Abrir relatório (${Math.round(blob.size/1024)} KB)</a>`;
+  }catch(e){out.textContent="Não foi possível gerar agora."}finally{b.disabled=false;b.textContent="Gerar PDF"}};
+$("#rel-wa").onclick=async()=>{const b=$("#rel-wa"),out=$("#rel-out");b.disabled=true;b.textContent="Enviando…";out.textContent="";
+  try{const r=await chamarRel({enviar:true});if(!r)return;const j=await r.json().catch(()=>({}));
+    if(!r.ok){out.textContent=j.error||"Erro ao enviar.";return}
+    const st=(j.status||[]);out.style.color="";
+    out.textContent=st.includes("enviado")||st.includes("enviado_modelo")?"✅ Relatório enviado no WhatsApp.":"⚠️ O WhatsApp só deixa o robô mandar mensagens até 24h depois da sua última mensagem. Mande um \"oi\" para o robô e toque em Enviar de novo — ou use Gerar PDF.";
+  }catch(e){out.textContent="Não foi possível enviar agora."}finally{b.disabled=false;b.textContent="Enviar no WhatsApp"}};
+async function carregarAuto(){const {data}=await sb.from("pf_wallets").select("relatorio_semanal,relatorio_mensal").eq("id",walletId).maybeSingle();
+  if(data){$("#auto-sem").checked=!!data.relatorio_semanal;$("#auto-mes").checked=!!data.relatorio_mensal}}
+["#auto-sem","#auto-mes"].forEach(id=>$(id).onchange=async()=>{const {error}=await sb.from("pf_wallets").update({relatorio_semanal:$("#auto-sem").checked,relatorio_mensal:$("#auto-mes").checked}).eq("id",walletId);
+  toast(error?"Não foi possível salvar.":"Preferência salva")});
+document.querySelector('nav button[data-v="whats"]').addEventListener("click",carregarAuto);
 
 function renderTudo(){preencherPeriodos();renderResumo();renderLista()}
 
