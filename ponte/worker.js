@@ -23,6 +23,8 @@ const PERMITIDOS = [
   'landsateuwest.blob.core.windows.net', // Landsat (arquivos)
   'ai4edataeuwest.blob.core.windows.net', // Uso do solo Esri/Impact Observatory (Planetary Computer)
   'modiseuwest.blob.core.windows.net',    // Áreas queimadas MODIS (Planetary Computer)
+  'overpass-api.de',               // OpenStreetMap (rios, energia, pistas)
+  'overpass.kumi.systems',         // OpenStreetMap (espelho)
   'rest.isric.org',                // Solo (SoilGrids / ISRIC)
   'files.isric.org',               // Solo (mapas SoilGrids)
   'geoservicos.ibge.gov.br',       // IBGE (biomas, limites, fronteira)

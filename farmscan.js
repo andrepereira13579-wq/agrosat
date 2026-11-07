@@ -84,7 +84,7 @@
     ['car', 'CAR (SICAR)'], ['sigef', 'SIGEF / INCRA'], ['emb', 'Embargos IBAMA'], ['prodes', 'PRODES (INPE)'], ['deter', 'Alertas DETER (INPE)'],
     ['prot', 'Áreas protegidas e territórios'], ['fogo', 'Focos de queimada'], ['credito', 'Crédito rural (Sicor)'], ['aq', 'Áreas queimadas (5 anos)'], ['bioma', 'Bioma'],
     ['uso', 'Uso e cobertura do solo'], ['u08', 'Vegetação nativa em 2008'], ['idade', 'Idade da pastagem'], ['cena', 'Imagem de satélite recente'], ['cbers', 'Imagem de 2 m (CBERS-4A)'], ['cob', 'Condição da cobertura (12 meses)'],
-    ['relevo', 'Relevo'], ['solo', 'Solo'], ['clima', 'Climatologia'],
+    ['relevo', 'Relevo'], ['solo', 'Solo'], ['clima', 'Climatologia'], ['entorno', 'Entorno, água e infraestrutura'],
   ];
   async function coletar(f, aviso) {
     const F = farmFeature(f), fb = turf.bbox(F), viz = turf.bbox(turf.buffer(F, CONF.raioKm, { units: 'kilometers' }));
@@ -100,6 +100,7 @@
       rodar('prodes', () => prodesNaArea(fb)), rodar('deter', () => deterNaArea(fb)), rodar('prot', () => protegidasNaArea(viz)),
       rodar('fogo', () => focosNaArea(viz, CONF.diasFocos)), rodar('credito', () => creditoNaArea(fb)), rodar('bioma', () => biomaNoPonto(centro[0], centro[1])),
       rodar('solo', () => soloNoPonto(centro[0], centro[1])), rodar('clima', () => climatologia(centro[0], centro[1])),
+      rodar('entorno', () => consultarEntorno(f, F)),
     ]);
     const mapas = (async () => {
       await rodar('uso', async () => { try { return await MB.ler('m10', MB.COL.m10.anos[1]); } catch (e) { return await MB.ler('m30', MB.COL.m30.anos[1]); } });
@@ -273,7 +274,7 @@
     if (R.aq) G.aq = grafico({ type: 'bar', data: { labels: R.aq.anos.map(a => a.ano), datasets: [{ label: 'Área queimada no imóvel (ha)', data: R.aq.anos.map(a => +a.ha.toFixed(2)), backgroundColor: R.aq.anos.map(a => M.aqCores[a.ano]) }] }, options: { scales: { y: eixo, x: eixo }, plugins: { legend: { display: false } } } }, 900, 240);
 
     // ---- Capa ----
-    const chips = ['Fundiário', 'Ambiental', 'Desmatamento', 'Fogo', 'Uso do solo', 'Cobertura', 'Lotação', 'Pastagem', 'Relevo', 'Solo', 'Clima'];
+    const chips = ['Fundiário', 'Ambiental', 'Infraestrutura', 'Desmatamento', 'Fogo', 'Uso do solo', 'Cobertura', 'Lotação', 'Pastagem', 'Relevo', 'Solo', 'Clima'];
     pags.push({ capa: true, corpo: `
       <div class="capa">
         <div class="marca">AgroSat · Relatório da Propriedade</div>
@@ -309,6 +310,7 @@
     const S_ = [
       ['CAR (SICAR)', A.car], ['SIGEF / INCRA', A.sigef], ['Embargos IBAMA', A.emb], ['Desmatamento PRODES', A.prodes], ['Alertas DETER', A.deter],
       ['Áreas queimadas (5 anos)', A.aq], [`Focos de queimada (${CONF.diasFocos} dias)`, A.fogo], ['Áreas protegidas e territórios', A.prot], ['Crédito rural (Sicor)', A.credito], ['Reserva Legal', A.rl],
+      ['Entorno e infraestrutura', R.entorno ? (() => { const L = linhasEntorno(R.entorno), al = L.filter(l => l.nivel === 'alerta' || l.nivel === 'grave'); return { nivel: al.length ? 'alerta' : 'ok', resumo: al.length ? al.map(l => `${l.nome}: ${semTag(l.texto)}`).join(' · ') : 'Sem mineração, floresta pública ou sítio arqueológico sobre o imóvel; fora da faixa de fronteira' }; })() : { nivel: 'erro', resumo: esc(D.E.entorno || '') }],
       ['Uso do solo', A.uso ? { nivel: 'info', resumo: A.uso.grupos.slice(0, 3).map(g => `${g.nome} ${fmt(g.pct, 0)}%`).join(' · ') } : { nivel: 'erro', resumo: esc(D.E.uso || '') }],
       ['Condição da cobertura', R.cob ? (() => { const c = k => (R.cob.classes.find(x => x.k === k) || { pct: 0 }).pct; const sujo = c(2) + c(3), deg = c(5) + c(6); return { nivel: sujo + deg >= 25 ? 'alerta' : 'info', resumo: `Pasto formado ${fmt(c(4), 0)}% · degradado/solo ${fmt(deg, 0)}% · juquira ${fmt(sujo, 0)}%${c(3) >= 1 ? ` (${fmt(c(3), 0)}% avançou sobre pasto desde ${R.cob.anoAntigo})` : ''} · mata ${fmt(c(1), 0)}%` }; })() : { nivel: 'erro', resumo: esc(D.E.cob || '') }],
       ['Capacidade de suporte', (R.cob && R.clima) ? (() => { try { const L = calcularLotacao(f, R.cob, R.clima, f.lot); return { nivel: L.ua && L.ua > L.capAno * 1.05 ? 'alerta' : 'info', resumo: `Sustenta cerca de ${fmt(L.capAno, 0)} UA no ano (${fmt(L.capAno / Math.max(L.haPasto, 0.01), 2)} UA/ha de pasto)${L.ua ? ` · rebanho ${fmt(L.ua, 0)} UA` : ''}${L.deficitT > 0 ? ` · déficit de ${fmt(L.deficitT, 1)} t MS em ${L.mesesDeficit.join(', ')}` : ''}` }; } catch (e) { return { nivel: 'erro', resumo: esc(e.message) }; } })() : { nivel: 'erro', resumo: 'depende da condição da cobertura e do clima' }],
@@ -486,6 +488,25 @@
         <p class="nota">Veranicos na estação chuvosa reduzem o crescimento do pasto e o rendimento de lavouras e silagem. O período seco orienta o planejamento de suplementação e volumoso. Leitura regional (reanálise de ~10 km), não medição na fazenda.</p>`);
     }
 
+    // ---- Entorno, água e infraestrutura ----
+    if (R.entorno) {
+      const EN = R.entorno, L = linhasEntorno(EN), o = EN.R.osm, M = EN.R.mun;
+      const perto = L.flatMap(l => l.itens.filter(i => i.km <= 5).map(i => i.ft));
+      const me = await mapa(f, { raioKm: 3, camadas: [
+        { feats: perto.filter(ft => !/Point/.test(ft.geometry.type)), cor: '#ffb000', fill: 'rgba(255,176,0,.18)', larg: 2 },
+        ...(o && o.app && o.app.geom ? [{ feats: [o.app.geom], cor: '#4fc3f7', fill: 'rgba(79,195,247,.45)', larg: 1 }] : []),
+        { feats: perto.filter(ft => /Point/.test(ft.geometry.type)), cor: '#ffb000', r: 6 },
+      ] });
+      pg('Entorno, água e infraestrutura', 'Energia, mineração, água, patrimônio e logística no imóvel e no entorno.', `
+        ${fig(me, 'Amarelo: rios, linhas de energia, processos minerários e outras feições até 5 km. Azul: APP estimada de rios e nascentes dentro do imóvel.')}
+        ${tab(['Tema', 'Situação'], L.map(l => [`${selo(l.nivel)} ${esc(l.nome)}`, l.texto + (l.itens[0] && l.itens[0].nome !== '—' ? `<br><small>${esc(l.itens[0].nome)}${l.itens[0].det ? ' · ' + esc(l.itens[0].det) : ''}</small>` : '')]))}
+        ${o && o.app ? `<p><b>APP de cursos d'água e nascentes (estimativa):</b> ${ha(o.app.ha)}, considerando 30 m de cada lado dos rios mapeados no OpenStreetMap (largura até 10 m) e 50 m em volta das nascentes. Rios mais largos têm faixa maior; córregos não mapeados ficam de fora.</p>` : ''}
+        ${M ? `<p><b>Município:</b> ${esc(M.nome)} - ${M.uf} (código IBGE ${M.id})${M.bovinos && M.bovinos.length ? `. Rebanho bovino (IBGE/PPM): ${M.bovinos.map(x => `${x.ano}: ${fmt(x.cab, 0)}`).join(' · ')} cabeças.` : '.'}</p>` : ''}
+        <h3>Certidões e documentos</h3>
+        ${tab(['Documento', 'Onde emitir'], CERTIDOES.map(([n, u, d]) => [`<b>${n}</b><br><small>${d}</small>`, `<a href="${u}">${u.replace(/^https?:\/\//, '').split('/')[0]}</a>`]))}
+        <p class="nota">Bases de energia (ANEEL/SIGEL), mineração (ANM/SIGMINE), água (ANA/SNIRH), florestas públicas (SFB), patrimônio (IPHAN) e OpenStreetMap. As camadas dos órgãos são encontradas automaticamente pelo nome no catálogo de cada um; se um órgão mudar a camada, o tema aparece como "Não consultado". Matrícula e CCIR não têm consulta aberta: use os links acima.</p>`);
+    }
+
     // ---- Metodologia ----
     pg('Metodologia e fontes', 'Como este relatório foi produzido.', `
       <p>O relatório é gerado automaticamente a partir do limite do imóvel cadastrado no AgroSat. O desenho é cruzado com bases públicas oficiais para identificar o que se sobrepõe a ele ou está no entorno. Áreas e percentuais são calculados sobre o limite analisado.</p>
@@ -506,6 +527,7 @@
         ['Relevo', 'SRTM (Terrain Tiles, ~30 m)', 'declividade de Horn, classes Embrapa'],
         ['Solo', 'SoilGrids 2.0 (ISRIC, 250 m)', 'centro do imóvel'],
         ['Clima', 'ERA5 via Open-Meteo', 'série diária desde 1991 no centro do imóvel'],
+        ['Entorno e infraestrutura', 'ANEEL, ANM, ANA, SFB, IPHAN, OpenStreetMap, IBGE', 'sobreposição e distância até cada feição (raios de 5 a 50 km)'],
       ])}
       <p class="nota">As bases oficiais podem ter lacunas regionais ou atualizações pendentes. Este relatório mostra o estado das bases públicas no momento da geração e não substitui consulta direta aos órgãos, certidões oficiais nem vistoria em campo. Bases que não responderam aparecem como "Não consultado".</p>`);
 

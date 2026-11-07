@@ -105,7 +105,11 @@ const ARC_EMBARGO = 'https://pamgia.ibama.gov.br/server/rest/services/01_Publica
 function esriParaGeoJSON(j) {
   if (j.error) throw new Error(j.error.message || 'a base recusou a consulta');
   const area = r => { let a = 0; for (let i = 0, k = r.length - 1; i < r.length; k = i++) a += (r[k][0] - r[i][0]) * (r[k][1] + r[i][1]); return a / 2; };
-  const features = (j.features || []).filter(f => f.geometry && f.geometry.rings).map(f => {
+  const features = (j.features || []).filter(f => f.geometry && (f.geometry.rings || f.geometry.paths || f.geometry.x != null || f.geometry.points)).map(f => {
+    const G = f.geometry, P = f.attributes || {};
+    if (G.x != null) return { type: 'Feature', properties: P, geometry: { type: 'Point', coordinates: [G.x, G.y] } };
+    if (G.points) return { type: 'Feature', properties: P, geometry: { type: 'MultiPoint', coordinates: G.points } };
+    if (G.paths) return { type: 'Feature', properties: P, geometry: G.paths.length === 1 ? { type: 'LineString', coordinates: G.paths[0] } : { type: 'MultiLineString', coordinates: G.paths } };
     const polys = [];
     f.geometry.rings.forEach(r => { if (area(r) < 0 || !polys.length) polys.push([r]); else polys[polys.length - 1].push(r); }); // externo: sentido horário
     return { type: 'Feature', properties: f.attributes || {}, geometry: polys.length === 1 ? { type: 'Polygon', coordinates: polys[0] } : { type: 'MultiPolygon', coordinates: polys } };

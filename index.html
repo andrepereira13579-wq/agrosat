@@ -6,7 +6,7 @@
 <title>AgroSat — Monitoramento de fazendas por satélite</title>
 <link rel="stylesheet" href="lib/leaflet.css">
 <link rel="stylesheet" href="lib/maplibre-gl.css">
-<link rel="stylesheet" href="style.css?v=202611062010">
+<link rel="stylesheet" href="style.css?v=202611071907">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0d1510">
 <link rel="apple-touch-icon" href="icone-192.png">
@@ -195,10 +195,14 @@
         <p class="hint">Cruza a fazenda com CAR, SIGEF/INCRA, embargos do IBAMA, desmatamento PRODES, terras indígenas, unidades de conservação, quilombolas, assentamentos, focos de queimada do INPE (área + 5 km ao redor), crédito rural registrado no Banco Central e clima.</p>
         <button class="btn full" id="btnDiag">Verificar situação da fazenda</button>
         <div id="diagBox" class="diag"></div>
+        <h4 style="margin:16px 0 4px">Entorno, água e infraestrutura</h4>
+        <p class="hint">Mineração (ANM), florestas públicas, sítios arqueológicos (IPHAN), usinas solares, hidrelétricas e termelétricas, linhas de transmissão e subestações (ANEEL), outorgas, pivôs e barragens (ANA), rios, nascentes e APP, linhas de energia e pistas de pouso (OpenStreetMap), faixa de fronteira e rebanho do município (IBGE). Links das certidões no fim.</p>
+        <button class="btn ghost full" id="btnEntorno">🏗 Consultar entorno e infraestrutura</button>
+        <div id="entRes" class="diag" hidden></div>
         <p class="hint">Dados públicos consultados na hora. Não substituem certidões oficiais.</p>
       </div>
     </div>
-    <footer class="foot">Imagens: Copernicus Sentinel‑2 (ESA), via catálogo Earth Search (AWS). Mapa base: Esri World Imagery. · versão 202611062010</footer>
+    <footer class="foot">Imagens: Copernicus Sentinel‑2 (ESA), via catálogo Earth Search (AWS). Mapa base: Esri World Imagery. · versão 202611071907</footer>
   </section>
 </main>
 
@@ -329,27 +333,28 @@
 <script src="lib/jszip.min.js"></script>
 <script src="lib/shp.min.js"></script>
 <script src="lib/turf.min.js"></script>
-<script src="config.js?v=202611062010"></script>
-<script src="app.js?v=202611062010"></script>
-<script src="dados.js?v=202611062010"></script>
-<script src="credito.js?v=202611062010"></script>
-<script src="integracao.js?v=202611062010"></script>
-<script src="extras.js?v=202611062010"></script>
-<script src="kmls.js?v=202611062010"></script>
+<script src="config.js?v=202611071907"></script>
+<script src="app.js?v=202611071907"></script>
+<script src="dados.js?v=202611071907"></script>
+<script src="credito.js?v=202611071907"></script>
+<script src="integracao.js?v=202611071907"></script>
+<script src="extras.js?v=202611071907"></script>
+<script src="kmls.js?v=202611071907"></script>
 <script src="lib/maplibre-gl.js"></script>
-<script src="tresd.js?v=202611062010"></script>
-<script src="local.js?v=202611062010"></script>
-<script src="whats.js?v=202611062010"></script>
-<script src="camadas.js?v=202611062010"></script>
-<script src="mapbiomas.js?v=202611062010"></script>
-<script src="terreno.js?v=202611062010"></script>
-<script src="imagem.js?v=202611062010"></script>
-<script src="consultas2.js?v=202611062010"></script>
-<script src="alternativas.js?v=202611062010"></script>
-<script src="limpa.js?v=202611062010"></script>
-<script src="cobertura.js?v=202611062010"></script>
-<script src="lotacao.js?v=202611062010"></script>
-<script src="pdf.js?v=202611062010"></script>
-<script src="farmscan.js?v=202611062010"></script>
+<script src="tresd.js?v=202611071907"></script>
+<script src="local.js?v=202611071907"></script>
+<script src="whats.js?v=202611071907"></script>
+<script src="camadas.js?v=202611071907"></script>
+<script src="mapbiomas.js?v=202611071907"></script>
+<script src="terreno.js?v=202611071907"></script>
+<script src="imagem.js?v=202611071907"></script>
+<script src="consultas2.js?v=202611071907"></script>
+<script src="alternativas.js?v=202611071907"></script>
+<script src="limpa.js?v=202611071907"></script>
+<script src="cobertura.js?v=202611071907"></script>
+<script src="entorno.js?v=202611071907"></script>
+<script src="lotacao.js?v=202611071907"></script>
+<script src="pdf.js?v=202611071907"></script>
+<script src="farmscan.js?v=202611071907"></script>
 </body>
 </html>
