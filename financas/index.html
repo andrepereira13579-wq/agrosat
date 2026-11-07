@@ -223,6 +223,20 @@ nav svg{width:22px;height:22px}
       <button class="btn" type="submit" id="f-salvar">Salvar lançamento</button>
       <button class="btn ghost hide" type="button" id="f-cancelar" style="margin-top:8px">Cancelar edição</button>
     </form>
+    <div class="card" id="cat-card">
+      <h2>Categorias e palavras-chave</h2>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 10px">Crie suas categorias e diga quais palavras levam a elas. O robô do WhatsApp usa essas palavras: ex. categoria <b>Venda de volumoso</b> com <i>silagem, feno, capim</i> → "vendi silagem no bovino" cai lá. Para ensinar palavras novas a uma categoria que já existe, crie com o mesmo nome.</p>
+      <div class="two f">
+        <div><label for="nc-area">Área</label><select id="nc-area"></select></div>
+        <div><label for="nc-tipo">Tipo</label><select id="nc-tipo"><option value="despesa">Despesa</option><option value="receita">Receita</option></select></div>
+      </div>
+      <div class="f"><label for="nc-nome">Nome da categoria</label><input type="text" id="nc-nome" maxlength="60" list="nc-sug" placeholder="Ex.: Venda de volumoso"><datalist id="nc-sug"></datalist></div>
+      <div class="f"><label for="nc-pal">Palavras-chave (separe por vírgula)</label><input type="text" id="nc-pal" placeholder="Ex.: silagem, feno, capim, sorgo"></div>
+      <label class="chk" style="margin-bottom:12px"><input type="checkbox" id="nc-aplicar" checked> Mover para ela os lançamentos já feitos que tenham essas palavras</label>
+      <button class="btn" type="button" id="nc-salvar">Salvar categoria</button>
+      <div class="err" id="nc-err"></div>
+      <div id="cat-lista" style="margin-top:12px"></div>
+    </div>
   </section>
 
   <!-- LISTA -->
@@ -300,7 +314,7 @@ const AREAS = {
     receita:["Venda de milho verde","Venda de palhada / silagem","Outras receitas"]},
   bovino:{nome:"Bovino de Corte",cor:"var(--bovino)",
     despesa:["Compra de animais","Sal mineral","Suplemento / ração","Medicamentos e vacinas","Pastagem / adubação","Mão de obra","Cerca / infraestrutura","Combustível / máquinas","Frete","Arrendamento de pasto","Impostos / GTA","Outros"],
-    receita:["Venda de animais","Venda de esterco","Outras receitas"]}
+    receita:["Venda de animais","Venda de volumoso","Venda de esterco","Aluguel de pasto","Outras receitas"]}
 };
 const MESES=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
 const $=s=>document.querySelector(s);
@@ -359,7 +373,7 @@ async function iniciar(){
   mostrarApp();
   const {data,error}=await sb.rpc("pf_my_wallet");
   if(error||!data){status("Não foi possível abrir sua carteira: "+(error?.message||"tente novamente"));return}
-  walletId=data;await carregar();ouvirMudancas()}
+  walletId=data;await carregar();carregarCats();ouvirMudancas()}
 let canal=null,recarregarT=null;
 function ouvirMudancas(){
   if(canal)sb.removeChannel(canal);
@@ -421,7 +435,11 @@ $("#r-periodo").addEventListener("change",renderResumo);
 /* ---------- Formulário ---------- */
 function renderAreasForm(){$("#f-area").innerHTML=Object.entries(AREAS).map(([k,a])=>`<button type="button" data-a="${k}" style="--c:${a.cor}" class="${fArea===k?"on":""}">${a.nome}</button>`).join("");
   document.querySelectorAll("#f-area button").forEach(b=>b.onclick=()=>{fArea=b.dataset.a;renderAreasForm();renderCats()})}
-function renderCats(sel){const l=[...AREAS[fArea][fTipo]];if(sel&&!l.includes(sel))l.push(sel);$("#f-cat").innerHTML=l.map(c=>`<option>${esc(c)}</option>`).join("");if(sel)$("#f-cat").value=sel;
+let minhasCats=[];
+function catsDe(area,tipo){const base=AREAS[area][tipo],outro=base[base.length-1],l=base.slice(0,-1);
+  minhasCats.filter(c=>c.area===area&&c.tipo===tipo&&!l.includes(c.nome)&&c.nome!==outro).forEach(c=>l.push(c.nome));l.push(outro);return l}
+function renderCats(sel){const l=catsDe(fArea,fTipo);if(sel&&!l.includes(sel))l.push(sel);
+  $("#f-cat").innerHTML=l.map(c=>`<option>${esc(c)}</option>`).join("")+`<option value="__nova__">+ Nova categoria…</option>`;if(sel)$("#f-cat").value=sel;
   $("#f-reemb-wrap").classList.toggle("hide",!(fArea==="senar"&&fTipo==="despesa"))}
 document.querySelectorAll("#f-tipo button").forEach(b=>b.onclick=()=>{fTipo=b.dataset.v;document.querySelectorAll("#f-tipo button").forEach(x=>x.classList.toggle("on",x===b));renderCats()});
 function limparForm(){$("#f-valor").value="";$("#f-desc").value="";$("#f-local").value="";$("#f-data").value=hoje();$("#f-reemb").checked=false;$("#f-reembok").checked=false}
@@ -455,6 +473,45 @@ async function excluir(id){const i=itens.find(x=>x.id===id);if(!i)return;
 async function marcarReemb(id){const i=itens.find(x=>x.id===id);if(!i)return;
   const {error}=await sb.from("pf_entries").update({reemb_ok:!i.reemb_ok}).eq("id",id);if(error){toast("Não foi possível atualizar.");return}
   toast(i.reemb_ok?"Marcado como pendente":"Marcado como reembolsado");carregar(true)}
+
+/* ---------- Categorias ---------- */
+const semAcento=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+$("#nc-area").innerHTML=Object.entries(AREAS).map(([k,a])=>`<option value="${k}">${a.nome}</option>`).join("");
+function sugestoesNc(){$("#nc-sug").innerHTML=catsDe($("#nc-area").value,$("#nc-tipo").value).map(c=>`<option value="${esc(c)}">`).join("")}
+["#nc-area","#nc-tipo"].forEach(id=>$(id).onchange=sugestoesNc);
+$("#f-cat").addEventListener("change",()=>{if($("#f-cat").value!=="__nova__")return;renderCats();
+  $("#nc-area").value=fArea;$("#nc-tipo").value=fTipo;sugestoesNc();$("#nc-nome").value="";$("#nc-pal").value="";
+  $("#cat-card").scrollIntoView({behavior:"smooth"});setTimeout(()=>$("#nc-nome").focus(),350)});
+async function carregarCats(){if(!walletId)return;
+  const {data,error}=await sb.from("pf_categories").select("*").eq("wallet_id",walletId).order("area").order("tipo").order("nome");
+  if(error)return;minhasCats=data||[];renderCatLista();const cur=$("#f-cat").value;renderCats(cur&&cur!=="__nova__"?cur:undefined);sugestoesNc()}
+function palavrasDe(c){return [c.nome,...String(c.palavras||"").split(/[,;\n]/)].map(w=>semAcento(w).trim()).filter(w=>w.length>=2)}
+function bate(texto,pals){const t=" "+semAcento(texto).replace(/[^a-z0-9]+/g," ")+" ";return pals.some(w=>t.includes(" "+w.replace(/[^a-z0-9]+/g," ").trim()+" "))}
+async function aplicarCat(c){const pals=palavrasDe(c);
+  const ids=itens.filter(i=>i.area===c.area&&i.tipo===c.tipo&&i.categoria!==c.nome&&bate((i.descricao||"")+" "+(i.local||""),pals)).map(i=>i.id);
+  if(!ids.length)return 0;const {error}=await sb.from("pf_entries").update({categoria:c.nome}).in("id",ids);return error?0:ids.length}
+function renderCatLista(){const el=$("#cat-lista");
+  el.innerHTML=minhasCats.length?`<div style="font-size:12.5px;color:var(--muted);margin-bottom:4px">Minhas categorias</div>`+minhasCats.map(c=>`<div class="item" style="--c:${AREAS[c.area]?.cor};align-items:flex-start"><span class="dot"></span><div class="mid"><div class="t">${esc(c.nome)}</div>
+      <div class="s">${AREAS[c.area]?.nome} · ${c.tipo}</div>
+      <input type="text" data-pal="${c.id}" value="${esc(c.palavras||"")}" placeholder="palavras-chave" style="margin-top:6px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 9px;width:100%;font-size:13px"></div>
+      <div class="acts" style="flex-direction:column"><button data-cs="${c.id}">salvar</button><button data-cx="${c.id}" style="color:var(--red)">excluir</button></div></div>`).join("")
+    :`<div class="empty" style="padding:10px">Nenhuma categoria sua ainda.</div>`;
+  el.querySelectorAll("[data-cs]").forEach(b=>b.onclick=async()=>{const c=minhasCats.find(x=>x.id===b.dataset.cs);const pal=el.querySelector(`[data-pal="${c.id}"]`).value.trim();
+    const {error}=await sb.from("pf_categories").update({palavras:pal}).eq("id",c.id);if(error){toast("Não foi possível salvar.");return}
+    const n=await aplicarCat({...c,palavras:pal});toast("Palavras salvas"+(n?` · ${n} lançamento(s) movido(s)`:""));carregarCats();if(n)carregar(true)});
+  el.querySelectorAll("[data-cx]").forEach(b=>b.onclick=async()=>{const c=minhasCats.find(x=>x.id===b.dataset.cx);
+    if(!await confirmar(`Excluir a categoria "${c.nome}"? Os lançamentos que já estão nela continuam com esse nome.`))return;
+    const {error}=await sb.from("pf_categories").delete().eq("id",c.id);toast(error?"Não foi possível excluir.":"Categoria excluída");carregarCats()})}
+$("#nc-salvar").onclick=async()=>{const err=$("#nc-err");err.style.color="";err.textContent="";
+  const c={wallet_id:walletId,area:$("#nc-area").value,tipo:$("#nc-tipo").value,nome:$("#nc-nome").value.trim().slice(0,60),palavras:$("#nc-pal").value.trim()};
+  if(!c.nome){err.textContent="Dê um nome para a categoria.";return}
+  const ja=minhasCats.find(x=>x.area===c.area&&x.tipo===c.tipo&&semAcento(x.nome)===semAcento(c.nome));
+  const {error}=ja?await sb.from("pf_categories").update({palavras:[ja.palavras,c.palavras].filter(Boolean).join(", ")}).eq("id",ja.id):await sb.from("pf_categories").insert(c);
+  if(error){err.textContent="Não foi possível salvar: "+error.message;return}
+  const n=$("#nc-aplicar").checked?await aplicarCat(ja?{...c,nome:ja.nome,palavras:[ja.palavras,c.palavras].filter(Boolean).join(", ")}:c):0;
+  err.style.color="var(--green)";err.textContent=`Categoria "${c.nome}" salva.`+(n?` ${n} lançamento(s) movido(s) para ela.`:"");
+  $("#nc-nome").value="";$("#nc-pal").value="";
+  if(fArea===c.area&&fTipo===c.tipo){await carregarCats();renderCats(ja?ja.nome:c.nome)}else await carregarCats();if(n)carregar(true)};
 
 /* ---------- Lista ---------- */
 $("#l-area").innerHTML=`<option value="">Todas as áreas</option>`+Object.entries(AREAS).map(([k,a])=>`<option value="${k}">${a.nome}</option>`).join("");
@@ -536,7 +593,7 @@ document.querySelector('nav button[data-v="whats"]').addEventListener("click",ca
 
 function renderTudo(){preencherPeriodos();renderResumo();renderLista()}
 
-renderAreasForm();renderCats();limparForm();
+renderAreasForm();renderCats();limparForm();sugestoesNc();
 if(location.hash.includes("type=recovery")){mostrarNovaSenha()}else iniciar();
 </script>
 </body>
