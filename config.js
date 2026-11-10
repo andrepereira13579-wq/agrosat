@@ -4,8 +4,4 @@ window.AGROSAT_PROXY = 'https://agrosat-ponte.andrepereira13579.workers.dev';   
 window.AGROSAT_CONSULTOR = { nome: '', empresa: '', contato: '' };
 
 // KMLs guardados no site (pasta kml/): aparecem para baixar ou cadastrar com um toque.
-window.AGROSAT_KMLS = [
-  { nome: 'Zome', arquivo: 'kml/Zome.kml' },
-  { nome: 'Ailton', arquivo: 'kml/Ailton.kml' },
-  { nome: 'Rikelme', arquivo: 'kml/Rikelme.kml' },
-];
+window.AGROSAT_KMLS = [];   // vazio: nenhum KML fica público no site
