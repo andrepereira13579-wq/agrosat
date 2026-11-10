@@ -8,6 +8,7 @@
      /saude                                   teste rápido ("ok")
 */
 
+const VERSAO_PONTE = 3;   // o app compara com a sua cópia e avisa quando a ponte precisa ser atualizada
 const PERMITIDOS = [
   'geoserver.car.gov.br',          // CAR / SICAR
   'acervofundiario.incra.gov.br',  // SIGEF / INCRA
@@ -110,7 +111,7 @@ export default {
   async fetch(req) {
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
     const u = new URL(req.url);
-    if (u.pathname === '/saude') return json({ ok: true });
+    if (u.pathname === '/saude') return json({ ok: true, versao: VERSAO_PONTE });
     if (u.pathname === '/focos') return focos(u.searchParams);
     const alvo = u.searchParams.get('url');
     if (!alvo) return json({ erro: 'informe ?url=' }, 400);
