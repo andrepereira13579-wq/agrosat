@@ -92,8 +92,9 @@
     const D = { f, F, centro, uf, R: {}, E: {} };
     const rodar = async (k, fn) => {
       aviso(k, 'wait');
-      try { D.R[k] = await (typeof comLimite === 'function' ? comLimite(fn(), k === 'cob' || k === 'idade' ? 240000 : 120000, 'demorou demais (base lenta ou fora do ar)') : fn()); aviso(k, 'ok'); }
-      catch (e) { console.warn(k, e); D.E[k] = e.message || String(e); aviso(k, 'erro'); }
+      const lim = (k === 'cob' || k === 'idade') ? 300000 : (k === 'cena' || k === 'aq' || k === 'cbers') ? 240000 : 120000;
+      try { D.R[k] = await (typeof comLimite === 'function' ? comLimite(fn(), lim, `demorou mais de ${lim / 60000} min (internet lenta ou base fora do ar)`) : fn()); aviso(k, 'ok'); }
+      catch (e) { console.warn(k, e); D.E[k] = e.message || String(e); aviso(k, 'erro', D.E[k]); }
     };
     const gov = Promise.all([
       rodar('car', () => carNaArea(fb, uf)), rodar('sigef', () => sigefNaArea(fb, uf)), rodar('emb', () => embargosNaArea(viz)),
@@ -582,15 +583,33 @@
   // ---------- Progresso na janela ----------
   function progresso(w) {
     const itens = [...ETAPAS, ['doc', 'Montando o documento']];
-    const est = {};
-    const html = () => `<div style="font:15px/1.5 system-ui;padding:22px;max-width:520px;margin:auto;color:#1d2a22"><h2 style="color:#14532d;margin:0 0 4px">Gerando o relatório completo…</h2><p style="color:#666;margin:0 0 14px">Consultando as bases públicas. Leva de 30 s a 2 min.</p>${itens.map(([k, t]) => { const s = est[k]; const ic = s === 'ok' ? '✅' : s === 'erro' ? '⚠️' : s === 'wait' ? '⏳' : '▫️'; return `<div>${ic} ${t}</div>`; }).join('')}</div>`;
+    const PESO = { cob: 4, cena: 3, idade: 3, aq: 3, entorno: 3, uso: 2, cbers: 2, clima: 2, relevo: 2, doc: 2 };
+    const peso = k => PESO[k] || 1, total = itens.reduce((a, [k]) => a + peso(k), 0);
+    const est = {}, msg = {}, t0 = Date.now();
+    const esc = t => String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const pct = () => {
+      let v = 0; for (const [k] of itens) { const s = est[k]; v += s === 'ok' || s === 'erro' ? peso(k) : s === 'wait' ? peso(k) * 0.3 : 0; }
+      return Math.min(100, Math.round(v / total * 100));
+    };
+    const tempo = () => { const s = Math.round((Date.now() - t0) / 1000); return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')} s`; };
+    const html = () => {
+      const p = pct(), nErro = Object.values(est).filter(s => s === 'erro').length;
+      return `<div style="font:15px/1.5 system-ui;padding:22px;max-width:520px;margin:auto;color:#1d2a22">
+<h2 style="color:#14532d;margin:0 0 4px">Gerando o relatório completo…</h2>
+<p style="color:#666;margin:0 0 10px">Consultando as bases públicas. Com internet lenta pode levar alguns minutos.</p>
+<div style="display:flex;justify-content:space-between;font-weight:600;margin-bottom:4px"><span>${p}% concluído</span><span style="color:#666;font-weight:400">${tempo()}</span></div>
+<div style="height:14px;background:#e5e7eb;border-radius:7px;overflow:hidden;margin-bottom:10px"><div style="height:100%;width:${p}%;background:linear-gradient(90deg,#16a34a,#15803d);transition:width .4s"></div></div>
+<div style="font-size:12px;color:#555;margin-bottom:12px">✅ consultado · ⏳ em andamento · ⚠️ não consultado (sai no relatório como “Não consultado”)${nErro ? ` · <b>${nErro} com aviso</b>` : ''}</div>
+${itens.map(([k, t]) => { const s = est[k]; const ic = s === 'ok' ? '✅' : s === 'erro' ? '⚠️' : s === 'wait' ? '⏳' : '▫️'; return `<div>${ic} ${t}${s === 'erro' && msg[k] ? `<div style="font-size:12px;color:#92400e;margin:0 0 4px 26px">Motivo: ${esc(String(msg[k]).slice(0, 160))}</div>` : ''}</div>`; }).join('')}</div>`;
+    };
+    let timer = null;
     const pintar = () => {
       if (w && !w.closed) { try { w.document.body.innerHTML = html(); return; } catch (e) { } }
-      const feitos = Object.values(est).filter(s => s === 'ok' || s === 'erro').length; busy(true, `Relatório completo: ${feitos} de ${itens.length} etapas…`);
+      busy(true, `Relatório completo: ${pct()}% (${tempo()})…`);
     };
     if (w && !w.closed) { try { w.document.open(); w.document.write(`<!DOCTYPE html><meta name="viewport" content="width=device-width"><title>Relatório completo</title><body></body>`); w.document.close(); } catch (e) { } }
-    pintar();
-    return (k, s) => { est[k] = s; pintar(); };
+    pintar(); timer = setInterval(() => { if (est.doc === 'ok' || est.doc === 'erro' || Date.now() - t0 > 900000) { clearInterval(timer); return; } pintar(); }, 1000);
+    return (k, s, m) => { est[k] = s; if (m) msg[k] = m; if (k === 'doc' && s === 'ok') clearInterval(timer); pintar(); };
   }
 
   async function gerar() {
@@ -606,7 +625,7 @@
       busy(false);
       mostrarDocumento(w, html);
     } catch (e) {
-      console.error(e); busy(false);
+      console.error(e); aviso('doc', 'erro'); busy(false);
       toast('Não consegui gerar o relatório completo: ' + e.message, 7000);
       if (w && !w.closed) try { w.document.body.innerHTML = `<p style="font:15px system-ui;padding:22px">Não consegui gerar o relatório: ${esc(e.message)}</p>`; } catch (x) { }
     } finally { $('btnFS').disabled = false; }
