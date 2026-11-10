@@ -1,6 +1,6 @@
 {
  "fonte": "Banco Central do Brasil — Sicor (dados abertos de crédito rural)",
- "gerado": "2026-11-05",
+ "gerado": "2026-11-10",
  "ufs": [
   "MA"
  ],
@@ -18,9 +18,9 @@
   2026
  ],
  "tile": 0.25,
- "glebas": 246888,
- "operacoes": 181143,
- "operacoes_com_dados": 181143,
+ "glebas": 247362,
+ "operacoes": 181477,
+ "operacoes_com_dados": 181477,
  "blocos": [
   "-165_-18",
   "-165_-19",
