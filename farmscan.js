@@ -165,7 +165,7 @@
       const flo = A.uso.classes.filter(c => [3, 5, 6, 49].includes(c.v)).reduce((s, c) => s + c.ha, 0), sav = A.uso.classes.filter(c => c.v === 4).reduce((s, c) => s + c.ha, 0);
       A.uso.natHa = natHa; A.uso.nativaDom = flo >= sav && flo > 0 ? 'floresta' : sav > 0 ? 'savana' : 'campo';
     }
-    if (R.u08) { const Rs = MB.resumo(R.u08); A.nat08 = (Rs.porGrupo.nat || 0) * Rs.pxHa; }
+    if (R.u08) { const Rs = MB.resumo(R.u08); A.nat08 = (Rs.porGrupo.nat || 0) * Rs.pxHa; A.fonte08 = R.u08.fonte === 'tc' ? 'TerraClass' : 'MapBiomas'; A.cobre08 = R.u08.cobre; }
     // Reserva Legal
     {
       const legal = naAmazoniaLegal(D.centro[0], D.centro[1], (A.carDados && A.carDados.uf) || D.uf);
@@ -175,7 +175,7 @@
       let nivel = 'info', resumo;
       if (!A.uso) resumo = `Exigência mínima de ${regra.pct}% (${regra.regra}): ${ha(exig)}. Não consegui medir a vegetação nativa para comparar.`;
       else if (mf <= 4) {
-        resumo = `Imóvel com ${fmt(mf, 2)} módulo(s) fiscal(is): pelo art. 67 do Código Florestal, a Reserva Legal pode ser a vegetação nativa existente em 22/07/2008${Number.isFinite(A.nat08) ? ` (≈ ${ha(A.nat08)} pelo MapBiomas)` : ''}, sem obrigação de recompor até ${regra.pct}%.`;
+        resumo = `Imóvel com ${fmt(mf, 2)} módulo(s) fiscal(is): pelo art. 67 do Código Florestal, a Reserva Legal pode ser a vegetação nativa existente em 22/07/2008${Number.isFinite(A.nat08) ? ` (≈ ${ha(A.nat08)} pelo ${A.fonte08 || 'MapBiomas'})` : ''}, sem obrigação de recompor até ${regra.pct}%.`;
         if (Number.isFinite(A.nat08) && nat < A.nat08 - Math.max(0.5, A.nat08 * 0.05)) { nivel = 'alerta'; resumo += ` <b>A vegetação nativa caiu de ${ha(A.nat08)} para ${ha(nat)} depois de 2008.</b>`; }
         else nivel = 'ok';
       } else if (saldo < -Math.max(0.5, exig * 0.03)) { nivel = 'alerta'; resumo = `Exigência de ${regra.pct}% (${ha(exig)}); vegetação nativa estimada de ${ha(nat)} (${fmt(nat / area * 100, 0)}%). <b>Possível déficit de ${ha(-saldo)}</b>${Number.isFinite(mf) ? '' : '; módulos fiscais não informados (até 4 MF pode valer o art. 67)'}.`; }
@@ -370,9 +370,9 @@
         ${fig(M.uso, 'Classes de uso do solo dentro do limite analisado.')}
         ${barras(A.uso.classes.filter(c => c.pct >= 0.3))}
         <h3>Reserva Legal (estimativa)</h3>
-        ${kpis([[`${rl.pct}%`, rl.regra], [ha(rl.exig), 'exigência mínima'], [ha(rl.nat), 'vegetação nativa hoje'], [Number.isFinite(A.nat08) ? ha(A.nat08) : '—', 'nativa em 2008 (MapBiomas 30 m)']])}
+        ${kpis([[`${rl.pct}%`, rl.regra], [ha(rl.exig), 'exigência mínima'], [ha(rl.nat), 'vegetação nativa hoje'], [Number.isFinite(A.nat08) ? ha(A.nat08) : '—', `nativa em 2008 (${A.fonte08 || 'MapBiomas'} 30 m)`]])}
         <p>${selo(rl.nivel)} ${rl.resumo}</p>
-        ${A.uso.m.alt ? `<p class="nota"><b>Base substituta:</b> o MapBiomas suspendeu os downloads de mapas. Este uso do solo vem do ${CIT_IO}, ano ${A.uso.ano}; a classe "Pastagem" corresponde a campo/pasto (rangeland), que também inclui campos naturais, e "Formação florestal" a árvores. A vegetação de 2008 depende do MapBiomas e fica sem leitura até eles reabrirem.</p>` : ''}
+        ${A.uso.m.alt ? `<p class="nota"><b>Base substituta:</b> o MapBiomas suspendeu os downloads de mapas. ${esc(A.uso.m.nota || '')} ${Number.isFinite(A.nat08) ? `A vegetação de 2008 vem do ${A.fonte08}${A.cobre08 < 0.9 ? ` (só ${Math.round(A.cobre08 * 100)}% da área tem leitura em 2008)` : ''}.` : `A vegetação de 2008 ficou sem leitura: ${esc(D.E && D.E.u08 || 'o TerraClass 2008 cobre só o bioma Amazônia')}.`}</p>` : ''}
         <p class="nota">Estimativa pela regra geral do Código Florestal (art. 12), sobre a área ${A.carDados ? 'declarada no CAR' : 'do perímetro'}. Não desconta APP nem considera compensação, servidão ou RL averbada fora do imóvel. A RL oficial é a declarada e aprovada no SICAR; a vegetação nativa aqui vem de imagens de satélite. Não substitui análise técnica do CAR.</p>`);
     }
 
@@ -521,6 +521,7 @@
         ['Crédito rural', 'Banco Central do Brasil (Sicor, dados abertos)', 'glebas financiadas que se sobrepõem ao limite'],
         ['Áreas queimadas', R.aq && R.aq.fonte ? R.aq.fonte : 'MapBiomas Fogo, Coleção 5 (30 m); se fora do ar, MODIS MCD64A1 (NASA)', 'pixels dentro do limite, por mês'],
         ['Uso do solo e pastagem', A.uso ? A.uso.cit + (A.uso.m.alt ? ' (MapBiomas com downloads suspensos)' : '') : 'MapBiomas (10 m e 30 m)', 'pixels dentro do limite'],
+        ['Vegetação em 2008', R.u08 ? (R.u08.fonte === 'tc' ? 'TerraClass 2008 (INPE / Embrapa, 30 m)' : 'MapBiomas Coleção 10 (30 m)') : 'Não consultado', 'pixels de vegetação nativa dentro do limite'],
         ['Imagem e vigor', 'Sentinel-2 (ESA/Copernicus, Earth Search)', 'imagem mais limpa dos últimos 4 meses'],
         ['Imagem de 2 m', 'CBERS-4A WPM (INPE, Brazil Data Cube)', 'imagem mais recente com pouca nuvem que cobre a área'],
         ['Condição da cobertura', 'Sentinel-2, série de 12 meses (10 m)', 'NDVI na seca e nas águas, por pixel; comparação com 3 anos antes'],

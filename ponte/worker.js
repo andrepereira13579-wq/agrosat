@@ -39,6 +39,8 @@ const PERMITIDOS = [
   'geo.anm.gov.br',                // ANM (processos minerários)
   'geoserver.florestal.gov.br',    // SFB (florestas públicas)
   'portal.iphan.gov.br',           // IPHAN (sítios arqueológicos)
+  'www.terraclass.gov.br',         // TerraClass (INPE/Embrapa, uso da terra 2008–2024)
+  'terraclass.gov.br',             // TerraClass (sem www)
   'geoinfo.dados.embrapa.br',      // Embrapa (solos, aptidão agrícola)
 ];
 

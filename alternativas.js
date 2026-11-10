@@ -26,7 +26,13 @@
   const cacheIO = new Map();
   async function lulcAlternativo(colK, ano) {
     const f = farm(), b = bboxOf(f.polys), cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2;
-    if (ano < 2017) throw new Error('o MapBiomas está fora do ar (downloads suspensos pelo próprio MapBiomas) e não há outra base de uso do solo antes de 2017');
+    // 1º TerraClass (oficial, INPE/Embrapa, desde 2008); 2º Esri/IO 10 m (global, 2017 em diante)
+    let erroTC = null;
+    if (window.TERRACLASS) {
+      try { return await window.TERRACLASS(ano); }
+      catch (e) { erroTC = e; console.warn('TerraClass', e.message); }
+    }
+    if (ano < 2017) throw new Error('MapBiomas fora do ar (downloads suspensos) e ' + (erroTC ? erroTC.message : 'não há outra base de uso do solo antes de 2017'));
     const k = `${f.id}|${ano}`; if (cacheIO.has(k)) return cacheIO.get(k);
     let cands = [], a;
     for (a = Math.min(ano, new Date().getFullYear()); a >= 2017 && !cands.length; a--) {
@@ -69,7 +75,7 @@
       cod[kk] = IO_PARA_MB[v[jj * W2 + ii]] || 0; if (cod[kk]) n++;
     }
     if (!n) throw new Error(`o mapa de uso do solo substituto (${it.id}, EPSG ${epsg}) veio sem dados nesta área`);
-    return { g, cod, ano: anoReal, colK: 'alt', alt: true, c: { nome: '10 m', res: 10, cit: CIT_IO, anos: [2017, anoReal] } };
+    return { g, cod, ano: anoReal, colK: 'alt', alt: true, fonte: 'io', c: { nome: '10 m', res: 10, cit: CIT_IO, anos: [2017, anoReal] }, nota: `Fonte substituta: ${CIT_IO}, ano ${anoReal}. Nela, "Pastagem" é a classe campo/pasto (rangeland), que também inclui campos naturais, e "Formação florestal" é árvores.` };
   }
 
   // ---------- Áreas queimadas (MODIS MCD64A1, 500 m) ----------
