@@ -1,0 +1,25 @@
+name: Publicar ponte (Cloudflare Worker)
+
+on:
+  push:
+    branches: [main]
+    paths: ['ponte/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      TEM_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sem token do Cloudflare
+        if: env.TEM_TOKEN != 'true'
+        run: echo "Falta o segredo CLOUDFLARE_API_TOKEN no repositório (Settings > Secrets and variables > Actions)."
+      - name: Publicar agrosat-ponte
+        if: env.TEM_TOKEN == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy ponte/worker.js --name agrosat-ponte --compatibility-date 2024-09-01
