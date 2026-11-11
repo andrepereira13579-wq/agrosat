@@ -20,7 +20,10 @@ SAIDA = os.path.join(os.path.dirname(__file__), '..', 'data', 'anm')
 
 def baixar(url, destino, obrigatorio=True):
     import urllib.parse
-    variantes = [[], ['--ciphers', 'DEFAULT:@SECLEVEL=0'], ['--tlsv1.2', '--tls-max', '1.2', '--ciphers', 'DEFAULT:@SECLEVEL=0']]
+    variantes = [[], ['--ciphers', 'DEFAULT:@SECLEVEL=0']]
+    # servidores da ANM com cadeia de certificado incompleta: só leitura de dado público, aceita sem verificar
+    if 'anm.gov.br' in url:
+        variantes += [['-k', '--ciphers', 'DEFAULT:@SECLEVEL=0'], ['-k', '--tlsv1.2', '--tls-max', '1.2', '--ciphers', 'DEFAULT:@SECLEVEL=0']]
     rotas = [(url, v) for v in variantes] + [(PONTE + '/?url=' + urllib.parse.quote(url, safe=''), [])]
     for u, extra in rotas:
         try:
