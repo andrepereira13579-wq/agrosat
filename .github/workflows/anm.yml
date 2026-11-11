@@ -1,0 +1,47 @@
+# Panorama dos processos minerários (ANM/SIGMINE) por município. Roda todo dia 15, quando o gerador muda, ou pelo botão.
+name: Panorama mineração (ANM)
+
+on:
+  schedule:
+    - cron: '23 7 15 * *'
+  push:
+    branches: [main]
+    paths:
+      - 'ferramentas/anm_panorama.py'
+      - '.github/workflows/anm.yml'
+  workflow_dispatch:
+    inputs:
+      uf:
+        description: 'Estado (MA, PI, PA, TO)'
+        default: 'MA'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: anm
+  cancel-in-progress: false
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyshp shapely pyproj
+      - name: Baixar da ANM e somar por município
+        env:
+          ANM_UF: ${{ github.event.inputs.uf || 'MA' }}
+        run: python3 ferramentas/anm_panorama.py
+      - name: Salvar no repositório
+        run: |
+          git config user.name "agrosat-bot"
+          git config user.email "agrosat-bot@users.noreply.github.com"
+          git add -A data/anm
+          if git diff --cached --quiet; then echo "Sem mudanças."; exit 0; fi
+          git commit -m "Panorama de mineração (ANM) atualizado em $(date +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push
