@@ -11,7 +11,7 @@ from pyproj import Transformer
 UF = os.environ.get('ANM_UF', 'MA').upper()
 COD = {'MA': 21, 'PI': 22, 'PA': 15, 'TO': 17}[UF]
 URL_ANM = f'https://app.anm.gov.br/dadosabertos/SIGMINE/PROCESSOS_MINERARIOS/{UF}.zip'
-URL_MUN = f'https://servicodados.ibge.gov.br/api/v3/malhas/estados/{COD}?formato=application/vnd.geo%2Bjson&intrarregiao=municipio&qualidade=intermediaria'
+URL_MUN = f'https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-{COD}-mun.json'  # malha municipal IBGE (cópia pública)
 URL_NOMES = f'https://servicodados.ibge.gov.br/api/v1/localidades/estados/{COD}/municipios'
 PONTE = 'https://agrosat-ponte.andrepereira13579.workers.dev'
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36'
@@ -89,13 +89,13 @@ def grupo_fase(f):
 
 def main():
     os.makedirs(SAIDA, exist_ok=True)
-    baixar(URL_MUN, '/tmp/mun.json'); baixar(URL_NOMES, '/tmp/nomes.json')
-    nomes = {str(m['id']): m['nome'] for m in json.load(open('/tmp/nomes.json', encoding='utf-8'))}
+    baixar(URL_MUN, '/tmp/mun.json')
     mun = json.load(open('/tmp/mun.json', encoding='utf-8'))
+    nomes = {str(ft['properties']['id']): ft['properties']['name'] for ft in mun['features']}
     tr = Transformer.from_crs('EPSG:4674', 'EPSG:5880', always_xy=True).transform  # SIRGAS -> Policônica (área em m²)
     mgeo, mcod = [], []
     for ft in mun['features']:
-        mgeo.append(transform(tr, shape(ft['geometry']).buffer(0))); mcod.append(str(ft['properties'].get('codarea')))
+        mgeo.append(transform(tr, shape(ft['geometry']).buffer(0))); mcod.append(str(ft['properties'].get('id')))
     arv = STRtree(mgeo)
     registros = []   # (dict de atributos, geometria GeoJSON)
     if baixar(URL_ANM, '/tmp/anm.zip', obrigatorio=False):
