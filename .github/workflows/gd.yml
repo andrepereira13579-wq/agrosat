@@ -1,0 +1,47 @@
+# Atualiza a base de micro e minigeração distribuída (ANEEL) usada no relatório completo.
+# Roda todo dia 12, quando o gerador muda, ou pelo botão "Run workflow" em Actions.
+name: Base de geração distribuída (ANEEL)
+
+on:
+  schedule:
+    - cron: '41 8 12 * *'
+  push:
+    branches: [main]
+    paths:
+      - 'ferramentas/gd_aneel.py'
+      - '.github/workflows/gd.yml'
+  workflow_dispatch:
+    inputs:
+      ufs:
+        description: 'Estados (ex.: MA ou MA,PI,TO)'
+        default: 'MA'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gd
+  cancel-in-progress: false
+
+jobs:
+  gerar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Baixar da ANEEL e recortar
+        env:
+          GD_UFS: ${{ github.event.inputs.ufs || 'MA' }}
+        run: python3 ferramentas/gd_aneel.py
+      - name: Salvar no repositório
+        run: |
+          git config user.name "agrosat-bot"
+          git config user.email "agrosat-bot@users.noreply.github.com"
+          git add -A data/gd
+          if git diff --cached --quiet; then echo "Sem mudanças."; exit 0; fi
+          git commit -m "Base de geração distribuída (ANEEL) atualizada em $(date +%Y-%m-%d)"
+          git pull --rebase origin main
+          git push

@@ -23,7 +23,7 @@ const TEMAS_ENTORNO = [
   { k: 'min', nome: 'Processos minerários (ANM)', raiz: 'anm', re: /processo|sigmine|brasil/i, raio: 10, dentro: 'alerta' },
   { k: 'outorga', nome: 'Outorgas de água (ANA)', raiz: ['ana', 'ana2'], re: /outorg/i, raio: 10 },
   { k: 'pivo', nome: 'Pivôs centrais', raiz: ['ana', 'ana2'], re: /piv[oô]/i, raio: 20 },
-  { k: 'barragem', nome: 'Barragens (SNISB)', raiz: ['ana', 'ana2', 'infrasa'], re: /barrag|snisb/i, raio: 20 },
+  { k: 'barragem', nome: 'Barragens (SNISB)', raiz: ['ana', 'ana2', 'infrasa'], re: /barrag|snisb/i, raio: 50 },
   { k: 'flopub', nome: 'Florestas públicas (SFB)', raiz: 'ibama', re: /floresta.{0,4}p[uú]blica|cnfp/i, raio: 5, dentro: 'alerta' },
   { k: 'armazem', nome: 'Armazéns e silos', raiz: ['infrasa'], re: /armaz|silo|conab/i, raio: 50 },
   { k: 'porto', nome: 'Portos e terminais', raiz: ['infrasa'], re: /porto|terminal/i, raio: 50 },

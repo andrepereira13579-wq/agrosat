@@ -84,7 +84,7 @@
     ['car', 'CAR (SICAR)'], ['sigef', 'SIGEF / INCRA'], ['emb', 'Embargos IBAMA'], ['prodes', 'PRODES (INPE)'], ['deter', 'Alertas DETER (INPE)'],
     ['prot', 'Áreas protegidas e territórios'], ['fogo', 'Focos de queimada'], ['credito', 'Crédito rural (Sicor)'], ['aq', 'Áreas queimadas (5 anos)'], ['bioma', 'Bioma'],
     ['uso', 'Uso e cobertura do solo'], ['u08', 'Vegetação nativa em 2008'], ['idade', 'Idade da pastagem'], ['cena', 'Imagem de satélite recente'], ['cbers', 'Imagem de 2 m (CBERS-4A)'], ['cob', 'Condição da cobertura (12 meses)'],
-    ['relevo', 'Relevo'], ['solo', 'Solo'], ['clima', 'Climatologia'], ['entorno', 'Entorno, água e infraestrutura'],
+    ['relevo', 'Relevo'], ['solo', 'Solo'], ['apt', 'Aptidão agrícola (Embrapa)'], ['clima', 'Climatologia'], ['entorno', 'Entorno, água e infraestrutura'], ['gd', 'Geração distribuída (ANEEL)'],
   ];
   async function coletar(f, aviso) {
     const F = farmFeature(f), fb = turf.bbox(F), viz = turf.bbox(turf.buffer(F, CONF.raioKm, { units: 'kilometers' }));
@@ -101,7 +101,7 @@
       rodar('prodes', () => prodesNaArea(fb)), rodar('deter', () => deterNaArea(fb)), rodar('prot', () => protegidasNaArea(viz)),
       rodar('fogo', () => focosNaArea(viz, CONF.diasFocos)), rodar('credito', () => creditoNaArea(fb)), rodar('bioma', () => biomaNoPonto(centro[0], centro[1])),
       rodar('solo', () => soloNoPonto(centro[0], centro[1])), rodar('clima', () => climatologia(centro[0], centro[1])),
-      rodar('entorno', () => consultarEntorno(f, F)),
+      rodar('entorno', () => consultarEntorno(f, F)), rodar('gd', () => geracaoDistribuida(f, F, 50)), rodar('apt', () => aptidaoAgricola(F)),
     ]);
     const mapas = (async () => {
       await rodar('uso', async () => { try { return await MB.ler('m10', MB.COL.m10.anos[1]); } catch (e) { return await MB.ler('m30', MB.COL.m30.anos[1]); } });
@@ -317,6 +317,7 @@
       ['Capacidade de suporte', (R.cob && R.clima) ? (() => { try { const L = calcularLotacao(f, R.cob, R.clima, f.lot); return { nivel: L.ua && L.ua > L.capAno * 1.05 ? 'alerta' : 'info', resumo: `Sustenta cerca de ${fmt(L.capAno, 0)} UA no ano (${fmt(L.capAno / Math.max(L.haPasto, 0.01), 2)} UA/ha de pasto)${L.ua ? ` · rebanho ${fmt(L.ua, 0)} UA` : ''}${L.deficitT > 0 ? ` · déficit de ${fmt(L.deficitT, 1)} t MS em ${L.mesesDeficit.join(', ')}` : ''}` }; } catch (e) { return { nivel: 'erro', resumo: esc(e.message) }; } })() : { nivel: 'erro', resumo: 'depende da condição da cobertura e do clima' }],
       ['Pastagem (idade e vigor)', A.pasto],
       ['Relevo', A.relevo ? { nivel: 'info', resumo: `Declividade média ${fmt(A.relevo.media, 1)}% · predomínio ${A.relevo.dom.nome.toLowerCase()} · altitude ${fmt(A.relevo.altMin, 0)}–${fmt(A.relevo.altMax, 0)} m` } : { nivel: 'erro', resumo: esc(D.E.relevo || '') }],
+      ['Aptidão agrícola', R.apt ? { nivel: 'info', resumo: R.apt.classes.slice(0, 2).map(c => `${esc(c.simbolo)} (${fmt(c.pct, 0)}%): ${esc(c.legenda)}`).join(' · ') } : { nivel: 'erro', resumo: esc(D.E.apt || '') }],
       ['Solo', R.solo ? { nivel: 'info', resumo: `Textura ${R.solo.textura.toLowerCase()} · argila ${fmt(R.solo.argila, 0)}% · pH ${n1(R.solo.ph)}${R.solo.wrb && R.solo.wrb[0] ? ' · ' + R.solo.wrb[0].sibcs : ''}` } : { nivel: 'erro', resumo: esc(D.E.solo || '') }],
       ['Clima', R.clima ? { nivel: 'info', resumo: `Chuva média ${fmt(R.clima.chuvaAnual, 0)} mm/ano · ${R.clima.secos} mês(es) seco(s) · últimos 30 dias ${Number.isFinite(R.clima.recente.dif) ? (R.clima.recente.dif >= 0 ? '+' : '') + fmt(R.clima.recente.dif, 0) + '%' : '—'} da normal` } : { nivel: 'erro', resumo: esc(D.E.clima || '') }],
     ];
@@ -471,6 +472,17 @@
         <p class="nota">Estimativas de modelo global (resolução de 250 m) em um ponto: servem para orientar, não substituem análise de solo em laboratório nem o levantamento pedológico.</p>`);
     }
 
+    // ---- Aptidão agrícola (Embrapa) ----
+    if (R.apt) {
+      const ap = R.apt, PAL = ['#e0b422', '#7fb24a', '#d9822b', '#4e9ad6', '#b06ab3', '#8c6d4f'];
+      const ma = await mapa(f, { camadas: ap.classes.map((c, i) => ({ feats: c.geoms, cor: PAL[i % PAL.length], fill: PAL[i % PAL.length] + '80', larg: 1 })) });
+      pg('Aptidão agrícola das terras', `Mapa de Aptidão Agrícola das Terras do Brasil (Embrapa Solos e IBGE, 2025, escala 1:500.000): ${ha(ap.haTot)} classificados em ${ap.classes.length} classe(s).`, `
+        ${fig(ma, ap.classes.map((c, i) => `<span style="color:${PAL[i % PAL.length]}">■</span> ${esc(c.simbolo)}`).join(' &nbsp; '))}
+        ${tab(['Classe', 'O que significa', 'Área', '% do imóvel'], ap.classes.map(c => [`<b>${esc(c.simbolo)}</b>`, esc(c.legenda) + (c.legendaOrig && c.legendaOrig !== c.legenda ? `<br><small>${esc(c.legendaOrig)}</small>` : ''), ha(c.ha), fmt(c.pct, 1) + '%']))}
+        <p><b>Como ler o símbolo:</b> o número é o grupo (1 a 3 lavouras, 4 pastagem plantada, 5 silvicultura ou pastagem natural, 6 preservação). As letras são os níveis de manejo (A baixo, B médio, C alto nível tecnológico; P pastagem plantada; S silvicultura; N pastagem natural): <b>maiúscula</b> = aptidão boa, <b>minúscula</b> = regular, <b>entre parênteses</b> = restrita, letra ausente = inapta.</p>
+        <p class="nota">Mapa regional (1:500.000): serve para planejamento, não para decisão dentro da fazenda; manchas menores que algumas centenas de hectares não aparecem. Na Amazônia Legal só as áreas já desmatadas foram avaliadas; terras indígenas e unidades de conservação ficaram de fora.</p>`);
+    }
+
     // ---- Clima ----
     if (R.clima) {
       const C = R.clima, rc = C.recente;
@@ -508,6 +520,33 @@
         <p class="nota">Bases de energia (ANEEL/SIGEL), mineração (ANM/SIGMINE), água (ANA/SNIRH), florestas públicas (SFB), patrimônio (IPHAN) e OpenStreetMap. As camadas dos órgãos são encontradas automaticamente pelo nome no catálogo de cada um; se um órgão mudar a camada, o tema aparece como "Não consultado". Matrícula e CCIR não têm consulta aberta: use os links acima.</p>`);
     }
 
+    // ---- Geração solar e termelétricas / Barragens e hidrelétricas ----
+    {
+      const EN = R.entorno ? R.entorno.R : {}, gd = R.gd;
+      const cen = x => { try { const c = turf.centroid(x.ft).geometry.coordinates; return { lon: c[0], lat: c[1] }; } catch (e) { return null; } };
+      const ufv = (EN.solar && EN.solar.itens) || [], ute = (EN.termo && EN.termo.itens) || [];
+      if (gd || EN.solar || EN.termo) {
+        const pts = [...(gd ? gd.itens.map(x => ({ lon: x.lon, lat: x.lat, cor: '#ffb000', r: 4 })) : []), ...ufv.map(cen).filter(Boolean).map(p => ({ ...p, cor: '#ff7a00', r: 7 })), ...ute.map(cen).filter(Boolean).map(p => ({ ...p, cor: '#e53935', r: 7 }))];
+        const me = await mapa(f, { raioKm: 50, pontos: pts });
+        const dentro = gd ? gd.itens.filter(x => x.km === 0).length : 0;
+        pg('Geração solar e termelétricas', 'Infraestrutura de energia em até 50 km do imóvel.', `
+          ${fig(me, 'Contorno branco: imóvel. Pontos âmbar: micro e minigeração distribuída (ANEEL); laranja: usinas solares; vermelho: termelétricas.')}
+          <p>${gd ? `Foram localizadas <b>${fmt(gd.itens.length, 0)} instalações de geração distribuída</b> (${fmt(gd.kw, 1)} kW de potência instalada)` : `Geração distribuída: não consultada (${esc(D.E.gd || '')})`}, <b>${ufv.length} usina(s) solar(es)</b> e <b>${ute.length} termelétrica(s)</b> em até 50 km do limite. ${dentro ? `<b>${dentro} instalação(ões) dentro do imóvel.</b>` : 'Nenhum ponto de geração distribuída incide no polígono analisado.'}</p>
+          ${gd && gd.itens.length ? `<h3>Geração distribuída mais próxima</h3>${tab(['Município', 'Classe', 'Modalidade', 'Fonte', 'Potência', 'Distância'], gd.itens.slice(0, 15).map(x => [esc(x.mun) + '/' + gd.uf, esc(x.classe), esc(x.mod), esc(x.ger), fmt(x.kw, 1) + ' kW', fmt(x.km, 1) + ' km']))}<p class="nota">A tabela mostra as ${Math.min(15, gd.itens.length)} instalações mais próximas entre ${fmt(gd.itens.length, 0)} no raio. Registros declarados pelas distribuidoras à ANEEL (base de ${dBR(gd.gerado)}); potência instalada não é geração. Dados pessoais dos titulares não são exibidos.</p>` : ''}
+          ${ufv.length || ute.length ? `<h3>Usinas (ANEEL/SIGEL)</h3>${tab(['Tipo', 'Nome', 'Detalhe', 'Distância'], [...ufv.map(x => ['Solar', x], ), ...ute.map(x => ['Termelétrica', x])].slice(0, 15).map(([t, x]) => [t, esc(x.nome), esc(x.det || ''), fmt(x.km, 1) + ' km']))}` : ''}`);
+      }
+      if (EN.barragem || EN.hidro) {
+        const bar = (EN.barragem && EN.barragem.itens) || [], hid = (EN.hidro && EN.hidro.itens) || [];
+        const mb = await mapa(f, { raioKm: 50, pontos: [...bar.map(cen).filter(Boolean).map(p => ({ ...p, cor: '#29b6f6', r: 7 })), ...hid.map(cen).filter(Boolean).map(p => ({ ...p, cor: '#ffd600', r: 7 }))] });
+        const dentroB = bar.filter(x => x.km === 0).length + hid.filter(x => x.km === 0).length;
+        pg('Barragens e hidrelétricas', 'Infraestrutura hídrica e energética em até 50 km do imóvel.', `
+          ${fig(mb, 'Barragens em azul e hidrelétricas em amarelo. O contorno branco representa o imóvel.')}
+          <p>Foram localizadas <b>${EN.barragem ? bar.length : '—'} barragem(ns)</b> e <b>${EN.hidro ? hid.length : '—'} hidrelétrica(s)</b> no raio analisado. ${dentroB ? `<b>${dentroB} feição(ões) incidem no limite do imóvel.</b>` : 'Nenhuma feição incide no limite do imóvel.'}${!EN.barragem ? ` Barragens não consultadas: ${esc(R.entorno.E.barragem || '')}.` : ''}${!EN.hidro ? ` Hidrelétricas não consultadas: ${esc(R.entorno.E.hidro || '')}.` : ''}</p>
+          ${bar.length || hid.length ? tab(['Tipo', 'Nome', 'Detalhe', 'Distância'], [...bar.map(x => ['Barragem', x]), ...hid.map(x => ['Hidrelétrica', x])].sort((a, b) => a[1].km - b[1].km).slice(0, 20).map(([t, x]) => [t, esc(x.nome || '—'), esc(x.det || ''), x.km === 0 ? '<b>no imóvel</b>' : fmt(x.km, 1) + ' km'])) : ''}
+          <p class="nota">A proximidade é contexto territorial e não representa, por si só, restrição ou sobreposição. Barragens: SNISB/ANA; hidrelétricas: ANEEL/SIGEL.</p>`);
+      }
+    }
+
     // ---- Metodologia ----
     pg('Metodologia e fontes', 'Como este relatório foi produzido.', `
       <p>O relatório é gerado automaticamente a partir do limite do imóvel cadastrado no AgroSat. O desenho é cruzado com bases públicas oficiais para identificar o que se sobrepõe a ele ou está no entorno. Áreas e percentuais são calculados sobre o limite analisado.</p>
@@ -529,6 +568,8 @@
         ['Relevo', 'SRTM (Terrain Tiles, ~30 m)', 'declividade de Horn, classes Embrapa'],
         ['Solo', 'SoilGrids 2.0 (ISRIC, 250 m)', 'centro do imóvel'],
         ['Clima', 'ERA5 via Open-Meteo', 'série diária desde 1991 no centro do imóvel'],
+        ['Geração distribuída', R.gd ? `ANEEL, dados abertos (base de ${dBR(R.gd.gerado)})` : 'ANEEL, dados abertos', 'instalações em até 50 km do limite'],
+        ['Aptidão agrícola', 'Embrapa Solos e IBGE, Mapa de Aptidão Agrícola das Terras do Brasil (2025, 1:500.000)', 'classes que cruzam o limite'],
         ['Entorno e infraestrutura', 'ANEEL, ANM, ANA, SFB, IPHAN, OpenStreetMap, IBGE', 'sobreposição e distância até cada feição (raios de 5 a 50 km)'],
       ])}
       <p class="nota">As bases oficiais podem ter lacunas regionais ou atualizações pendentes. Este relatório mostra o estado das bases públicas no momento da geração e não substitui consulta direta aos órgãos, certidões oficiais nem vistoria em campo. Bases que não responderam aparecem como "Não consultado".</p>`);
