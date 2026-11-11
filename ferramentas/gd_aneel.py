@@ -131,14 +131,14 @@ def main():
 
     C = dict(uf=col('SigUF'), mun=col('NomMunicipio'), classe=col('DscClasseConsumo'),
              mod=col('DscModalidadeHabilitado', 'SigModalidadeEmpreendimento'), ger=col('SigTipoGeracao', 'DscFonteGeracao'),
-             kw=col('MdaPotenciaInstaladaKW', 'PotenciaInstalada'), lat=col('NumCoordNEmpreendimento'), lon=col('NumCoordEEmpreendimento'),
+             kw=col('MdaPotenciaInstaladaKW', 'PotenciaInstalada'), lat=col('NumCoordNEmpreendimento', 'NumCoordNSub'), lon=col('NumCoordEEmpreendimento', 'NumCoordESub'), sub=col('NomSubEstacao'),
              data=col('DthAtualizaCadastralEmpreend', 'DatConexao'))
     falta = [k for k in ('uf', 'kw', 'lat', 'lon') if C[k] is None]
     if falta:
         raise SystemExit(f'Colunas não encontradas: {falta}. Cabeçalho: {cab}')
     print('Colunas:', {k: (cab[v] if v is not None else None) for k, v in C.items()}, flush=True)
 
-    out = {uf: {'listas': {'mun': [], 'classe': [], 'mod': [], 'ger': []}, 'idx': {'mun': {}, 'classe': {}, 'mod': {}, 'ger': {}}, 'd': [], 'sem': 0} for uf in UFS}
+    out = {uf: {'listas': {'mun': [], 'classe': [], 'mod': [], 'ger': [], 'sub': []}, 'idx': {'mun': {}, 'classe': {}, 'mod': {}, 'ger': {}, 'sub': {}}, 'd': [], 'sem': 0} for uf in UFS}
 
     def idx(o, k, v):
         v = (v or '').strip() or '—'
@@ -161,13 +161,14 @@ def main():
         g = lambda k: row[C[k]] if C[k] is not None and C[k] < len(row) else ''
         ano = ''.join(ch for ch in g('data')[:10] if ch.isdigit())
         ano = int(ano[:4]) if len(ano) >= 4 and ano[:2] in ('19', '20') else (int(ano[-4:]) if len(ano) >= 8 else 0)
-        o['d'].append([round(lat, 5), round(lon, 5), idx(o, 'mun', g('mun')), idx(o, 'classe', g('classe')), idx(o, 'mod', g('mod')), idx(o, 'ger', g('ger')), round(kw or 0, 2), ano])
+        o['d'].append([round(lat, 5), round(lon, 5), idx(o, 'mun', g('mun')), idx(o, 'classe', g('classe')), idx(o, 'mod', g('mod')), idx(o, 'ger', g('ger')), round(kw or 0, 2), ano, idx(o, 'sub', g('sub'))])
     print(f'Linhas lidas: {n}', flush=True)
     hoje = datetime.date.today().isoformat()
     meta = {}
     for uf, o in out.items():
         doc = {'gerado': hoje, 'fonte': 'ANEEL — Relação de empreendimentos de geração distribuída (dados abertos)', 'uf': uf,
-               'listas': o['listas'], 'd': o['d'], 'semCoordenada': o['sem']}
+               'listas': o['listas'], 'd': o['d'], 'semCoordenada': o['sem'],
+               'local': 'empreendimento' if cab[C['lat']] == 'NumCoordNEmpreendimento' else 'subestacao'}
         with open(os.path.join(SAIDA, uf + '.json'), 'w', encoding='utf-8') as f:
             json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
         meta[uf] = {'registros': len(o['d']), 'semCoordenada': o['sem']}

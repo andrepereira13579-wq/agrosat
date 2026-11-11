@@ -526,13 +526,13 @@
       const cen = x => { try { const c = turf.centroid(x.ft).geometry.coordinates; return { lon: c[0], lat: c[1] }; } catch (e) { return null; } };
       const ufv = (EN.solar && EN.solar.itens) || [], ute = (EN.termo && EN.termo.itens) || [];
       if (gd || EN.solar || EN.termo) {
-        const pts = [...(gd ? gd.itens.map(x => ({ lon: x.lon, lat: x.lat, cor: '#ffb000', r: 4 })) : []), ...ufv.map(cen).filter(Boolean).map(p => ({ ...p, cor: '#ff7a00', r: 7 })), ...ute.map(cen).filter(Boolean).map(p => ({ ...p, cor: '#e53935', r: 7 }))];
+        const pts = [...(gd ? gd.grupos.map(x => ({ lon: x.lon, lat: x.lat, cor: '#ffb000', r: Math.min(14, 4 + Math.sqrt(x.n)) })) : []), ...ufv.map(cen).filter(Boolean).map(p => ({ ...p, cor: '#ff7a00', r: 7 })), ...ute.map(cen).filter(Boolean).map(p => ({ ...p, cor: '#e53935', r: 7 }))];
         const me = await mapa(f, { raioKm: 50, pontos: pts });
-        const dentro = gd ? gd.itens.filter(x => x.km === 0).length : 0;
+        const dentro = gd ? gd.grupos.filter(x => x.km === 0).reduce((s, x) => s + x.n, 0) : 0;
         pg('Geração solar e termelétricas', 'Infraestrutura de energia em até 50 km do imóvel.', `
-          ${fig(me, 'Contorno branco: imóvel. Pontos âmbar: micro e minigeração distribuída (ANEEL); laranja: usinas solares; vermelho: termelétricas.')}
-          <p>${gd ? `Foram localizadas <b>${fmt(gd.itens.length, 0)} instalações de geração distribuída</b> (${fmt(gd.kw, 1)} kW de potência instalada)` : `Geração distribuída: não consultada (${esc(D.E.gd || '')})`}, <b>${ufv.length} usina(s) solar(es)</b> e <b>${ute.length} termelétrica(s)</b> em até 50 km do limite. ${dentro ? `<b>${dentro} instalação(ões) dentro do imóvel.</b>` : 'Nenhum ponto de geração distribuída incide no polígono analisado.'}</p>
-          ${gd && gd.itens.length ? `<h3>Geração distribuída mais próxima</h3>${tab(['Município', 'Classe', 'Modalidade', 'Fonte', 'Potência', 'Distância'], gd.itens.slice(0, 15).map(x => [esc(x.mun) + '/' + gd.uf, esc(x.classe), esc(x.mod), esc(x.ger), fmt(x.kw, 1) + ' kW', fmt(x.km, 1) + ' km']))}<p class="nota">A tabela mostra as ${Math.min(15, gd.itens.length)} instalações mais próximas entre ${fmt(gd.itens.length, 0)} no raio. Registros declarados pelas distribuidoras à ANEEL (base de ${dBR(gd.gerado)}); potência instalada não é geração. Dados pessoais dos titulares não são exibidos.</p>` : ''}
+          ${fig(me, `Contorno branco: imóvel. Pontos âmbar: micro e minigeração distribuída (ANEEL)${gd && gd.porSub ? ', na posição da subestação a que estão ligadas (o tamanho do ponto cresce com o número de instalações)' : ''}; laranja: usinas solares; vermelho: termelétricas.`)}
+          <p>${gd ? `Foram localizadas <b>${fmt(gd.n, 0)} instalações de geração distribuída</b> (${fmt(gd.kw, 1)} kW de potência instalada)` : `Geração distribuída: não consultada (${esc(D.E.gd || '')})`}, <b>${ufv.length} usina(s) solar(es)</b> e <b>${ute.length} termelétrica(s)</b> em até 50 km do limite. ${dentro ? `<b>${dentro} instalação(ões) ligadas a uma subestação dentro do imóvel.</b>` : ''}</p>
+          ${gd && gd.grupos.length ? `<h3>Geração distribuída mais próxima${gd.porSub ? ', por subestação' : ''}</h3>${tab([gd.porSub ? 'Subestação' : 'Local', 'Municípios', 'Instalações', 'Classe principal', 'Potência', 'Distância'], gd.grupos.slice(0, 15).map(x => [esc(x.sub || '—'), esc(x.muns.slice(0, 3).join(', ')) + (x.muns.length > 3 ? ` e mais ${x.muns.length - 3}` : '') + '/' + gd.uf, fmt(x.n, 0), esc(x.classes[0] ? `${x.classes[0][0]} (${x.classes[0][1]})` : ''), fmt(x.kw, 1) + ' kW', fmt(x.km, 1) + ' km']))}<p class="nota">${gd.porSub ? 'A ANEEL não divulga mais a coordenada de cada instalação, só a da subestação a que ela está ligada: a distância é até a subestação, não até a placa solar. ' : ''}Registros declarados pelas distribuidoras à ANEEL (base de ${dBR(gd.gerado)}); potência instalada não é geração. Dados pessoais dos titulares não são exibidos.</p>` : ''}
           ${ufv.length || ute.length ? `<h3>Usinas (ANEEL/SIGEL)</h3>${tab(['Tipo', 'Nome', 'Detalhe', 'Distância'], [...ufv.map(x => ['Solar', x], ), ...ute.map(x => ['Termelétrica', x])].slice(0, 15).map(([t, x]) => [t, esc(x.nome), esc(x.det || ''), fmt(x.km, 1) + ' km']))}` : ''}`);
       }
       if (EN.barragem || EN.hidro) {
@@ -568,7 +568,7 @@
         ['Relevo', 'SRTM (Terrain Tiles, ~30 m)', 'declividade de Horn, classes Embrapa'],
         ['Solo', 'SoilGrids 2.0 (ISRIC, 250 m)', 'centro do imóvel'],
         ['Clima', 'ERA5 via Open-Meteo', 'série diária desde 1991 no centro do imóvel'],
-        ['Geração distribuída', R.gd ? `ANEEL, dados abertos (base de ${dBR(R.gd.gerado)})` : 'ANEEL, dados abertos', 'instalações em até 50 km do limite'],
+        ['Geração distribuída', R.gd ? `ANEEL, dados abertos (base de ${dBR(R.gd.gerado)})` : 'ANEEL, dados abertos', 'instalações ligadas a subestações em até 50 km do limite'],
         ['Aptidão agrícola', 'Embrapa Solos e IBGE, Mapa de Aptidão Agrícola das Terras do Brasil (2025, 1:500.000)', 'classes que cruzam o limite'],
         ['Entorno e infraestrutura', 'ANEEL, ANM, ANA, SFB, IPHAN, OpenStreetMap, IBGE', 'sobreposição e distância até cada feição (raios de 5 a 50 km)'],
       ])}

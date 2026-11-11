@@ -17,19 +17,27 @@ async function baseGD(uf) {
 
 async function geracaoDistribuida(f, F, raio = 50) {
   const uf = (f.uf || 'MA').toUpperCase();
-  const B = await baseGD(uf), L = B.listas;
+  const B = await baseGD(uf), L = B.listas, porSub = B.local === 'subestacao';
   const bb = turf.bbox(turf.buffer(F, raio, { units: 'kilometers' }));
-  const itens = [];
+  const grupos = new Map(), memo = new Map();
+  let n = 0, kw = 0;
   for (const d of B.d) {
     const [lat, lon] = d;
     if (lon < bb[0] || lon > bb[2] || lat < bb[1] || lat > bb[3]) continue;
-    const ft = turf.point([lon, lat]);
-    const km = distKmFeicao(F, ft);
+    const kk = lat + ',' + lon;
+    let km = memo.get(kk);
+    if (km === undefined) { km = distKmFeicao(F, turf.point([lon, lat])); memo.set(kk, km); }
     if (km > raio) continue;
-    itens.push({ lon, lat, km, mun: L.mun[d[2]], classe: L.classe[d[3]], mod: L.mod[d[4]], ger: L.ger[d[5]], kw: d[6], ano: d[7], ft });
+    n++; kw += d[6] || 0;
+    // agrupa pelo ponto (subestação, quando a ANEEL só informa a subestação)
+    const g = grupos.get(kk) || { lon, lat, km, sub: L.sub ? L.sub[d[8]] : '', muns: new Map(), classes: new Map(), n: 0, kw: 0 };
+    g.n++; g.kw += d[6] || 0;
+    const m = L.mun[d[2]]; g.muns.set(m, (g.muns.get(m) || 0) + 1);
+    const c = L.classe[d[3]]; g.classes.set(c, (g.classes.get(c) || 0) + 1);
+    grupos.set(kk, g);
   }
-  itens.sort((a, b) => a.km - b.km);
-  return { itens, kw: itens.reduce((s, x) => s + (x.kw || 0), 0), raio, uf, gerado: B.gerado, fonte: B.fonte };
+  const lista = [...grupos.values()].sort((a, b) => a.km - b.km).map(g => ({ ...g, muns: [...g.muns.entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]), classes: [...g.classes.entries()].sort((a, b) => b[1] - a[1]) }));
+  return { grupos: lista, n, kw, raio, uf, gerado: B.gerado, fonte: B.fonte, porSub };
 }
 
 // ---------------- Aptidão agrícola ----------------
