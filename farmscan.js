@@ -214,7 +214,7 @@
   const selo = n => `<span class="tag" style="background:${COR[n] || COR.info}">${ROT[n] || ''}</span>`;
 
   async function montar(D, A, aviso) {
-    const { f, R } = D, cons = CONF.consultor, id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())).slice(0, 8).toUpperCase();
+    const { f, F, R } = D, cons = CONF.consultor, id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())).slice(0, 8).toUpperCase();
     const agora = new Date(), quando = `${dBR(isoDay(agora))} às ${agora.toTimeString().slice(0, 5)}`;
     const cd = A.carDados || {}, mun = cd.mun || f.municipio || '', uf = cd.uf || D.uf;
     const pags = []; const pg = (titulo, lead, corpo) => pags.push({ titulo, lead, corpo });
@@ -311,6 +311,7 @@
     const S_ = [
       ['CAR (SICAR)', A.car], ['SIGEF / INCRA', A.sigef], ['Embargos IBAMA', A.emb], ['Desmatamento PRODES', A.prodes], ['Alertas DETER', A.deter],
       ['Áreas queimadas (5 anos)', A.aq], [`Focos de queimada (${CONF.diasFocos} dias)`, A.fogo], ['Áreas protegidas e territórios', A.prot], ['Crédito rural (Sicor)', A.credito], ['Reserva Legal', A.rl],
+      ['Mineração', R.entorno && R.entorno.R.min ? (() => { const MI = mineracaoNoImovel(R.entorno.R.min.itens, F); return MI.sobre.length ? { nivel: MI.sobre.some(x => x.nivel === 'grave') ? 'grave' : 'alerta', resumo: `${MI.sobre.length} processo(s) da ANM sobre ${fmt(MI.haUniao, 1)} ha (${fmt(MI.pct, 0)}%): ${MI.sobre.slice(0, 3).map(x => `${esc(x.subs)} (${esc(x.fase.toLowerCase())})`).join(', ')}` } : { nivel: 'ok', resumo: `Nenhum processo sobre o imóvel${MI.perto.length ? ` · ${MI.perto.length} até 10 km` : ''}` }; })() : { nivel: 'erro', resumo: esc((R.entorno && R.entorno.E.min) || D.E.entorno || '') }],
       ['Entorno e infraestrutura', R.entorno ? (() => { const L = linhasEntorno(R.entorno), al = L.filter(l => l.nivel === 'alerta' || l.nivel === 'grave'); const er = L.filter(l => l.nivel === 'erro'); if (er.length >= L.length - 1) return { nivel: 'erro', resumo: 'As bases de entorno não responderam agora' }; return { nivel: al.length ? 'alerta' : er.length ? 'info' : 'ok', resumo: (al.length ? al.map(l => `${l.nome}: ${semTag(l.texto)}`).join(' · ') : 'Nada sobre o imóvel nas bases consultadas (mineração, floresta pública, sítio arqueológico); fora da faixa de fronteira') + (er.length ? ` · ${er.length} base(s) não consultada(s): ${er.map(l => l.nome.split(' (')[0]).join(', ')}` : '') }; })() : { nivel: 'erro', resumo: esc(D.E.entorno || '') }],
       ['Uso do solo', A.uso ? { nivel: 'info', resumo: A.uso.grupos.slice(0, 3).map(g => `${g.nome} ${fmt(g.pct, 0)}%`).join(' · ') } : { nivel: 'erro', resumo: esc(D.E.uso || '') }],
       ['Condição da cobertura', R.cob ? (() => { const c = k => (R.cob.classes.find(x => x.k === k) || { pct: 0 }).pct; const sujo = c(2) + c(3), deg = c(5) + c(6); return { nivel: sujo + deg >= 25 ? 'alerta' : 'info', resumo: `Pasto formado ${fmt(c(4), 0)}% · degradado/solo ${fmt(deg, 0)}% · juquira ${fmt(sujo, 0)}%${c(3) >= 1 ? ` (${fmt(c(3), 0)}% avançou sobre pasto desde ${R.cob.anoAntigo})` : ''} · mata ${fmt(c(1), 0)}%` }; })() : { nivel: 'erro', resumo: esc(D.E.cob || '') }],
@@ -518,6 +519,18 @@
         <h3>Certidões e documentos</h3>
         ${tab(['Documento', 'Onde emitir'], CERTIDOES.map(([n, u, d]) => [`<b>${n}</b><br><small>${d}</small>`, `<a href="${u}">${u.replace(/^https?:\/\//, '').split('/')[0]}</a>`]))}
         <p class="nota">Bases de energia (ANEEL/SIGEL), mineração (ANM/SIGMINE), água (ANA/SNIRH), florestas públicas (SFB), patrimônio (IPHAN) e OpenStreetMap. As camadas dos órgãos são encontradas automaticamente pelo nome no catálogo de cada um; se um órgão mudar a camada, o tema aparece como "Não consultado". Matrícula e CCIR não têm consulta aberta: use os links acima.</p>`);
+    }
+
+    // ---- Mineração (ANM) ----
+    if (R.entorno && R.entorno.R.min) {
+      const MI = mineracaoNoImovel(R.entorno.R.min.itens, F), CM = { grave: '#d73027', alerta: '#ffb000', info: '#4fc3f7' };
+      const mm = await mapa(f, { raioKm: MI.sobre.length ? 0.5 : 3, camadas: [
+        ...MI.perto.filter(x => x.km <= 3).map(x => ({ feats: [x.ft], cor: 'rgba(255,255,255,.6)', fill: 'rgba(255,255,255,.08)', larg: 1 })),
+        ...MI.sobre.map(x => ({ feats: [x.ft], cor: CM[x.nivel], fill: CM[x.nivel] + '40', larg: 2 })),
+      ] });
+      pg('Mineração', 'Processos minerários da ANM (SIGMINE) sobre o imóvel e até 10 km.', `
+        ${fig(mm, 'Polígonos dos processos: vermelho = direito de lavrar; amarelo = pesquisa ou pedido em análise; azul = disponibilidade; branco = processos vizinhos. Contorno branco grosso: imóvel.')}
+        ${mineracaoHTML(MI)}`);
     }
 
     // ---- Geração solar e termelétricas / Barragens e hidrelétricas ----

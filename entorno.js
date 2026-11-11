@@ -268,12 +268,57 @@ function linhasEntorno(EN) {
       if (DL.group) DL.group.clearLayers(); else DL.group = L_layerGroupSafe();
       try { L_geo(camada); } catch (e) { }
       $('entRes').hidden = false;
+      const MIN = EN.R.min ? mineracaoNoImovel(EN.R.min.itens, F) : null;
       $('entRes').innerHTML = L.map(l => `<div class="dcard" style="border-left:4px solid ${COR[l.nivel]}"><b>${l.nome}</b><div>${l.texto}</div>${l.itens.length ? `<details><summary>${l.itens.length > 1 ? `ver os ${Math.min(8, l.itens.length)} mais próximos` : "ver detalhe"}</summary>${tabelaHTML(['Nome', 'Detalhe', 'Distância'], l.itens.slice(0, 8).map(i => [esc(i.nome), esc(i.det || ''), i.km === 0 ? 'dentro' : fmt(i.km, i.km < 10 ? 1 : 0) + ' km']))}</details>` : ''}</div>`).join('')
         + (M ? `<div class="dcard" style="border-left:4px solid ${COR.info}"><b>Município: ${esc(M.nome)} - ${M.uf}</b>${M.bovinos && M.bovinos.length ? `<div>Rebanho bovino (IBGE/PPM): ${M.bovinos.map(x => `${x.ano}: ${fmt(x.cab, 0)}`).join(' · ')} cabeças</div>` : ''}</div>` : '')
-        + `<h4>Certidões e documentos</h4>${CERTIDOES.map(([n, u, d]) => `<p><a href="${u}" target="_blank" rel="noopener">${n}</a><br><span class="hint">${d}</span></p>`).join('')}`;
+        + `<h4>Certidões e documentos</h4>${CERTIDOES.map(([n, u, d]) => `<p><a href="${u}" target="_blank" rel="noopener">${n}</a><br><span class="hint">${d}</span></p>`).join('')}` ;
+      if (MIN) $('entRes').insertAdjacentHTML('afterbegin', `<div class="dcard" style="border-left:4px solid ${MIN.sobre.length ? COR.alerta : COR.ok}"><b>⛏️ Mineração (ANM)</b>${mineracaoHTML(MIN, true)}</div>`);
     } catch (e) { busy(false); toast('Não consegui consultar o entorno: ' + e.message, 6000); }
     finally { btn.disabled = false; }
   };
   function L_layerGroupSafe() { return L.layerGroup().addTo(map); }
   function L_geo(fs) { if (!fs.length) return; DL.group.addLayer(L.geoJSON({ type: 'FeatureCollection', features: fs }, { style: { color: '#ffb000', weight: 2, fillOpacity: .15 }, pointToLayer: (ft, ll) => L.circleMarker(ll, { radius: 6, color: '#fff', weight: 2, fillColor: '#ffb000', fillOpacity: 1 }) })); }
 })();
+
+// ---------- Mineração (ANM/SIGMINE): processos sobre o imóvel, com área sobreposta ----------
+const FASES_MIN = [
+  [/concess[aã]o de lavra|lavra garimpeira|licenciamento|registro de extra/i, 'grave', 'direito de lavrar (extração autorizada)'],
+  [/requerimento de lavra|requerimento de licenciamento|requerimento de lavra garimpeira|requerimento de registro/i, 'alerta', 'pedido de extração em análise'],
+  [/autoriza[cç][aã]o de pesquisa/i, 'alerta', 'pesquisa mineral autorizada (pode haver sondagem na área)'],
+  [/requerimento de pesquisa/i, 'alerta', 'pedido de pesquisa em análise'],
+  [/disponibilidade/i, 'info', 'área devolvida, disponível para novo interessado'],
+];
+const ehEmpresa = n => /\b(ltda|s\.?\/?a\.?|eireli|\bme\b|\bepp\b|minera|minera[cç][aã]o|empresa|companhia|cia\b|cooperativa|ind[uú]stria|com[eé]rcio|holding|associa|mining|resources|recursos|brasil)\b/i.test(n || '');
+function mineracaoNoImovel(itens, F) {
+  const P = (p, re) => { for (const [k, v] of Object.entries(p)) if (re.test(k) && v != null && v !== '') return String(v).trim(); return ''; };
+  const areaTot = turf.area(F) / 1e4, inters = [];
+  const proc = (itens || []).map(x => {
+    const p = x.ft.properties || {};
+    const fase = P(p, /^fase$/i), subs = P(p, /^subs/i), tit = P(p, /^nome$|titular|requerente/i);
+    let inter = null, haSob = 0;
+    if (x.km === 0) { try { inter = turf.intersect(F, x.ft); if (inter) { haSob = turf.area(inter) / 1e4; inters.push(inter); } } catch (e) { } }
+    const f = FASES_MIN.find(([re]) => re.test(fase)) || [null, 'info', ''];
+    return {
+      processo: P(p, /^processo$|^dsprocesso$/i) || [P(p, /^numero$/i), P(p, /^ano$/i)].filter(Boolean).join('/'),
+      subs: subs ? subs.charAt(0) + subs.slice(1).toLowerCase() : '—', fase: fase || '—', nivel: f[1], leitura: f[2],
+      ultimo: P(p, /ult_?evento|ultimo/i), uso: P(p, /^uso$/i), titular: tit ? (ehEmpresa(tit) ? tit : 'Pessoa física') : '—',
+      haProc: +P(p, /^area_?ha$|^area$/i) || 0, haSob, km: x.km, ft: x.ft, inter,
+    };
+  });
+  const sobre = proc.filter(x => x.km === 0 && x.haSob >= 0.01).sort((a, b) => b.haSob - a.haSob);
+  let haUniao = 0;
+  try { if (inters.length) { let u = inters[0]; for (const g of inters.slice(1)) u = turf.union(u, g) || u; haUniao = turf.area(u) / 1e4; } } catch (e) { haUniao = Math.min(areaTot, sobre.reduce((s, x) => s + x.haSob, 0)); }
+  return { sobre, perto: proc.filter(x => x.km > 0).sort((a, b) => a.km - b.km), haSoma: sobre.reduce((s, x) => s + x.haSob, 0), haUniao, pct: haUniao / areaTot * 100 };
+}
+function mineracaoHTML(MI, compacto) {
+  const COR = { grave: '#d73027', alerta: '#e0a800', info: '#2f6fb3' };
+  if (!MI.sobre.length) return `<p><b>Nenhum processo minerário sobre o imóvel.</b>${MI.perto.length ? ` ${MI.perto.length} processo(s) até 10 km; o mais próximo a ${fmt(MI.perto[0].km, 1)} km (${esc(MI.perto[0].subs)}, ${esc(MI.perto[0].fase.toLowerCase())}).` : ' Nenhum até 10 km.'}</p>`;
+  const card = x => `<div style="border:1px solid #ddd;border-left:5px solid ${COR[x.nivel]};border-radius:8px;padding:8px 10px;margin:6px 0">
+    <b style="font-size:1.05em">${esc(x.subs)}</b> · <b>${fmt(x.haSob, x.haSob < 10 ? 1 : 0)} ha sobrepostos</b>${x.haProc ? ` <span style="color:#666">(processo de ${fmt(x.haProc, 0)} ha)</span>` : ''}
+    <div><b>${esc(x.fase.toUpperCase())}</b>${x.leitura ? ` — ${x.leitura}` : ''}</div>
+    <div style="color:#555;font-size:.92em">Processo ANM ${esc(x.processo || '—')} · Titular: ${esc(x.titular)}${x.uso ? ` · Uso: ${esc(x.uso)}` : ''}${x.ultimo ? `<br>Último evento: ${esc(x.ultimo)}` : ''}</div></div>`;
+  return `<p><b>${MI.sobre.length} processo(s) minerário(s) sobre o imóvel</b>, cobrindo <b>${fmt(MI.haUniao, MI.haUniao < 10 ? 1 : 0)} ha (${fmt(MI.pct, 0)}% da área)</b>${Math.abs(MI.haSoma - MI.haUniao) > 0.5 ? ` — a soma por processo dá ${fmt(MI.haSoma, 1)} ha porque alguns se sobrepõem entre si` : ''}.</p>
+    ${MI.sobre.slice(0, compacto ? 6 : 20).map(card).join('')}
+    ${MI.perto.length ? `<p style="color:#555">Mais ${MI.perto.length} processo(s) até 10 km do limite.</p>` : ''}
+    <p class="${compacto ? 'hint' : 'nota'}">Fonte: ANM/SIGMINE. O subsolo é da União: o processo dá ao titular o direito de pesquisar ou lavrar o minério, não a posse da terra. Para pesquisar ele precisa de acordo com o proprietário ou de autorização judicial, e o dono do solo tem direito a renda pela ocupação, indenização por danos e participação no resultado da lavra (Código de Mineração, arts. 11 e 27). Nome de pessoa física não é exibido. Confira o andamento no SEI/Cadastro Mineiro da ANM pelo número do processo.</p>`;
+}
