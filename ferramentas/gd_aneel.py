@@ -15,6 +15,7 @@ PACOTE = 'relacao-de-empreendimentos-de-geracao-distribuida'
 API = 'https://dadosabertos.aneel.gov.br/api/3/action/package_show?id=' + PACOTE
 UA = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36'}
 ZIP_FIXO = 'https://dadosabertos.aneel.gov.br/dataset/5e0fafd2-21b9-4d5b-b622-40438d40aba2/resource/b1bd71e7-d0ad-4214-9053-cbd58e9564a7/download/empreendimento-geracao-distribuida.zip'
+SEDES = 'https://raw.githubusercontent.com/kelvins/municipios-brasileiros/main/csv/municipios.csv'  # sede de cada município (código IBGE, lat, lon)
 PONTE = os.environ.get('GD_PONTE', 'https://agrosat-ponte.andrepereira13579.workers.dev')
 UFS = [u.strip().upper() for u in os.environ.get('GD_UFS', 'MA').split(',') if u.strip()]
 SAIDA = os.path.join(os.path.dirname(__file__), '..', 'data', 'gd')
@@ -133,7 +134,19 @@ def main():
              mod=col('DscModalidadeHabilitado', 'SigModalidadeEmpreendimento'), ger=col('SigTipoGeracao', 'DscFonteGeracao'),
              kw=col('MdaPotenciaInstaladaKW', 'PotenciaInstalada'), lat=col('NumCoordNEmpreendimento', 'NumCoordNSub'), lon=col('NumCoordEEmpreendimento', 'NumCoordESub'), sub=col('NomSubEstacao'),
              data=col('DthAtualizaCadastralEmpreend', 'DatConexao'))
-    falta = [k for k in ('uf', 'kw', 'lat', 'lon') if C[k] is None]
+    C['codmun'] = col('CodMunicipioIbge')
+    # a ANEEL deixou de publicar a coordenada de cada instalação; a da subestação quase nunca vem preenchida.
+    # Por isso cada instalação é posicionada na sede do seu município (código IBGE).
+    sedes = {}
+    try:
+        baixar(SEDES, '/tmp/sedes.csv')
+        for r in csv.DictReader(open('/tmp/sedes.csv', encoding='utf-8')):
+            sedes[r['codigo_ibge'].strip()] = (float(r['latitude']), float(r['longitude']))
+        print('Sedes municipais:', len(sedes), flush=True)
+    except (Exception, SystemExit) as e:
+        print('Sem a lista de sedes municipais:', e, flush=True)
+    usar_sede = bool(sedes) and C['codmun'] is not None and not (C['lat'] is not None and cab[C['lat']] == 'NumCoordNEmpreendimento')
+    falta = [k for k in ('uf', 'kw') + (() if usar_sede else ('lat', 'lon')) if C[k] is None]
     if falta:
         raise SystemExit(f'Colunas não encontradas: {falta}. Cabeçalho: {cab}')
     print('Colunas:', {k: (cab[v] if v is not None else None) for k, v in C.items()}, flush=True)
@@ -155,7 +168,12 @@ def main():
         if uf not in out:
             continue
         o = out[uf]
-        lat, lon, kw = num(row[C['lat']]), num(row[C['lon']]), num(row[C['kw']])
+        kw = num(row[C['kw']])
+        if usar_sede:
+            sd = sedes.get((row[C['codmun']] or '').strip().split('.')[0])
+            lat, lon = sd if sd else (None, None)
+        else:
+            lat, lon = num(row[C['lat']]), num(row[C['lon']])
         if lat is None or lon is None or not (-35 < lat < 6 and -75 < lon < -30):
             o['sem'] += 1; continue
         g = lambda k: row[C[k]] if C[k] is not None and C[k] < len(row) else ''
@@ -168,7 +186,7 @@ def main():
     for uf, o in out.items():
         doc = {'gerado': hoje, 'fonte': 'ANEEL — Relação de empreendimentos de geração distribuída (dados abertos)', 'uf': uf,
                'listas': o['listas'], 'd': o['d'], 'semCoordenada': o['sem'],
-               'local': 'empreendimento' if cab[C['lat']] == 'NumCoordNEmpreendimento' else 'subestacao'}
+               'local': 'municipio' if usar_sede else ('empreendimento' if cab[C['lat']] == 'NumCoordNEmpreendimento' else 'subestacao')}
         with open(os.path.join(SAIDA, uf + '.json'), 'w', encoding='utf-8') as f:
             json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
         meta[uf] = {'registros': len(o['d']), 'semCoordenada': o['sem']}

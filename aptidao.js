@@ -17,7 +17,7 @@ async function baseGD(uf) {
 
 async function geracaoDistribuida(f, F, raio = 50) {
   const uf = (f.uf || 'MA').toUpperCase();
-  const B = await baseGD(uf), L = B.listas, porSub = B.local === 'subestacao';
+  const B = await baseGD(uf), L = B.listas, local = B.local || 'empreendimento';
   const bb = turf.bbox(turf.buffer(F, raio, { units: 'kilometers' }));
   const grupos = new Map(), memo = new Map();
   let n = 0, kw = 0;
@@ -37,7 +37,7 @@ async function geracaoDistribuida(f, F, raio = 50) {
     grupos.set(kk, g);
   }
   const lista = [...grupos.values()].sort((a, b) => a.km - b.km).map(g => ({ ...g, muns: [...g.muns.entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]), classes: [...g.classes.entries()].sort((a, b) => b[1] - a[1]) }));
-  return { grupos: lista, n, kw, raio, uf, gerado: B.gerado, fonte: B.fonte, porSub };
+  return { grupos: lista, n, kw, raio, uf, gerado: B.gerado, fonte: B.fonte, local };
 }
 
 // ---------------- Aptidão agrícola ----------------
