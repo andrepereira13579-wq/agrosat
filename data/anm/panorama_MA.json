@@ -2,78 +2,155 @@
  "gerado": "2026-11-11",
  "uf": "MA",
  "fonte": "ANM/SIGMINE (dados abertos); malha municipal IBGE",
- "processos": 790,
- "haTotal": 2478941,
+ "processos": 2902,
+ "haTotal": 4330006,
  "porFase": {
-  "pesquisa": {
-   "ha": 2413648,
-   "n": 771
-  },
   "lavra": {
-   "ha": 25441,
-   "n": 6
+   "ha": 81711,
+   "n": 586
   },
-  "outras": {
-   "ha": 13064,
-   "n": 4
+  "pesquisa": {
+   "ha": 2666934,
+   "n": 1313
   },
   "requerimento": {
-   "ha": 26789,
-   "n": 9
+   "ha": 472671,
+   "n": 542
+  },
+  "disponibilidade": {
+   "ha": 1093083,
+   "n": 442
+  },
+  "outras": {
+   "ha": 15607,
+   "n": 19
   }
  },
  "fasesDetalhe": [
   [
    "AUTORIZAÇÃO DE PESQUISA",
-   771
+   1313
   ],
   [
-   "REQUERIMENTO DE LAVRA",
-   9
+   "LICENCIAMENTO",
+   465
+  ],
+  [
+   "DISPONIBILIDADE",
+   275
+  ],
+  [
+   "REQUERIMENTO DE PESQUISA",
+   215
+  ],
+  [
+   "REQUERIMENTO DE LICENCIAMENTO",
+   182
+  ],
+  [
+   "APTO PARA DISPONIBILIDADE",
+   167
   ],
   [
    "CONCESSÃO DE LAVRA",
-   5
+   119
+  ],
+  [
+   "REQUERIMENTO DE LAVRA GARIMPEIRA",
+   94
+  ],
+  [
+   "REQUERIMENTO DE LAVRA",
+   50
   ],
   [
    "DIREITO DE REQUERER A LAVRA",
-   4
+   19
   ],
   [
    "LAVRA GARIMPEIRA",
+   2
+  ],
+  [
+   "REQUERIMENTO DE REGISTRO DE EXTRAÇÃO",
    1
   ]
  ],
  "substancias": [
   {
    "subs": "MINÉRIO DE FERRO",
-   "ha": 1165179,
-   "n": 301
+   "ha": 1559677,
+   "n": 416
   },
   {
    "subs": "FOSFATO",
-   "ha": 469102,
-   "n": 189
+   "ha": 694483,
+   "n": 284
   },
   {
    "subs": "MINÉRIO DE OURO",
-   "ha": 311613,
-   "n": 100
-  },
-  {
-   "subs": "OURO",
-   "ha": 161424,
-   "n": 44
+   "ha": 627080,
+   "n": 186
   },
   {
    "subs": "BAUXITA",
-   "ha": 143789,
-   "n": 23
+   "ha": 293972,
+   "n": 58
+  },
+  {
+   "subs": "OURO",
+   "ha": 185284,
+   "n": 72
   },
   {
    "subs": "ILMENITA",
-   "ha": 100181,
-   "n": 69
+   "ha": 166097,
+   "n": 111
+  },
+  {
+   "subs": "MINÉRIO DE COBRE",
+   "ha": 155749,
+   "n": 34
+  },
+  {
+   "subs": "CALCÁRIO",
+   "ha": 130415,
+   "n": 236
+  },
+  {
+   "subs": "QUARTZO",
+   "ha": 74804,
+   "n": 89
+  },
+  {
+   "subs": "GIPSITA",
+   "ha": 58886,
+   "n": 99
+  },
+  {
+   "subs": "AREIA",
+   "ha": 56847,
+   "n": 556
+  },
+  {
+   "subs": "ALUMÍNIO",
+   "ha": 38453,
+   "n": 6
+  },
+  {
+   "subs": "MINÉRIO DE ALUMÍNIO",
+   "ha": 33433,
+   "n": 10
+  },
+  {
+   "subs": "ARGILA",
+   "ha": 33403,
+   "n": 278
+  },
+  {
+   "subs": "CASSITERITA",
+   "ha": 28567,
+   "n": 3
   },
   {
    "subs": "MINÉRIO DE ESTANHO",
@@ -81,413 +158,377 @@
    "n": 4
   },
   {
-   "subs": "MINÉRIO DE COBRE",
-   "ha": 24332,
-   "n": 15
+   "subs": "DIAMANTE",
+   "ha": 20719,
+   "n": 12
   },
   {
-   "subs": "MINÉRIO DE ALUMÍNIO",
-   "ha": 21934,
-   "n": 8
-  },
-  {
-   "subs": "ALUMÍNIO",
-   "ha": 17909,
-   "n": 3
-  },
-  {
-   "subs": "AREIA",
-   "ha": 13438,
-   "n": 20
+   "subs": "BASALTO",
+   "ha": 20574,
+   "n": 69
   },
   {
    "subs": "MINÉRIO DE MANGANÊS",
-   "ha": 11783,
-   "n": 5
+   "ha": 18536,
+   "n": 6
+  },
+  {
+   "subs": "CAULIM",
+   "ha": 16977,
+   "n": 15
+  },
+  {
+   "subs": "GRANITO",
+   "ha": 13112,
+   "n": 108
+  },
+  {
+   "subs": "MÁRMORE",
+   "ha": 10658,
+   "n": 2
+  },
+  {
+   "subs": "TERRAS RARAS",
+   "ha": 10332,
+   "n": 2
+  },
+  {
+   "subs": "DIABÁSIO",
+   "ha": 7675,
+   "n": 19
   },
   {
    "subs": "CROMITA",
    "ha": 7419,
    "n": 4
-  },
-  {
-   "subs": "CASCALHO",
-   "ha": 2151,
-   "n": 1
-  },
-  {
-   "subs": "ARENITO",
-   "ha": 2023,
-   "n": 1
-  },
-  {
-   "subs": "CALCÁRIO",
-   "ha": 874,
-   "n": 1
-  },
-  {
-   "subs": "HEMATITA",
-   "ha": 559,
-   "n": 1
-  },
-  {
-   "subs": "BASALTO",
-   "ha": 283,
-   "n": 1
   }
  ],
  "municipios": [
   {
    "cod": "2106706",
    "nome": "Mirador",
-   "ha": 157350,
-   "pctMunicipio": 18.1,
+   "ha": 217697,
+   "pctMunicipio": 25.0,
    "porFase": {
-    "pesquisa": 157350
+    "pesquisa": 157916,
+    "requerimento": 7861,
+    "disponibilidade": 51920
    },
    "processos": {
-    "pesquisa": 24
+    "pesquisa": 29,
+    "requerimento": 6,
+    "disponibilidade": 7
    },
    "substancias": [
     [
      "MINÉRIO DE FERRO",
-     157350
+     216117
+    ],
+    [
+     "QUARTZO",
+     1483
+    ],
+    [
+     "AREIA",
+     97
     ]
    ]
   },
   {
    "cod": "2108009",
    "nome": "Pastos Bons",
-   "ha": 123200,
-   "pctMunicipio": 74.2,
+   "ha": 137954,
+   "pctMunicipio": 83.1,
    "porFase": {
-    "pesquisa": 123200
+    "pesquisa": 126270,
+    "lavra": 100,
+    "requerimento": 340,
+    "disponibilidade": 11244
    },
    "processos": {
-    "pesquisa": 27
+    "pesquisa": 31,
+    "lavra": 2,
+    "requerimento": 7,
+    "disponibilidade": 10
    },
    "substancias": [
     [
      "MINÉRIO DE FERRO",
-     113322
+     124566
     ],
     [
      "FOSFATO",
      9409
     ],
     [
-     "MINÉRIO DE OURO",
-     469
-    ]
-   ]
-  },
-  {
-   "cod": "2110658",
-   "nome": "São Domingos do Azeitão",
-   "ha": 93185,
-   "pctMunicipio": 95.7,
-   "porFase": {
-    "pesquisa": 93185
-   },
-   "processos": {
-    "pesquisa": 16
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     93185
-    ]
-   ]
-  },
-  {
-   "cod": "2106102",
-   "nome": "Loreto",
-   "ha": 75640,
-   "pctMunicipio": 20.8,
-   "porFase": {
-    "pesquisa": 75640
-   },
-   "processos": {
-    "pesquisa": 21
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     67666
+     "CALCÁRIO",
+     2254
     ],
     [
-     "FOSFATO",
-     2970
-    ],
-    [
-     "MINÉRIO DE OURO",
-     2830
-    ],
-    [
-     "MINÉRIO DE ALUMÍNIO",
-     1092
+     "BASALTO",
+     965
     ]
    ]
   },
   {
    "cod": "2109502",
    "nome": "Riachão",
-   "ha": 70371,
-   "pctMunicipio": 11.0,
+   "ha": 121402,
+   "pctMunicipio": 18.9,
    "porFase": {
-    "pesquisa": 70371
+    "pesquisa": 81052,
+    "disponibilidade": 19318,
+    "requerimento": 20988,
+    "lavra": 45
    },
    "processos": {
-    "pesquisa": 19
+    "pesquisa": 35,
+    "disponibilidade": 15,
+    "requerimento": 12,
+    "lavra": 1
    },
    "substancias": [
     [
      "FOSFATO",
-     53187
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     10710
+     77199
     ],
     [
      "MINÉRIO DE OURO",
-     6474
+     14165
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     10854
+    ],
+    [
+     "CALCÁRIO",
+     10020
+    ]
+   ]
+  },
+  {
+   "cod": "2106102",
+   "nome": "Loreto",
+   "ha": 121149,
+   "pctMunicipio": 33.3,
+   "porFase": {
+    "pesquisa": 81997,
+    "lavra": 164,
+    "requerimento": 1012,
+    "disponibilidade": 37976
+   },
+   "processos": {
+    "pesquisa": 29,
+    "lavra": 4,
+    "requerimento": 1,
+    "disponibilidade": 7
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     105202
+    ],
+    [
+     "CALCÁRIO",
+     5399
+    ],
+    [
+     "FOSFATO",
+     3019
+    ],
+    [
+     "MINÉRIO DE OURO",
+     2830
     ]
    ]
   },
   {
    "cod": "2103158",
    "nome": "Centro do Guilherme",
-   "ha": 66380,
-   "pctMunicipio": 61.2,
+   "ha": 106148,
+   "pctMunicipio": 97.9,
    "porFase": {
     "pesquisa": 63892,
-    "requerimento": 2488
+    "requerimento": 24045,
+    "disponibilidade": 18211
    },
    "processos": {
     "pesquisa": 24,
-    "requerimento": 3
+    "requerimento": 13,
+    "disponibilidade": 6
    },
    "substancias": [
     [
      "MINÉRIO DE OURO",
-     44009
+     73316
     ],
     [
      "OURO",
-     22371
+     32832
+    ]
+   ]
+  },
+  {
+   "cod": "2110658",
+   "nome": "São Domingos do Azeitão",
+   "ha": 105549,
+   "pctMunicipio": 108.4,
+   "porFase": {
+    "pesquisa": 93185,
+    "requerimento": 1722,
+    "disponibilidade": 10642
+   },
+   "processos": {
+    "pesquisa": 16,
+    "requerimento": 1,
+    "disponibilidade": 3
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     103827
+    ],
+    [
+     "QUARTZO",
+     1722
+    ]
+   ]
+  },
+  {
+   "cod": "2104099",
+   "nome": "Formosa da Serra Negra",
+   "ha": 96708,
+   "pctMunicipio": 24.3,
+   "porFase": {
+    "disponibilidade": 66393,
+    "requerimento": 14117,
+    "pesquisa": 14709,
+    "lavra": 351,
+    "outras": 1138
+   },
+   "processos": {
+    "disponibilidade": 11,
+    "requerimento": 3,
+    "pesquisa": 9,
+    "lavra": 8,
+    "outras": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     37668
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     19605
+    ],
+    [
+     "BAUXITA",
+     11221
+    ],
+    [
+     "MÁRMORE",
+     9713
     ]
    ]
   },
   {
    "cod": "2105427",
    "nome": "Itinga do Maranhão",
-   "ha": 62737,
-   "pctMunicipio": 17.4,
+   "ha": 95072,
+   "pctMunicipio": 26.4,
    "porFase": {
-    "requerimento": 12123,
-    "pesquisa": 50614
+    "pesquisa": 50614,
+    "requerimento": 15662,
+    "disponibilidade": 28796
    },
    "processos": {
-    "requerimento": 3,
-    "pesquisa": 10
+    "pesquisa": 10,
+    "requerimento": 5,
+    "disponibilidade": 7
    },
    "substancias": [
     [
      "BAUXITA",
-     55887
+     66849
     ],
     [
      "ALUMÍNIO",
-     6593
+     16979
     ],
     [
      "FOSFATO",
-     257
-    ]
-   ]
-  },
-  {
-   "cod": "2103406",
-   "nome": "Coelho Neto",
-   "ha": 61647,
-   "pctMunicipio": 62.1,
-   "porFase": {
-    "pesquisa": 61647
-   },
-   "processos": {
-    "pesquisa": 43
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     61647
-    ]
-   ]
-  },
-  {
-   "cod": "2111904",
-   "nome": "Sucupira do Norte",
-   "ha": 58550,
-   "pctMunicipio": 53.8,
-   "porFase": {
-    "pesquisa": 58550
-   },
-   "processos": {
-    "pesquisa": 14
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     58550
-    ]
-   ]
-  },
-  {
-   "cod": "2103505",
-   "nome": "Colinas",
-   "ha": 56639,
-   "pctMunicipio": 28.2,
-   "porFase": {
-    "pesquisa": 56639
-   },
-   "processos": {
-    "pesquisa": 14
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     44927
+     11241
     ],
     [
-     "FOSFATO",
-     11133
-    ],
-    [
-     "OURO",
-     438
-    ],
-    [
-     "MINÉRIO DE OURO",
-     141
+     "AREIA",
+     3
     ]
    ]
   },
   {
    "cod": "2101806",
    "nome": "Benedito Leite",
-   "ha": 52965,
-   "pctMunicipio": 29.3,
+   "ha": 93902,
+   "pctMunicipio": 52.0,
    "porFase": {
-    "pesquisa": 52965
+    "pesquisa": 53707,
+    "requerimento": 20116,
+    "disponibilidade": 20078
    },
    "processos": {
-    "pesquisa": 16
+    "pesquisa": 21,
+    "requerimento": 8,
+    "disponibilidade": 4
    },
    "substancias": [
     [
      "MINÉRIO DE FERRO",
-     50343
+     72726
+    ],
+    [
+     "QUARTZO",
+     14503
     ],
     [
      "MINÉRIO DE COBRE",
-     2578
+     4604
     ],
     [
-     "FOSFATO",
-     44
-    ]
-   ]
-  },
-  {
-   "cod": "2100501",
-   "nome": "Alto Parnaíba",
-   "ha": 52844,
-   "pctMunicipio": 4.7,
-   "porFase": {
-    "pesquisa": 52844
-   },
-   "processos": {
-    "pesquisa": 28
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     47136
-    ],
-    [
-     "MINÉRIO DE COBRE",
-     2008
-    ],
-    [
-     "FOSFATO",
-     1934
-    ],
-    [
-     "AREIA",
-     1333
-    ]
-   ]
-  },
-  {
-   "cod": "2103174",
-   "nome": "Centro Novo do Maranhão",
-   "ha": 50412,
-   "pctMunicipio": 6.1,
-   "porFase": {
-    "pesquisa": 41142,
-    "requerimento": 9271
-   },
-   "processos": {
-    "pesquisa": 23,
-    "requerimento": 5
-   },
-   "substancias": [
-    [
-     "OURO",
-     27076
-    ],
-    [
-     "MINÉRIO DE OURO",
-     17006
-    ],
-    [
-     "BAUXITA",
-     4773
-    ],
-    [
-     "ALUMÍNIO",
-     1557
+     "CALCÁRIO",
+     1755
     ]
    ]
   },
   {
    "cod": "2100055",
    "nome": "Açailândia",
-   "ha": 50225,
-   "pctMunicipio": 8.6,
+   "ha": 93762,
+   "pctMunicipio": 16.0,
    "porFase": {
-    "lavra": 1932,
+    "disponibilidade": 42377,
     "pesquisa": 48252,
-    "requerimento": 41
+    "requerimento": 1114,
+    "lavra": 2018
    },
    "processos": {
-    "lavra": 1,
+    "disponibilidade": 14,
     "pesquisa": 12,
-    "requerimento": 1
+    "requerimento": 5,
+    "lavra": 4
    },
    "substancias": [
     [
-     "MINÉRIO DE FERRO",
-     27998
+     "FOSFATO",
+     39365
     ],
     [
-     "FOSFATO",
-     11815
+     "MINÉRIO DE FERRO",
+     35651
     ],
     [
      "BAUXITA",
-     8555
+     16626
     ],
     [
      "MINÉRIO DE OURO",
@@ -496,22 +537,264 @@
    ]
   },
   {
-   "cod": "2102002",
-   "nome": "Bom Jardim",
-   "ha": 47195,
-   "pctMunicipio": 7.1,
+   "cod": "2103307",
+   "nome": "Codó",
+   "ha": 83426,
+   "pctMunicipio": 18.8,
    "porFase": {
-    "pesquisa": 44502,
-    "requerimento": 2693
+    "lavra": 22496,
+    "requerimento": 3031,
+    "pesquisa": 54610,
+    "disponibilidade": 3060,
+    "outras": 229
    },
    "processos": {
-    "pesquisa": 8,
-    "requerimento": 2
+    "lavra": 37,
+    "requerimento": 19,
+    "pesquisa": 50,
+    "disponibilidade": 9,
+    "outras": 2
+   },
+   "substancias": [
+    [
+     "CALCÁRIO",
+     35453
+    ],
+    [
+     "FOSFATO",
+     20482
+    ],
+    [
+     "GIPSITA",
+     13248
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     9744
+    ]
+   ]
+  },
+  {
+   "cod": "2103406",
+   "nome": "Coelho Neto",
+   "ha": 78059,
+   "pctMunicipio": 78.6,
+   "porFase": {
+    "pesquisa": 61698,
+    "requerimento": 9615,
+    "lavra": 1,
+    "disponibilidade": 6745
+   },
+   "processos": {
+    "pesquisa": 45,
+    "requerimento": 5,
+    "lavra": 1,
+    "disponibilidade": 4
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     78006
+    ],
+    [
+     "CASCALHO",
+     41
+    ],
+    [
+     "AREIA",
+     11
+    ]
+   ]
+  },
+  {
+   "cod": "2104800",
+   "nome": "Grajaú",
+   "ha": 77209,
+   "pctMunicipio": 10.1,
+   "porFase": {
+    "lavra": 5261,
+    "pesquisa": 48887,
+    "disponibilidade": 5021,
+    "outras": 1908,
+    "requerimento": 16131
+   },
+   "processos": {
+    "lavra": 18,
+    "pesquisa": 66,
+    "disponibilidade": 9,
+    "outras": 2,
+    "requerimento": 13
+   },
+   "substancias": [
+    [
+     "GIPSITA",
+     28696
+    ],
+    [
+     "FOSFATO",
+     13474
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     11250
+    ],
+    [
+     "CAULIM",
+     7602
+    ]
+   ]
+  },
+  {
+   "cod": "2103174",
+   "nome": "Centro Novo do Maranhão",
+   "ha": 69847,
+   "pctMunicipio": 8.4,
+   "porFase": {
+    "pesquisa": 41142,
+    "requerimento": 9685,
+    "disponibilidade": 19020
+   },
+   "processos": {
+    "pesquisa": 23,
+    "requerimento": 12,
+    "disponibilidade": 8
+   },
+   "substancias": [
+    [
+     "OURO",
+     27156
+    ],
+    [
+     "MINÉRIO DE OURO",
+     22477
+    ],
+    [
+     "ALUMÍNIO",
+     11647
+    ],
+    [
+     "BAUXITA",
+     4821
+    ]
+   ]
+  },
+  {
+   "cod": "2111904",
+   "nome": "Sucupira do Norte",
+   "ha": 69534,
+   "pctMunicipio": 63.9,
+   "porFase": {
+    "pesquisa": 59533,
+    "disponibilidade": 10001
+   },
+   "processos": {
+    "pesquisa": 15,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     68551
+    ],
+    [
+     "CALCÁRIO",
+     983
+    ]
+   ]
+  },
+  {
+   "cod": "2101400",
+   "nome": "Balsas",
+   "ha": 69297,
+   "pctMunicipio": 5.2,
+   "porFase": {
+    "pesquisa": 36722,
+    "lavra": 2095,
+    "requerimento": 10393,
+    "disponibilidade": 20087
+   },
+   "processos": {
+    "pesquisa": 45,
+    "lavra": 22,
+    "requerimento": 27,
+    "disponibilidade": 21
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     23701
+    ],
+    [
+     "CALCÁRIO",
+     11961
+    ],
+    [
+     "ARGILA",
+     10237
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     8534
+    ]
+   ]
+  },
+  {
+   "cod": "2103505",
+   "nome": "Colinas",
+   "ha": 67765,
+   "pctMunicipio": 33.7,
+   "porFase": {
+    "requerimento": 175,
+    "pesquisa": 64583,
+    "lavra": 223,
+    "disponibilidade": 2784
+   },
+   "processos": {
+    "requerimento": 6,
+    "pesquisa": 16,
+    "lavra": 8,
+    "disponibilidade": 4
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     47766
+    ],
+    [
+     "FOSFATO",
+     11133
+    ],
+    [
+     "TERRAS RARAS",
+     7724
+    ],
+    [
+     "OURO",
+     438
+    ]
+   ]
+  },
+  {
+   "cod": "2102002",
+   "nome": "Bom Jardim",
+   "ha": 63100,
+   "pctMunicipio": 9.5,
+   "porFase": {
+    "pesquisa": 44847,
+    "lavra": 2,
+    "requerimento": 12354,
+    "disponibilidade": 5898
+   },
+   "processos": {
+    "pesquisa": 10,
+    "lavra": 1,
+    "requerimento": 3,
+    "disponibilidade": 3
    },
    "substancias": [
     [
      "BAUXITA",
-     24491
+     30388
     ],
     [
      "MINÉRIO DE ESTANHO",
@@ -520,19 +803,61 @@
     [
      "ALUMÍNIO",
      9719
+    ],
+    [
+     "CASSITERITA",
+     9661
+    ]
+   ]
+  },
+  {
+   "cod": "2110005",
+   "nome": "Santa Luzia",
+   "ha": 59820,
+   "pctMunicipio": 9.6,
+   "porFase": {
+    "pesquisa": 9756,
+    "requerimento": 16710,
+    "disponibilidade": 33353
+   },
+   "processos": {
+    "pesquisa": 5,
+    "requerimento": 3,
+    "disponibilidade": 8
+   },
+   "substancias": [
+    [
+     "BAUXITA",
+     34511
+    ],
+    [
+     "CASSITERITA",
+     16661
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     4559
+    ],
+    [
+     "MINÉRIO DE ESTANHO",
+     3309
     ]
    ]
   },
   {
    "cod": "2111607",
    "nome": "São Raimundo das Mangabeiras",
-   "ha": 46038,
-   "pctMunicipio": 12.9,
+   "ha": 59729,
+   "pctMunicipio": 16.8,
    "porFase": {
-    "pesquisa": 46038
+    "pesquisa": 49940,
+    "disponibilidade": 9668,
+    "lavra": 121
    },
    "processos": {
-    "pesquisa": 11
+    "pesquisa": 18,
+    "disponibilidade": 7,
+    "lavra": 4
    },
    "substancias": [
     [
@@ -541,30 +866,108 @@
     ],
     [
      "MINÉRIO DE COBRE",
-     4715
+     10760
+    ],
+    [
+     "CALCÁRIO",
+     4036
     ],
     [
      "FOSFATO",
      2566
+    ]
+   ]
+  },
+  {
+   "cod": "2109700",
+   "nome": "Sambaíba",
+   "ha": 57257,
+   "pctMunicipio": 22.8,
+   "porFase": {
+    "pesquisa": 40092,
+    "requerimento": 3528,
+    "disponibilidade": 13637
+   },
+   "processos": {
+    "pesquisa": 20,
+    "requerimento": 1,
+    "disponibilidade": 11
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     27265
     ],
     [
-     "MINÉRIO DE MANGANÊS",
-     1221
+     "FOSFATO",
+     6819
+    ],
+    [
+     "CAULIM",
+     5747
+    ],
+    [
+     "MINÉRIO DE OURO",
+     5515
+    ]
+   ]
+  },
+  {
+   "cod": "2100501",
+   "nome": "Alto Parnaíba",
+   "ha": 56592,
+   "pctMunicipio": 5.0,
+   "porFase": {
+    "pesquisa": 56255,
+    "requerimento": 229,
+    "disponibilidade": 8,
+    "lavra": 50,
+    "outras": 50
+   },
+   "processos": {
+    "pesquisa": 40,
+    "requerimento": 20,
+    "disponibilidade": 1,
+    "lavra": 1,
+    "outras": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     47136
+    ],
+    [
+     "CALCÁRIO",
+     2152
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     2008
+    ],
+    [
+     "FOSFATO",
+     1934
     ]
    ]
   },
   {
    "cod": "2102804",
    "nome": "Carolina",
-   "ha": 43809,
-   "pctMunicipio": 6.8,
+   "ha": 56145,
+   "pctMunicipio": 8.7,
    "porFase": {
-    "pesquisa": 42935,
-    "lavra": 874
+    "requerimento": 153,
+    "pesquisa": 54829,
+    "lavra": 1077,
+    "disponibilidade": 49,
+    "outras": 37
    },
    "processos": {
-    "pesquisa": 15,
-    "lavra": 1
+    "requerimento": 7,
+    "pesquisa": 29,
+    "lavra": 7,
+    "disponibilidade": 1,
+    "outras": 1
    },
    "substancias": [
     [
@@ -572,340 +975,72 @@
      31680
     ],
     [
+     "AREIA",
+     9167
+    ],
+    [
      "ILMENITA",
      8434
     ],
     [
-     "MINÉRIO DE FERRO",
-     1709
-    ],
-    [
-     "OURO",
-     1113
-    ]
-   ]
-  },
-  {
-   "cod": "2104057",
-   "nome": "Estreito",
-   "ha": 35709,
-   "pctMunicipio": 13.0,
-   "porFase": {
-    "pesquisa": 35709
-   },
-   "processos": {
-    "pesquisa": 4
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     19107
-    ],
-    [
-     "MINÉRIO DE ALUMÍNIO",
-     8979
-    ],
-    [
-     "MINÉRIO DE MANGANÊS",
-     7623
+     "CALCÁRIO",
+     2789
     ]
    ]
   },
   {
    "cod": "2110609",
    "nome": "São Bernardo",
-   "ha": 32236,
-   "pctMunicipio": 31.4,
+   "ha": 54364,
+   "pctMunicipio": 52.9,
    "porFase": {
+    "requerimento": 10677,
+    "disponibilidade": 11415,
+    "lavra": 36,
     "pesquisa": 32236
    },
    "processos": {
+    "requerimento": 8,
+    "disponibilidade": 8,
+    "lavra": 1,
     "pesquisa": 21
    },
    "substancias": [
     [
      "MINÉRIO DE FERRO",
-     32236
-    ]
-   ]
-  },
-  {
-   "cod": "2103307",
-   "nome": "Codó",
-   "ha": 31529,
-   "pctMunicipio": 7.1,
-   "porFase": {
-    "pesquisa": 31529
-   },
-   "processos": {
-    "pesquisa": 12
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     19840
+     33395
     ],
     [
-     "MINÉRIO DE FERRO",
-     9744
+     "ILMENITA",
+     20893
     ],
     [
-     "OURO",
-     1945
-    ]
-   ]
-  },
-  {
-   "cod": "2103208",
-   "nome": "Chapadinha",
-   "ha": 30967,
-   "pctMunicipio": 9.4,
-   "porFase": {
-    "pesquisa": 30967
-   },
-   "processos": {
-    "pesquisa": 20
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     28940
+     "ARGILA",
+     39
     ],
     [
-     "FOSFATO",
-     2027
-    ]
-   ]
-  },
-  {
-   "cod": "2109007",
-   "nome": "Porto Franco",
-   "ha": 29886,
-   "pctMunicipio": 20.9,
-   "porFase": {
-    "pesquisa": 29886
-   },
-   "processos": {
-    "pesquisa": 9
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     15858
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     13745
-    ],
-    [
-     "BASALTO",
-     283
-    ]
-   ]
-  },
-  {
-   "cod": "2107308",
-   "nome": "Nova Iorque",
-   "ha": 29081,
-   "pctMunicipio": 29.3,
-   "porFase": {
-    "pesquisa": 29081
-   },
-   "processos": {
-    "pesquisa": 15
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     20518
-    ],
-    [
-     "FOSFATO",
-     7973
-    ],
-    [
-     "MINÉRIO DE OURO",
-     590
-    ]
-   ]
-  },
-  {
-   "cod": "2109700",
-   "nome": "Sambaíba",
-   "ha": 28416,
-   "pctMunicipio": 11.3,
-   "porFase": {
-    "pesquisa": 28416
-   },
-   "processos": {
-    "pesquisa": 9
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     26585
-    ],
-    [
-     "MINÉRIO DE MANGANÊS",
-     1019
-    ],
-    [
-     "MINÉRIO DE COBRE",
-     812
-    ]
-   ]
-  },
-  {
-   "cod": "2112308",
-   "nome": "Tuntum",
-   "ha": 27793,
-   "pctMunicipio": 7.7,
-   "porFase": {
-    "pesquisa": 27793
-   },
-   "processos": {
-    "pesquisa": 5
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     24931
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     2863
-    ]
-   ]
-  },
-  {
-   "cod": "2102200",
-   "nome": "Buriti",
-   "ha": 26023,
-   "pctMunicipio": 17.3,
-   "porFase": {
-    "pesquisa": 26023
-   },
-   "processos": {
-    "pesquisa": 17
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     25946
-    ],
-    [
-     "FOSFATO",
-     77
-    ]
-   ]
-  },
-  {
-   "cod": "2101608",
-   "nome": "Barra do Corda",
-   "ha": 24715,
-   "pctMunicipio": 3.1,
-   "porFase": {
-    "pesquisa": 24715
-   },
-   "processos": {
-    "pesquisa": 7
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE OURO",
-     18667
-    ],
-    [
-     "FOSFATO",
-     6048
-    ]
-   ]
-  },
-  {
-   "cod": "2106375",
-   "nome": "Maranhãozinho",
-   "ha": 23006,
-   "pctMunicipio": 23.4,
-   "porFase": {
-    "pesquisa": 23006
-   },
-   "processos": {
-    "pesquisa": 6
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE OURO",
-     22681
-    ],
-    [
-     "OURO",
-     325
-    ]
-   ]
-  },
-  {
-   "cod": "2106359",
-   "nome": "Marajá do Sena",
-   "ha": 22486,
-   "pctMunicipio": 25.5,
-   "porFase": {
-    "pesquisa": 22486
-   },
-   "processos": {
-    "pesquisa": 3
-   },
-   "substancias": [
-    [
-     "BAUXITA",
-     22486
-    ]
-   ]
-  },
-  {
-   "cod": "2104800",
-   "nome": "Grajaú",
-   "ha": 21639,
-   "pctMunicipio": 2.8,
-   "porFase": {
-    "pesquisa": 21639
-   },
-   "processos": {
-    "pesquisa": 19
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     10848
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     6050
-    ],
-    [
-     "MINÉRIO DE COBRE",
-     1784
-    ],
-    [
-     "MINÉRIO DE OURO",
-     1638
+     "AREIA",
+     36
     ]
    ]
   },
   {
    "cod": "2110807",
    "nome": "São Félix de Balsas",
-   "ha": 18132,
-   "pctMunicipio": 8.8,
+   "ha": 52161,
+   "pctMunicipio": 25.3,
    "porFase": {
-    "pesquisa": 18132
+    "pesquisa": 18132,
+    "disponibilidade": 34029
    },
    "processos": {
-    "pesquisa": 10
+    "pesquisa": 10,
+    "disponibilidade": 5
    },
    "substancias": [
     [
      "MINÉRIO DE FERRO",
-     14888
+     48917
     ],
     [
      "MINÉRIO DE ALUMÍNIO",
@@ -914,807 +1049,157 @@
    ]
   },
   {
-   "cod": "2110856",
-   "nome": "São Francisco do Brejão",
-   "ha": 18088,
-   "pctMunicipio": 24.1,
+   "cod": "2109007",
+   "nome": "Porto Franco",
+   "ha": 44701,
+   "pctMunicipio": 31.3,
    "porFase": {
-    "lavra": 5579,
-    "pesquisa": 12509
+    "lavra": 424,
+    "requerimento": 6069,
+    "pesquisa": 31395,
+    "disponibilidade": 6776,
+    "outras": 37
    },
    "processos": {
-    "lavra": 2,
-    "pesquisa": 2
-   },
-   "substancias": [
-    [
-     "BAUXITA",
-     12509
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     5579
-    ]
-   ]
-  },
-  {
-   "cod": "2110104",
-   "nome": "Santa Quitéria do Maranhão",
-   "ha": 17617,
-   "pctMunicipio": 9.0,
-   "porFase": {
-    "pesquisa": 17617
-   },
-   "processos": {
-    "pesquisa": 17
-   },
-   "substancias": [
-    [
-     "ILMENITA",
-     9831
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     7786
-    ]
-   ]
-  },
-  {
-   "cod": "2101400",
-   "nome": "Balsas",
-   "ha": 17369,
-   "pctMunicipio": 1.3,
-   "porFase": {
-    "pesquisa": 17369
-   },
-   "processos": {
-    "pesquisa": 10
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE OURO",
-     12286
-    ],
-    [
-     "MINÉRIO DE COBRE",
-     4055
-    ],
-    [
-     "HEMATITA",
-     559
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     469
-    ]
-   ]
-  },
-  {
-   "cod": "2100105",
-   "nome": "Afonso Cunha",
-   "ha": 17340,
-   "pctMunicipio": 45.9,
-   "porFase": {
-    "pesquisa": 17340
-   },
-   "processos": {
-    "pesquisa": 20
+    "lavra": 10,
+    "requerimento": 10,
+    "pesquisa": 20,
+    "disponibilidade": 3,
+    "outras": 1
    },
    "substancias": [
     [
      "MINÉRIO DE FERRO",
-     17340
+     23882
+    ],
+    [
+     "FOSFATO",
+     17580
+    ],
+    [
+     "BASALTO",
+     2877
+    ],
+    [
+     "AREIA",
+     218
     ]
    ]
   },
   {
    "cod": "2100550",
    "nome": "Amapá do Maranhão",
-   "ha": 16532,
-   "pctMunicipio": 32.6,
+   "ha": 44686,
+   "pctMunicipio": 88.1,
    "porFase": {
-    "pesquisa": 16532
+    "requerimento": 18171,
+    "pesquisa": 16532,
+    "disponibilidade": 9983
    },
    "processos": {
-    "pesquisa": 6
+    "requerimento": 10,
+    "pesquisa": 6,
+    "disponibilidade": 4
    },
    "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     31499
+    ],
     [
      "OURO",
      13187
-    ],
-    [
-     "MINÉRIO DE OURO",
-     3345
     ]
    ]
   },
   {
-   "cod": "2112506",
-   "nome": "Tutóia",
-   "ha": 16422,
-   "pctMunicipio": 9.7,
+   "cod": "2104057",
+   "nome": "Estreito",
+   "ha": 44462,
+   "pctMunicipio": 16.2,
    "porFase": {
-    "pesquisa": 16422
+    "pesquisa": 37606,
+    "disponibilidade": 6774,
+    "lavra": 82
    },
    "processos": {
-    "pesquisa": 12
-   },
-   "substancias": [
-    [
-     "ILMENITA",
-     8469
-    ],
-    [
-     "MINÉRIO DE OURO",
-     6047
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     1906
-    ]
-   ]
-  },
-  {
-   "cod": "2105922",
-   "nome": "Lagoa do Mato",
-   "ha": 15298,
-   "pctMunicipio": 11.7,
-   "porFase": {
-    "pesquisa": 15298
-   },
-   "processos": {
-    "pesquisa": 8
+    "pesquisa": 8,
+    "disponibilidade": 3,
+    "lavra": 3
    },
    "substancias": [
     [
      "MINÉRIO DE FERRO",
-     9415
+     19107
     ],
     [
-     "BAUXITA",
-     5882
-    ]
-   ]
-  },
-  {
-   "cod": "2110906",
-   "nome": "São Francisco do Maranhão",
-   "ha": 15205,
-   "pctMunicipio": 5.4,
-   "porFase": {
-    "pesquisa": 15205
-   },
-   "processos": {
-    "pesquisa": 16
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     10903
+     "MINÉRIO DE MANGANÊS",
+     14376
     ],
     [
-     "MINÉRIO DE FERRO",
-     4176
+     "MINÉRIO DE ALUMÍNIO",
+     8979
     ],
     [
-     "ILMENITA",
-     126
+     "CALCÁRIO",
+     946
     ]
    ]
   },
   {
    "cod": "2104073",
    "nome": "Feira Nova do Maranhão",
-   "ha": 13610,
-   "pctMunicipio": 9.2,
+   "ha": 43619,
+   "pctMunicipio": 29.3,
    "porFase": {
-    "pesquisa": 13610
+    "pesquisa": 14222,
+    "lavra": 50,
+    "disponibilidade": 29347
    },
    "processos": {
-    "pesquisa": 9
+    "pesquisa": 11,
+    "lavra": 1,
+    "disponibilidade": 7
    },
    "substancias": [
+    [
+     "MINÉRIO DE COBRE",
+     27668
+    ],
     [
      "MINÉRIO DE FERRO",
      13610
-    ]
-   ]
-  },
-  {
-   "cod": "2103901",
-   "nome": "Duque Bacelar",
-   "ha": 12895,
-   "pctMunicipio": 39.9,
-   "porFase": {
-    "pesquisa": 12895
-   },
-   "processos": {
-    "pesquisa": 12
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     12895
-    ]
-   ]
-  },
-  {
-   "cod": "2100600",
-   "nome": "Amarante do Maranhão",
-   "ha": 12384,
-   "pctMunicipio": 1.6,
-   "porFase": {
-    "pesquisa": 12384
-   },
-   "processos": {
-    "pesquisa": 8
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE ALUMÍNIO",
-     7565
     ],
     [
-     "FOSFATO",
-     3537
+     "CALCEDÔNIA",
+     1679
     ],
     [
-     "MINÉRIO DE FERRO",
-     1235
-    ],
-    [
-     "OURO",
-     46
-    ]
-   ]
-  },
-  {
-   "cod": "2104099",
-   "nome": "Formosa da Serra Negra",
-   "ha": 12091,
-   "pctMunicipio": 3.0,
-   "porFase": {
-    "outras": 1138,
-    "pesquisa": 10952
-   },
-   "processos": {
-    "outras": 1,
-    "pesquisa": 3
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     8717
-    ],
-    [
-     "MINÉRIO DE COBRE",
-     1564
-    ],
-    [
-     "BAUXITA",
-     1138
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     672
-    ]
-   ]
-  },
-  {
-   "cod": "2112605",
-   "nome": "Urbano Santos",
-   "ha": 12016,
-   "pctMunicipio": 9.8,
-   "porFase": {
-    "pesquisa": 12016
-   },
-   "processos": {
-    "pesquisa": 9
-   },
-   "substancias": [
-    [
-     "ILMENITA",
-     12016
-    ]
-   ]
-  },
-  {
-   "cod": "2105005",
-   "nome": "Humberto de Campos",
-   "ha": 11803,
-   "pctMunicipio": 5.4,
-   "porFase": {
-    "pesquisa": 11803
-   },
-   "processos": {
-    "pesquisa": 8
-   },
-   "substancias": [
-    [
-     "ILMENITA",
-     11803
-    ]
-   ]
-  },
-  {
-   "cod": "2103000",
-   "nome": "Caxias",
-   "ha": 11332,
-   "pctMunicipio": 2.1,
-   "porFase": {
-    "pesquisa": 11332
-   },
-   "processos": {
-    "pesquisa": 8
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     7604
-    ],
-    [
-     "FOSFATO",
-     3609
-    ],
-    [
-     "ILMENITA",
-     119
-    ]
-   ]
-  },
-  {
-   "cod": "2101707",
-   "nome": "Barreirinhas",
-   "ha": 11222,
-   "pctMunicipio": 3.5,
-   "porFase": {
-    "pesquisa": 11222
-   },
-   "processos": {
-    "pesquisa": 7
-   },
-   "substancias": [
-    [
-     "ILMENITA",
-     11222
-    ]
-   ]
-  },
-  {
-   "cod": "2106326",
-   "nome": "Maracaçumé",
-   "ha": 11099,
-   "pctMunicipio": 17.5,
-   "porFase": {
-    "pesquisa": 11099
-   },
-   "processos": {
-    "pesquisa": 12
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE OURO",
-     9743
-    ],
-    [
-     "OURO",
-     1356
-    ]
-   ]
-  },
-  {
-   "cod": "2102101",
-   "nome": "Brejo",
-   "ha": 10971,
-   "pctMunicipio": 10.0,
-   "porFase": {
-    "pesquisa": 10971
-   },
-   "processos": {
-    "pesquisa": 9
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     9114
-    ],
-    [
-     "FOSFATO",
-     1677
-    ],
-    [
-     "OURO",
-     180
-    ]
-   ]
-  },
-  {
-   "cod": "2102556",
-   "nome": "Campestre do Maranhão",
-   "ha": 10359,
-   "pctMunicipio": 16.8,
-   "porFase": {
-    "pesquisa": 10359
-   },
-   "processos": {
-    "pesquisa": 3
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     10298
-    ],
-    [
-     "MINÉRIO DE COBRE",
-     61
-    ]
-   ]
-  },
-  {
-   "cod": "2111052",
-   "nome": "São João do Paraíso",
-   "ha": 10354,
-   "pctMunicipio": 5.0,
-   "porFase": {
-    "pesquisa": 10354
-   },
-   "processos": {
-    "pesquisa": 5
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     6416
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     3939
-    ]
-   ]
-  },
-  {
-   "cod": "2104107",
-   "nome": "Fortaleza dos Nogueiras",
-   "ha": 10218,
-   "pctMunicipio": 6.1,
-   "porFase": {
-    "pesquisa": 10218
-   },
-   "processos": {
-    "pesquisa": 9
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     7490
-    ],
-    [
-     "MINÉRIO DE COBRE",
-     1955
-    ],
-    [
-     "MINÉRIO DE MANGANÊS",
-     774
-    ]
-   ]
-  },
-  {
-   "cod": "2103257",
-   "nome": "Cidelândia",
-   "ha": 9918,
-   "pctMunicipio": 6.7,
-   "porFase": {
-    "lavra": 76,
-    "pesquisa": 9842
-   },
-   "processos": {
-    "lavra": 1,
-    "pesquisa": 4
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     6605
-    ],
-    [
-     "MINÉRIO DE OURO",
-     3313
-    ]
-   ]
-  },
-  {
-   "cod": "2105302",
-   "nome": "Imperatriz",
-   "ha": 9679,
-   "pctMunicipio": 7.0,
-   "porFase": {
-    "lavra": 1207,
-    "pesquisa": 8472
-   },
-   "processos": {
-    "lavra": 2,
-    "pesquisa": 8
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     9384
-    ],
-    [
-     "BAUXITA",
-     163
-    ],
-    [
-     "OURO",
-     98
-    ],
-    [
-     "CASCALHO",
-     22
-    ]
-   ]
-  },
-  {
-   "cod": "2105989",
-   "nome": "Lajeado Novo",
-   "ha": 9418,
-   "pctMunicipio": 8.9,
-   "porFase": {
-    "pesquisa": 9418
-   },
-   "processos": {
-    "pesquisa": 5
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     9418
-    ]
-   ]
-  },
-  {
-   "cod": "2110005",
-   "nome": "Santa Luzia",
-   "ha": 9026,
-   "pctMunicipio": 1.4,
-   "porFase": {
-    "pesquisa": 9026
-   },
-   "processos": {
-    "pesquisa": 4
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     4559
-    ],
-    [
-     "MINÉRIO DE ESTANHO",
-     3309
-    ],
-    [
-     "BAUXITA",
-     1157
-    ]
-   ]
-  },
-  {
-   "cod": "2108058",
-   "nome": "Paulino Neves",
-   "ha": 8565,
-   "pctMunicipio": 8.6,
-   "porFase": {
-    "pesquisa": 8565
-   },
-   "processos": {
-    "pesquisa": 6
-   },
-   "substancias": [
-    [
-     "ILMENITA",
-     8565
-    ]
-   ]
-  },
-  {
-   "cod": "2101731",
-   "nome": "Belágua",
-   "ha": 8367,
-   "pctMunicipio": 16.5,
-   "porFase": {
-    "pesquisa": 8367
-   },
-   "processos": {
-    "pesquisa": 9
-   },
-   "substancias": [
-    [
-     "ILMENITA",
-     8367
-    ]
-   ]
-  },
-  {
-   "cod": "2107258",
-   "nome": "Nova Colinas",
-   "ha": 8292,
-   "pctMunicipio": 11.1,
-   "porFase": {
-    "pesquisa": 8292
-   },
-   "processos": {
-    "pesquisa": 3
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     6879
-    ],
-    [
-     "MINÉRIO DE OURO",
-     1414
-    ]
-   ]
-  },
-  {
-   "cod": "2100477",
-   "nome": "Alto Alegre do Pindaré",
-   "ha": 8001,
-   "pctMunicipio": 4.1,
-   "porFase": {
-    "pesquisa": 8001
-   },
-   "processos": {
-    "pesquisa": 3
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE ESTANHO",
-     8001
-    ]
-   ]
-  },
-  {
-   "cod": "2106672",
-   "nome": "Milagres do Maranhão",
-   "ha": 7757,
-   "pctMunicipio": 12.0,
-   "porFase": {
-    "pesquisa": 7757
-   },
-   "processos": {
-    "pesquisa": 7
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     3911
-    ],
-    [
-     "ILMENITA",
-     3846
-    ]
-   ]
-  },
-  {
-   "cod": "2111748",
-   "nome": "Senador Alexandre Costa",
-   "ha": 7746,
-   "pctMunicipio": 17.9,
-   "porFase": {
-    "pesquisa": 7746
-   },
-   "processos": {
-    "pesquisa": 1
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     7746
-    ]
-   ]
-  },
-  {
-   "cod": "2107902",
-   "nome": "Passagem Franca",
-   "ha": 6875,
-   "pctMunicipio": 5.0,
-   "porFase": {
-    "pesquisa": 6875
-   },
-   "processos": {
-    "pesquisa": 10
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     3434
-    ],
-    [
-     "FOSFATO",
-     3254
-    ],
-    [
-     "BAUXITA",
-     187
-    ]
-   ]
-  },
-  {
-   "cod": "2106300",
-   "nome": "Magalhães de Almeida",
-   "ha": 6389,
-   "pctMunicipio": 14.5,
-   "porFase": {
-    "pesquisa": 6389
-   },
-   "processos": {
-    "pesquisa": 6
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     6389
-    ]
-   ]
-  },
-  {
-   "cod": "2100956",
-   "nome": "Arame",
-   "ha": 6349,
-   "pctMunicipio": 2.1,
-   "porFase": {
-    "pesquisa": 6349
-   },
-   "processos": {
-    "pesquisa": 1
-   },
-   "substancias": [
-    [
-     "BAUXITA",
-     6349
-    ]
-   ]
-  },
-  {
-   "cod": "2100907",
-   "nome": "Araioses",
-   "ha": 6042,
-   "pctMunicipio": 3.3,
-   "porFase": {
-    "pesquisa": 6042
-   },
-   "processos": {
-    "pesquisa": 7
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     2893
-    ],
-    [
-     "FOSFATO",
-     2034
-    ],
-    [
-     "ILMENITA",
-     1114
+     "CALCÁRIO",
+     605
     ]
    ]
   },
   {
    "cod": "2102325",
    "nome": "Buriticupu",
-   "ha": 5830,
-   "pctMunicipio": 2.3,
+   "ha": 42971,
+   "pctMunicipio": 16.7,
    "porFase": {
-    "pesquisa": 5830
+    "pesquisa": 5830,
+    "lavra": 17,
+    "disponibilidade": 37124
    },
    "processos": {
-    "pesquisa": 4
+    "pesquisa": 4,
+    "lavra": 2,
+    "disponibilidade": 9
    },
    "substancias": [
+    [
+     "BAUXITA",
+     37117
+    ],
     [
      "MINÉRIO DE FERRO",
      5177
@@ -1722,24 +1207,144 @@
     [
      "MINÉRIO DE ESTANHO",
      653
+    ],
+    [
+     "AREIA",
+     17
+    ]
+   ]
+  },
+  {
+   "cod": "2100600",
+   "nome": "Amarante do Maranhão",
+   "ha": 42092,
+   "pctMunicipio": 5.4,
+   "porFase": {
+    "requerimento": 9615,
+    "pesquisa": 14704,
+    "disponibilidade": 17733,
+    "lavra": 41
+   },
+   "processos": {
+    "requerimento": 2,
+    "pesquisa": 14,
+    "disponibilidade": 4,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE ALUMÍNIO",
+     17133
+    ],
+    [
+     "BAUXITA",
+     16691
+    ],
+    [
+     "FOSFATO",
+     3537
+    ],
+    [
+     "GIPSITA",
+     1625
+    ]
+   ]
+  },
+  {
+   "cod": "2111805",
+   "nome": "Sítio Novo",
+   "ha": 39938,
+   "pctMunicipio": 12.7,
+   "porFase": {
+    "disponibilidade": 37856,
+    "pesquisa": 2076,
+    "requerimento": 6
+   },
+   "processos": {
+    "disponibilidade": 7,
+    "pesquisa": 3,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     21092
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     15345
+    ],
+    [
+     "MINÉRIO DE OURO",
+     2436
+    ],
+    [
+     "GRANITO",
+     637
+    ]
+   ]
+  },
+  {
+   "cod": "2101608",
+   "nome": "Barra do Corda",
+   "ha": 37266,
+   "pctMunicipio": 4.7,
+   "porFase": {
+    "lavra": 305,
+    "pesquisa": 25887,
+    "disponibilidade": 5965,
+    "requerimento": 5109
+   },
+   "processos": {
+    "lavra": 9,
+    "pesquisa": 9,
+    "disponibilidade": 7,
+    "requerimento": 2
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     18667
+    ],
+    [
+     "FOSFATO",
+     16049
+    ],
+    [
+     "GIPSITA",
+     1999
+    ],
+    [
+     "ARGILA",
+     334
     ]
    ]
   },
   {
    "cod": "2111300",
    "nome": "São Luís",
-   "ha": 5674,
-   "pctMunicipio": 6.8,
+   "ha": 35926,
+   "pctMunicipio": 42.8,
    "porFase": {
-    "pesquisa": 5674
+    "lavra": 768,
+    "pesquisa": 7674,
+    "requerimento": 26373,
+    "disponibilidade": 1111
    },
    "processos": {
-    "pesquisa": 8
+    "lavra": 33,
+    "pesquisa": 36,
+    "requerimento": 49,
+    "disponibilidade": 3
    },
    "substancias": [
     [
+     "QUARTZO",
+     26230
+    ],
+    [
      "AREIA",
-     3385
+     7114
     ],
     [
      "MINÉRIO DE COBRE",
@@ -1752,60 +1357,1418 @@
    ]
   },
   {
-   "cod": "2100808",
-   "nome": "Anapurus",
-   "ha": 5115,
-   "pctMunicipio": 8.3,
+   "cod": "2103257",
+   "nome": "Cidelândia",
+   "ha": 34388,
+   "pctMunicipio": 23.3,
    "porFase": {
-    "pesquisa": 5115
+    "disponibilidade": 22864,
+    "requerimento": 1552,
+    "pesquisa": 9842,
+    "lavra": 131
    },
    "processos": {
-    "pesquisa": 4
+    "disponibilidade": 7,
+    "requerimento": 3,
+    "pesquisa": 4,
+    "lavra": 3
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     30316
+    ],
+    [
+     "MINÉRIO DE OURO",
+     3313
+    ],
+    [
+     "FOSFATO",
+     593
+    ],
+    [
+     "AREIA",
+     111
+    ]
+   ]
+  },
+  {
+   "cod": "2107308",
+   "nome": "Nova Iorque",
+   "ha": 34263,
+   "pctMunicipio": 34.5,
+   "porFase": {
+    "pesquisa": 32719,
+    "requerimento": 1051,
+    "lavra": 112,
+    "disponibilidade": 381
+   },
+   "processos": {
+    "pesquisa": 24,
+    "requerimento": 2,
+    "lavra": 3,
+    "disponibilidade": 2
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     21070
+    ],
+    [
+     "FOSFATO",
+     7973
+    ],
+    [
+     "CALCÁRIO",
+     4529
+    ],
+    [
+     "MINÉRIO DE OURO",
+     590
+    ]
+   ]
+  },
+  {
+   "cod": "2105922",
+   "nome": "Lagoa do Mato",
+   "ha": 32331,
+   "pctMunicipio": 24.7,
+   "porFase": {
+    "pesquisa": 15298,
+    "disponibilidade": 17033
+   },
+   "processos": {
+    "pesquisa": 8,
+    "disponibilidade": 12
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     21654
+    ],
+    [
+     "BAUXITA",
+     5882
+    ],
+    [
+     "FOSFATO",
+     4795
+    ]
+   ]
+  },
+  {
+   "cod": "2112308",
+   "nome": "Tuntum",
+   "ha": 32269,
+   "pctMunicipio": 8.9,
+   "porFase": {
+    "lavra": 5,
+    "pesquisa": 32253,
+    "disponibilidade": 11
+   },
+   "processos": {
+    "lavra": 1,
+    "pesquisa": 12,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     24931
+    ],
+    [
+     "GIPSITA",
+     2883
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     2863
+    ],
+    [
+     "CALCÁRIO",
+     1576
+    ]
+   ]
+  },
+  {
+   "cod": "2103208",
+   "nome": "Chapadinha",
+   "ha": 31700,
+   "pctMunicipio": 9.6,
+   "porFase": {
+    "lavra": 453,
+    "requerimento": 136,
+    "disponibilidade": 93,
+    "pesquisa": 31017
+   },
+   "processos": {
+    "lavra": 21,
+    "requerimento": 6,
+    "disponibilidade": 5,
+    "pesquisa": 21
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     28940
+    ],
+    [
+     "FOSFATO",
+     2027
+    ],
+    [
+     "AREIA",
+     528
+    ],
+    [
+     "ARGILA",
+     124
+    ]
+   ]
+  },
+  {
+   "cod": "2107902",
+   "nome": "Passagem Franca",
+   "ha": 31038,
+   "pctMunicipio": 22.5,
+   "porFase": {
+    "pesquisa": 6879,
+    "lavra": 49,
+    "disponibilidade": 24109
+   },
+   "processos": {
+    "pesquisa": 11,
+    "lavra": 1,
+    "disponibilidade": 15
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     27544
+    ],
+    [
+     "FOSFATO",
+     3254
+    ],
+    [
+     "BAUXITA",
+     187
+    ],
+    [
+     "AREIA",
+     49
+    ]
+   ]
+  },
+  {
+   "cod": "2110104",
+   "nome": "Santa Quitéria do Maranhão",
+   "ha": 30492,
+   "pctMunicipio": 15.6,
+   "porFase": {
+    "pesquisa": 17617,
+    "requerimento": 8304,
+    "lavra": 50,
+    "disponibilidade": 4522
+   },
+   "processos": {
+    "pesquisa": 17,
+    "requerimento": 6,
+    "lavra": 1,
+    "disponibilidade": 5
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     16088
+    ],
+    [
+     "ILMENITA",
+     14354
+    ],
+    [
+     "AREIA",
+     50
+    ]
+   ]
+  },
+  {
+   "cod": "2104107",
+   "nome": "Fortaleza dos Nogueiras",
+   "ha": 29214,
+   "pctMunicipio": 17.4,
+   "porFase": {
+    "pesquisa": 13868,
+    "disponibilidade": 8365,
+    "requerimento": 6981
+   },
+   "processos": {
+    "pesquisa": 17,
+    "disponibilidade": 6,
+    "requerimento": 3
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     15768
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     8319
+    ],
+    [
+     "ARGILA",
+     2096
+    ],
+    [
+     "QUARTZITO",
+     886
+    ]
+   ]
+  },
+  {
+   "cod": "2110906",
+   "nome": "São Francisco do Maranhão",
+   "ha": 28522,
+   "pctMunicipio": 10.2,
+   "porFase": {
+    "lavra": 515,
+    "disponibilidade": 7448,
+    "pesquisa": 16877,
+    "requerimento": 3682
+   },
+   "processos": {
+    "lavra": 2,
+    "disponibilidade": 7,
+    "pesquisa": 19,
+    "requerimento": 6
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     19234
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     6076
+    ],
+    [
+     "CALCÁRIO",
+     3051
+    ],
+    [
+     "ILMENITA",
+     126
+    ]
+   ]
+  },
+  {
+   "cod": "2111102",
+   "nome": "São João dos Patos",
+   "ha": 28499,
+   "pctMunicipio": 18.7,
+   "porFase": {
+    "requerimento": 2992,
+    "pesquisa": 3773,
+    "lavra": 35,
+    "disponibilidade": 21699
+   },
+   "processos": {
+    "requerimento": 3,
+    "pesquisa": 5,
+    "lavra": 1,
+    "disponibilidade": 16
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     22293
+    ],
+    [
+     "ARENITO",
+     3361
+    ],
+    [
+     "CALCÁRIO",
+     1725
+    ],
+    [
+     "FOSFATO",
+     730
+    ]
+   ]
+  },
+  {
+   "cod": "2109551",
+   "nome": "Ribamar Fiquene",
+   "ha": 26893,
+   "pctMunicipio": 35.6,
+   "porFase": {
+    "lavra": 116,
+    "requerimento": 17608,
+    "pesquisa": 4835,
+    "disponibilidade": 4334
+   },
+   "processos": {
+    "lavra": 3,
+    "requerimento": 7,
+    "pesquisa": 10,
+    "disponibilidade": 6
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     13628
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     6907
+    ],
+    [
+     "AREIA",
+     4282
+    ],
+    [
+     "FOSFATO",
+     1931
+    ]
+   ]
+  },
+  {
+   "cod": "2111250",
+   "nome": "São José dos Basílios",
+   "ha": 26408,
+   "pctMunicipio": 72.1,
+   "porFase": {
+    "pesquisa": 3748,
+    "requerimento": 22660
+   },
+   "processos": {
+    "pesquisa": 4,
+    "requerimento": 9
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     25458
+    ],
+    [
+     "ARGILA",
+     469
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     404
+    ],
+    [
+     "AREIA",
+     77
+    ]
+   ]
+  },
+  {
+   "cod": "2110856",
+   "nome": "São Francisco do Brejão",
+   "ha": 26085,
+   "pctMunicipio": 34.7,
+   "porFase": {
+    "disponibilidade": 7997,
+    "pesquisa": 12509,
+    "lavra": 5579
+   },
+   "processos": {
+    "disponibilidade": 2,
+    "pesquisa": 2,
+    "lavra": 2
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     13576
+    ],
+    [
+     "BAUXITA",
+     12509
+    ]
+   ]
+  },
+  {
+   "cod": "2102200",
+   "nome": "Buriti",
+   "ha": 26047,
+   "pctMunicipio": 17.3,
+   "porFase": {
+    "requerimento": 24,
+    "pesquisa": 26023
+   },
+   "processos": {
+    "requerimento": 1,
+    "pesquisa": 17
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     25946
+    ],
+    [
+     "FOSFATO",
+     77
+    ],
+    [
+     "AREIA",
+     24
+    ]
+   ]
+  },
+  {
+   "cod": "2101509",
+   "nome": "Barão de Grajaú",
+   "ha": 23715,
+   "pctMunicipio": 10.4,
+   "porFase": {
+    "lavra": 119,
+    "outras": 2132,
+    "pesquisa": 1419,
+    "requerimento": 35,
+    "disponibilidade": 20010
+   },
+   "processos": {
+    "lavra": 11,
+    "outras": 2,
+    "pesquisa": 2,
+    "requerimento": 1,
+    "disponibilidade": 12
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     15105
+    ],
+    [
+     "FOSFATO",
+     5313
+    ],
+    [
+     "ILMENITA",
+     2132
+    ],
+    [
+     "ARENITO",
+     1011
+    ]
+   ]
+  },
+  {
+   "cod": "2106375",
+   "nome": "Maranhãozinho",
+   "ha": 23331,
+   "pctMunicipio": 23.8,
+   "porFase": {
+    "pesquisa": 23006,
+    "disponibilidade": 325
+   },
+   "processos": {
+    "pesquisa": 6,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     22681
+    ],
+    [
+     "OURO",
+     651
+    ]
+   ]
+  },
+  {
+   "cod": "2105989",
+   "nome": "Lajeado Novo",
+   "ha": 22985,
+   "pctMunicipio": 21.8,
+   "porFase": {
+    "pesquisa": 9467,
+    "requerimento": 13478,
+    "lavra": 40
+   },
+   "processos": {
+    "pesquisa": 6,
+    "requerimento": 2,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE COBRE",
+     13478
+    ],
+    [
+     "FOSFATO",
+     9418
+    ],
+    [
+     "BASALTO",
+     49
+    ],
+    [
+     "ARGILA",
+     40
+    ]
+   ]
+  },
+  {
+   "cod": "2106359",
+   "nome": "Marajá do Sena",
+   "ha": 22489,
+   "pctMunicipio": 25.5,
+   "porFase": {
+    "pesquisa": 22486,
+    "requerimento": 3
+   },
+   "processos": {
+    "pesquisa": 3,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "BAUXITA",
+     22486
+    ],
+    [
+     "AREIA",
+     3
+    ]
+   ]
+  },
+  {
+   "cod": "2109601",
+   "nome": "Rosário",
+   "ha": 22253,
+   "pctMunicipio": 32.0,
+   "porFase": {
+    "lavra": 1251,
+    "pesquisa": 10636,
+    "requerimento": 4046,
+    "disponibilidade": 6298,
+    "outras": 22
+   },
+   "processos": {
+    "lavra": 30,
+    "pesquisa": 48,
+    "requerimento": 23,
+    "disponibilidade": 8,
+    "outras": 2
+   },
+   "substancias": [
+    [
+     "GRANITO",
+     4942
+    ],
+    [
+     "MINÉRIO DE OURO",
+     4367
+    ],
+    [
+     "AREIA",
+     4362
+    ],
+    [
+     "FOSFATO",
+     3488
+    ]
+   ]
+  },
+  {
+   "cod": "2101251",
+   "nome": "Bacabeira",
+   "ha": 21923,
+   "pctMunicipio": 35.1,
+   "porFase": {
+    "lavra": 1021,
+    "requerimento": 13494,
+    "pesquisa": 7056,
+    "disponibilidade": 144,
+    "outras": 210
+   },
+   "processos": {
+    "lavra": 25,
+    "requerimento": 9,
+    "pesquisa": 21,
+    "disponibilidade": 4,
+    "outras": 5
+   },
+   "substancias": [
+    [
+     "QUARTZO",
+     13085
+    ],
+    [
+     "GRANITO",
+     5319
+    ],
+    [
+     "MINÉRIO DE OURO",
+     1793
+    ],
+    [
+     "ARGILA",
+     1211
+    ]
+   ]
+  },
+  {
+   "cod": "2111052",
+   "nome": "São João do Paraíso",
+   "ha": 21307,
+   "pctMunicipio": 10.3,
+   "porFase": {
+    "pesquisa": 10956,
+    "lavra": 39,
+    "disponibilidade": 10311
+   },
+   "processos": {
+    "pesquisa": 6,
+    "lavra": 1,
+    "disponibilidade": 3
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     15717
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     3939
+    ],
+    [
+     "BASALTO",
+     1606
+    ],
+    [
+     "AREIA",
+     39
+    ]
+   ]
+  },
+  {
+   "cod": "2105302",
+   "nome": "Imperatriz",
+   "ha": 20865,
+   "pctMunicipio": 15.2,
+   "porFase": {
+    "lavra": 1889,
+    "pesquisa": 9214,
+    "requerimento": 9502,
+    "disponibilidade": 260
+   },
+   "processos": {
+    "lavra": 30,
+    "pesquisa": 13,
+    "requerimento": 13,
+    "disponibilidade": 8
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     18575
+    ],
+    [
+     "CALCÁRIO",
+     638
+    ],
+    [
+     "SAIBRO",
+     360
+    ],
+    [
+     "ARGILA",
+     335
+    ]
+   ]
+  },
+  {
+   "cod": "2112506",
+   "nome": "Tutóia",
+   "ha": 20714,
+   "pctMunicipio": 12.3,
+   "porFase": {
+    "pesquisa": 16752,
+    "disponibilidade": 3963
+   },
+   "processos": {
+    "pesquisa": 16,
+    "disponibilidade": 3
    },
    "substancias": [
     [
      "ILMENITA",
-     5115
+     10416
+    ],
+    [
+     "MINÉRIO DE OURO",
+     6047
+    ],
+    [
+     "MINÉRIO DE MAGNÉSIO",
+     2016
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     1906
+    ]
+   ]
+  },
+  {
+   "cod": "2107258",
+   "nome": "Nova Colinas",
+   "ha": 20583,
+   "pctMunicipio": 27.5,
+   "porFase": {
+    "pesquisa": 9579,
+    "requerimento": 4,
+    "disponibilidade": 11000
+   },
+   "processos": {
+    "pesquisa": 10,
+    "requerimento": 1,
+    "disponibilidade": 5
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     7825
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     6879
+    ],
+    [
+     "CALCEDÔNIA",
+     2017
+    ],
+    [
+     "MINÉRIO DE OURO",
+     1414
+    ]
+   ]
+  },
+  {
+   "cod": "2112605",
+   "nome": "Urbano Santos",
+   "ha": 19186,
+   "pctMunicipio": 15.6,
+   "porFase": {
+    "disponibilidade": 4851,
+    "pesquisa": 12016,
+    "requerimento": 2302,
+    "lavra": 18
+   },
+   "processos": {
+    "disponibilidade": 3,
+    "pesquisa": 9,
+    "requerimento": 4,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     19168
+    ],
+    [
+     "AREIA",
+     18
+    ]
+   ]
+  },
+  {
+   "cod": "2103000",
+   "nome": "Caxias",
+   "ha": 19036,
+   "pctMunicipio": 3.6,
+   "porFase": {
+    "lavra": 390,
+    "pesquisa": 14999,
+    "requerimento": 198,
+    "disponibilidade": 3449
+   },
+   "processos": {
+    "lavra": 19,
+    "pesquisa": 25,
+    "requerimento": 9,
+    "disponibilidade": 10
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     7604
+    ],
+    [
+     "FOSFATO",
+     3609
+    ],
+    [
+     "DIABÁSIO",
+     2583
+    ],
+    [
+     "BASALTO",
+     1600
+    ]
+   ]
+  },
+  {
+   "cod": "2100105",
+   "nome": "Afonso Cunha",
+   "ha": 17352,
+   "pctMunicipio": 45.9,
+   "porFase": {
+    "requerimento": 12,
+    "pesquisa": 17340
+   },
+   "processos": {
+    "requerimento": 1,
+    "pesquisa": 20
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     17340
+    ],
+    [
+     "CASCALHO",
+     12
+    ]
+   ]
+  },
+  {
+   "cod": "2107001",
+   "nome": "Montes Altos",
+   "ha": 17006,
+   "pctMunicipio": 11.3,
+   "porFase": {
+    "requerimento": 9740,
+    "pesquisa": 602,
+    "disponibilidade": 6664
+   },
+   "processos": {
+    "requerimento": 4,
+    "pesquisa": 4,
+    "disponibilidade": 2
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     6866
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     6503
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     3473
+    ],
+    [
+     "BASALTO",
+     164
+    ]
+   ]
+  },
+  {
+   "cod": "2100477",
+   "nome": "Alto Alegre do Pindaré",
+   "ha": 16545,
+   "pctMunicipio": 8.5,
+   "porFase": {
+    "pesquisa": 8407,
+    "lavra": 8,
+    "requerimento": 2246,
+    "disponibilidade": 5884
+   },
+   "processos": {
+    "pesquisa": 4,
+    "lavra": 1,
+    "requerimento": 1,
+    "disponibilidade": 2
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE ESTANHO",
+     8001
+    ],
+    [
+     "BAUXITA",
+     5884
+    ],
+    [
+     "CASSITERITA",
+     2246
+    ],
+    [
+     "ARGILA",
+     406
+    ]
+   ]
+  },
+  {
+   "cod": "2100956",
+   "nome": "Arame",
+   "ha": 16455,
+   "pctMunicipio": 5.4,
+   "porFase": {
+    "pesquisa": 6349,
+    "requerimento": 7,
+    "disponibilidade": 10099
+   },
+   "processos": {
+    "pesquisa": 1,
+    "requerimento": 2,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "BAUXITA",
+     16448
+    ],
+    [
+     "AREIA",
+     7
+    ]
+   ]
+  },
+  {
+   "cod": "2108058",
+   "nome": "Paulino Neves",
+   "ha": 16059,
+   "pctMunicipio": 16.1,
+   "porFase": {
+    "pesquisa": 9559,
+    "disponibilidade": 6500
+   },
+   "processos": {
+    "pesquisa": 9,
+    "disponibilidade": 5
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     15065
+    ],
+    [
+     "DIATOMITO",
+     555
+    ],
+    [
+     "TURFA",
+     389
+    ],
+    [
+     "AREIA",
+     50
+    ]
+   ]
+  },
+  {
+   "cod": "2106326",
+   "nome": "Maracaçumé",
+   "ha": 15145,
+   "pctMunicipio": 23.8,
+   "porFase": {
+    "lavra": 251,
+    "pesquisa": 11099,
+    "disponibilidade": 3651,
+    "requerimento": 145
+   },
+   "processos": {
+    "lavra": 7,
+    "pesquisa": 12,
+    "disponibilidade": 5,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     13487
+    ],
+    [
+     "OURO",
+     1356
+    ],
+    [
+     "AREIA",
+     250
+    ],
+    [
+     "ARGILA",
+     35
+    ]
+   ]
+  },
+  {
+   "cod": "2103901",
+   "nome": "Duque Bacelar",
+   "ha": 15108,
+   "pctMunicipio": 46.8,
+   "porFase": {
+    "pesquisa": 15108,
+    "lavra": 1
+   },
+   "processos": {
+    "pesquisa": 18,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     12895
+    ],
+    [
+     "AREIA",
+     2213
+    ]
+   ]
+  },
+  {
+   "cod": "2112209",
+   "nome": "Timon",
+   "ha": 14548,
+   "pctMunicipio": 8.2,
+   "porFase": {
+    "pesquisa": 11907,
+    "disponibilidade": 283,
+    "lavra": 1181,
+    "requerimento": 1177
+   },
+   "processos": {
+    "pesquisa": 42,
+    "disponibilidade": 6,
+    "lavra": 36,
+    "requerimento": 8
+   },
+   "substancias": [
+    [
+     "DIABÁSIO",
+     4092
+    ],
+    [
+     "BASALTO",
+     3326
+    ],
+    [
+     "ARGILA",
+     2764
+    ],
+    [
+     "AREIA",
+     1614
     ]
    ]
   },
   {
    "cod": "2112001",
    "nome": "Tasso Fragoso",
-   "ha": 5079,
-   "pctMunicipio": 1.1,
+   "ha": 14240,
+   "pctMunicipio": 3.2,
    "porFase": {
-    "pesquisa": 5079
+    "pesquisa": 5595,
+    "requerimento": 1,
+    "lavra": 8,
+    "disponibilidade": 8637
    },
    "processos": {
-    "pesquisa": 1
+    "pesquisa": 3,
+    "requerimento": 1,
+    "lavra": 4,
+    "disponibilidade": 1
    },
    "substancias": [
     [
+     "FOSFATO",
+     8637
+    ],
+    [
      "MINÉRIO DE OURO",
      5079
+    ],
+    [
+     "DIAMANTE",
+     516
+    ],
+    [
+     "AREIA",
+     9
+    ]
+   ]
+  },
+  {
+   "cod": "2106672",
+   "nome": "Milagres do Maranhão",
+   "ha": 14164,
+   "pctMunicipio": 21.9,
+   "porFase": {
+    "pesquisa": 9312,
+    "disponibilidade": 4852
+   },
+   "processos": {
+    "pesquisa": 9,
+    "disponibilidade": 3
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     8699
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     3911
+    ],
+    [
+     "CALCÁRIO",
+     1013
+    ],
+    [
+     "DIAMANTE",
+     541
+    ]
+   ]
+  },
+  {
+   "cod": "2101707",
+   "nome": "Barreirinhas",
+   "ha": 13465,
+   "pctMunicipio": 4.2,
+   "porFase": {
+    "pesquisa": 12384,
+    "disponibilidade": 282,
+    "lavra": 246,
+    "requerimento": 553
+   },
+   "processos": {
+    "pesquisa": 12,
+    "disponibilidade": 3,
+    "lavra": 6,
+    "requerimento": 3
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     11425
+    ],
+    [
+     "DIATOMITO",
+     1439
+    ],
+    [
+     "SAIBRO",
+     299
+    ],
+    [
+     "AREIA",
+     251
+    ]
+   ]
+  },
+  {
+   "cod": "2102309",
+   "nome": "Buriti Bravo",
+   "ha": 12667,
+   "pctMunicipio": 7.9,
+   "porFase": {
+    "requerimento": 1634,
+    "lavra": 10,
+    "pesquisa": 11023
+   },
+   "processos": {
+    "requerimento": 5,
+    "lavra": 1,
+    "pesquisa": 14
+   },
+   "substancias": [
+    [
+     "CALCÁRIO",
+     6360
+    ],
+    [
+     "FOSFATO",
+     4605
+    ],
+    [
+     "TERRAS RARAS",
+     1530
+    ],
+    [
+     "ILMENITA",
+     80
+    ]
+   ]
+  },
+  {
+   "cod": "2102101",
+   "nome": "Brejo",
+   "ha": 12621,
+   "pctMunicipio": 11.5,
+   "porFase": {
+    "requerimento": 19,
+    "lavra": 166,
+    "pesquisa": 12436
+   },
+   "processos": {
+    "requerimento": 2,
+    "lavra": 5,
+    "pesquisa": 10
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     9114
+    ],
+    [
+     "FOSFATO",
+     1677
+    ],
+    [
+     "DIAMANTE",
+     1465
+    ],
+    [
+     "OURO",
+     180
+    ]
+   ]
+  },
+  {
+   "cod": "2100808",
+   "nome": "Anapurus",
+   "ha": 12375,
+   "pctMunicipio": 20.0,
+   "porFase": {
+    "disponibilidade": 5785,
+    "pesquisa": 5115,
+    "requerimento": 1475
+   },
+   "processos": {
+    "disponibilidade": 4,
+    "pesquisa": 4,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     12375
+    ]
+   ]
+  },
+  {
+   "cod": "2105005",
+   "nome": "Humberto de Campos",
+   "ha": 12224,
+   "pctMunicipio": 5.6,
+   "porFase": {
+    "pesquisa": 11803,
+    "disponibilidade": 421
+   },
+   "processos": {
+    "pesquisa": 8,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     11803
+    ],
+    [
+     "FOSFATO",
+     421
+    ]
+   ]
+  },
+  {
+   "cod": "2102036",
+   "nome": "Bom Jesus das Selvas",
+   "ha": 12049,
+   "pctMunicipio": 4.5,
+   "porFase": {
+    "lavra": 72,
+    "disponibilidade": 11977
+   },
+   "processos": {
+    "lavra": 6,
+    "disponibilidade": 13
+   },
+   "substancias": [
+    [
+     "BAUXITA",
+     11977
+    ],
+    [
+     "AREIA",
+     54
+    ],
+    [
+     "CASCALHO",
+     19
+    ]
+   ]
+  },
+  {
+   "cod": "2102556",
+   "nome": "Campestre do Maranhão",
+   "ha": 11053,
+   "pctMunicipio": 17.9,
+   "porFase": {
+    "requerimento": 556,
+    "pesquisa": 10448,
+    "disponibilidade": 48
+   },
+   "processos": {
+    "requerimento": 3,
+    "pesquisa": 4,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     10804
+    ],
+    [
+     "BASALTO",
+     89
+    ],
+    [
+     "MINÉRIO DE COBRE",
+     61
+    ],
+    [
+     "AREIA",
+     50
     ]
    ]
   },
   {
    "cod": "2104552",
    "nome": "Governador Edison Lobão",
-   "ha": 5022,
-   "pctMunicipio": 8.1,
+   "ha": 11044,
+   "pctMunicipio": 17.8,
    "porFase": {
-    "pesquisa": 5022
+    "requerimento": 2437,
+    "disponibilidade": 3233,
+    "lavra": 192,
+    "pesquisa": 5183
    },
    "processos": {
-    "pesquisa": 8
+    "requerimento": 15,
+    "disponibilidade": 4,
+    "lavra": 6,
+    "pesquisa": 14
    },
    "substancias": [
     [
-     "CASCALHO",
-     2124
+     "FOSFATO",
+     7061
     ],
     [
-     "FOSFATO",
-     1569
+     "CASCALHO",
+     2213
     ],
     [
      "MINÉRIO DE FERRO",
@@ -1813,94 +2776,202 @@
     ],
     [
      "AREIA",
-     260
+     408
     ]
    ]
   },
   {
-   "cod": "2109551",
-   "nome": "Ribamar Fiquene",
-   "ha": 4690,
-   "pctMunicipio": 6.2,
+   "cod": "2100907",
+   "nome": "Araioses",
+   "ha": 10389,
+   "pctMunicipio": 5.7,
    "porFase": {
-    "pesquisa": 4690
+    "pesquisa": 6092,
+    "requerimento": 1071,
+    "disponibilidade": 3226
    },
    "processos": {
-    "pesquisa": 7
+    "pesquisa": 8,
+    "requerimento": 1,
+    "disponibilidade": 5
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     4098
+    ],
+    [
+     "FOSFATO",
+     2976
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     2893
+    ],
+    [
+     "AREIA",
+     373
+    ]
+   ]
+  },
+  {
+   "cod": "2101731",
+   "nome": "Belágua",
+   "ha": 10052,
+   "pctMunicipio": 19.8,
+   "porFase": {
+    "pesquisa": 8367,
+    "disponibilidade": 1685
+   },
+   "processos": {
+    "pesquisa": 9,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     10052
+    ]
+   ]
+  },
+  {
+   "cod": "2111201",
+   "nome": "São José de Ribamar",
+   "ha": 9013,
+   "pctMunicipio": 23.1,
+   "porFase": {
+    "lavra": 352,
+    "pesquisa": 697,
+    "disponibilidade": 60,
+    "requerimento": 7903
+   },
+   "processos": {
+    "lavra": 10,
+    "pesquisa": 11,
+    "disponibilidade": 2,
+    "requerimento": 10
+   },
+   "substancias": [
+    [
+     "QUARTZO",
+     7626
+    ],
+    [
+     "ÁGUA MINERAL",
+     726
+    ],
+    [
+     "AREIA",
+     545
+    ],
+    [
+     "LATERITA",
+     109
+    ]
+   ]
+  },
+  {
+   "cod": "2107704",
+   "nome": "Paraibano",
+   "ha": 8420,
+   "pctMunicipio": 15.6,
+   "porFase": {
+    "lavra": 16,
+    "pesquisa": 903,
+    "disponibilidade": 7501
+   },
+   "processos": {
+    "lavra": 2,
+    "pesquisa": 2,
+    "disponibilidade": 8
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     7830
+    ],
+    [
+     "CALCÁRIO",
+     574
+    ],
+    [
+     "ARGILA",
+     16
+    ]
+   ]
+  },
+  {
+   "cod": "2111748",
+   "nome": "Senador Alexandre Costa",
+   "ha": 7935,
+   "pctMunicipio": 18.3,
+   "porFase": {
+    "disponibilidade": 159,
+    "pesquisa": 7746,
+    "requerimento": 31
+   },
+   "processos": {
+    "disponibilidade": 2,
+    "pesquisa": 1,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     7746
+    ],
+    [
+     "AREIA",
+     189
+    ]
+   ]
+  },
+  {
+   "cod": "2101103",
+   "nome": "Axixá",
+   "ha": 6948,
+   "pctMunicipio": 33.8,
+   "porFase": {
+    "disponibilidade": 1534,
+    "requerimento": 1157,
+    "pesquisa": 4217,
+    "lavra": 41
+   },
+   "processos": {
+    "disponibilidade": 2,
+    "requerimento": 7,
+    "pesquisa": 12,
+    "lavra": 2
    },
    "substancias": [
     [
      "AREIA",
-     4117
+     4662
     ],
     [
      "FOSFATO",
-     416
+     1489
     ],
     [
-     "MINÉRIO DE COBRE",
-     133
+     "GRANITO",
+     316
     ],
-    [
-     "MINÉRIO DE FERRO",
-     25
-    ]
-   ]
-  },
-  {
-   "cod": "2102309",
-   "nome": "Buriti Bravo",
-   "ha": 4684,
-   "pctMunicipio": 2.9,
-   "porFase": {
-    "pesquisa": 4684
-   },
-   "processos": {
-    "pesquisa": 8
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     4605
-    ],
-    [
-     "ILMENITA",
-     80
-    ]
-   ]
-  },
-  {
-   "cod": "2109601",
-   "nome": "Rosário",
-   "ha": 4446,
-   "pctMunicipio": 6.4,
-   "porFase": {
-    "pesquisa": 4446
-   },
-   "processos": {
-    "pesquisa": 4
-   },
-   "substancias": [
     [
      "MINÉRIO DE OURO",
-     4367
-    ],
-    [
-     "FOSFATO",
-     79
+     308
     ]
    ]
   },
   {
    "cod": "2101939",
    "nome": "Bernardo do Mearim",
-   "ha": 4306,
-   "pctMunicipio": 16.3,
+   "ha": 6889,
+   "pctMunicipio": 26.0,
    "porFase": {
-    "pesquisa": 4306
+    "pesquisa": 6889
    },
    "processos": {
-    "pesquisa": 6
+    "pesquisa": 11
    },
    "substancias": [
     [
@@ -1908,170 +2979,96 @@
      2995
     ],
     [
-     "FOSFATO",
-     1312
-    ]
-   ]
-  },
-  {
-   "cod": "2110302",
-   "nome": "Santo Antônio dos Lopes",
-   "ha": 3995,
-   "pctMunicipio": 5.1,
-   "porFase": {
-    "pesquisa": 3995
-   },
-   "processos": {
-    "pesquisa": 2
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     3852
+     "QUARTZO",
+     2446
     ],
     [
-     "MINÉRIO DE OURO",
-     144
+     "FOSFATO",
+     1312
+    ],
+    [
+     "AREIA",
+     137
     ]
    ]
   },
   {
-   "cod": "2100303",
-   "nome": "Aldeias Altas",
-   "ha": 3654,
-   "pctMunicipio": 1.8,
+   "cod": "2111573",
+   "nome": "São Pedro dos Crentes",
+   "ha": 6628,
+   "pctMunicipio": 6.7,
    "porFase": {
-    "pesquisa": 3654
+    "pesquisa": 201,
+    "disponibilidade": 6427
    },
    "processos": {
-    "pesquisa": 5
+    "pesquisa": 1,
+    "disponibilidade": 3
    },
    "substancias": [
     [
-     "MINÉRIO DE FERRO",
-     3654
+     "MINÉRIO DE COBRE",
+     6427
+    ],
+    [
+     "CASCALHO",
+     201
     ]
    ]
   },
   {
-   "cod": "2107100",
-   "nome": "Morros",
-   "ha": 3541,
-   "pctMunicipio": 2.0,
+   "cod": "2106300",
+   "nome": "Magalhães de Almeida",
+   "ha": 6439,
+   "pctMunicipio": 14.6,
    "porFase": {
-    "pesquisa": 3541
+    "disponibilidade": 51,
+    "pesquisa": 6389
    },
    "processos": {
+    "disponibilidade": 1,
     "pesquisa": 6
    },
    "substancias": [
     [
-     "ILMENITA",
-     3066
+     "MINÉRIO DE FERRO",
+     6389
     ],
     [
      "AREIA",
-     238
-    ],
-    [
-     "MINÉRIO DE OURO",
-     211
-    ],
-    [
-     "OURO",
-     25
-    ]
-   ]
-  },
-  {
-   "cod": "2106607",
-   "nome": "Matões",
-   "ha": 3230,
-   "pctMunicipio": 1.7,
-   "porFase": {
-    "pesquisa": 3230
-   },
-   "processos": {
-    "pesquisa": 4
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     3134
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     80
-    ],
-    [
-     "MINÉRIO DE OURO",
-     16
-    ]
-   ]
-  },
-  {
-   "cod": "2111250",
-   "nome": "São José dos Basílios",
-   "ha": 3202,
-   "pctMunicipio": 8.7,
-   "porFase": {
-    "pesquisa": 3202
-   },
-   "processos": {
-    "pesquisa": 2
-   },
-   "substancias": [
-    [
-     "FOSFATO",
-     2798
-    ],
-    [
-     "MINÉRIO DE FERRO",
-     404
-    ]
-   ]
-  },
-  {
-   "cod": "2101103",
-   "nome": "Axixá",
-   "ha": 3180,
-   "pctMunicipio": 15.5,
-   "porFase": {
-    "pesquisa": 3180
-   },
-   "processos": {
-    "pesquisa": 4
-   },
-   "substancias": [
-    [
-     "AREIA",
-     2721
-    ],
-    [
-     "MINÉRIO DE OURO",
-     287
-    ],
-    [
-     "OURO",
-     172
+     51
     ]
    ]
   },
   {
    "cod": "2105609",
    "nome": "Joselândia",
-   "ha": 2810,
-   "pctMunicipio": 4.1,
+   "ha": 6334,
+   "pctMunicipio": 9.2,
    "porFase": {
-    "pesquisa": 2810
+    "disponibilidade": 20,
+    "lavra": 14,
+    "pesquisa": 3724,
+    "requerimento": 2576
    },
    "processos": {
-    "pesquisa": 2
+    "disponibilidade": 1,
+    "lavra": 2,
+    "pesquisa": 4,
+    "requerimento": 6
    },
    "substancias": [
     [
      "MINÉRIO DE FERRO",
      2681
+    ],
+    [
+     "FOSFATO",
+     2569
+    ],
+    [
+     "AREIA",
+     935
     ],
     [
      "ILMENITA",
@@ -2080,57 +3077,345 @@
    ]
   },
   {
-   "cod": "2103802",
-   "nome": "Dom Pedro",
-   "ha": 2738,
-   "pctMunicipio": 7.3,
+   "cod": "2105658",
+   "nome": "Junco do Maranhão",
+   "ha": 6252,
+   "pctMunicipio": 11.2,
    "porFase": {
-    "pesquisa": 2738
+    "disponibilidade": 6252
    },
    "processos": {
-    "pesquisa": 1
+    "disponibilidade": 1
    },
    "substancias": [
     [
-     "FOSFATO",
-     2738
+     "DIAMANTE",
+     6252
     ]
    ]
   },
   {
-   "cod": "2101509",
-   "nome": "Barão de Grajaú",
-   "ha": 2540,
-   "pctMunicipio": 1.1,
+   "cod": "2100303",
+   "nome": "Aldeias Altas",
+   "ha": 5918,
+   "pctMunicipio": 3.0,
    "porFase": {
-    "outras": 2132,
-    "pesquisa": 408
+    "pesquisa": 3801,
+    "lavra": 49,
+    "disponibilidade": 2068
    },
    "processos": {
-    "outras": 2,
+    "pesquisa": 6,
+    "lavra": 1,
+    "disponibilidade": 4
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     4745
+    ],
+    [
+     "CALCÁRIO",
+     1093
+    ],
+    [
+     "AREIA",
+     49
+    ],
+    [
+     "ARGILA",
+     31
+    ]
+   ]
+  },
+  {
+   "cod": "2106607",
+   "nome": "Matões",
+   "ha": 5705,
+   "pctMunicipio": 3.0,
+   "porFase": {
+    "pesquisa": 5627,
+    "lavra": 61,
+    "disponibilidade": 17
+   },
+   "processos": {
+    "pesquisa": 11,
+    "lavra": 2,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     3134
+    ],
+    [
+     "BASALTO",
+     1816
+    ],
+    [
+     "AMETISTA",
+     302
+    ],
+    [
+     "ARGILA",
+     287
+    ]
+   ]
+  },
+  {
+   "cod": "2112852",
+   "nome": "Vila Nova dos Martírios",
+   "ha": 5672,
+   "pctMunicipio": 4.7,
+   "porFase": {
+    "disponibilidade": 3235,
+    "lavra": 27,
+    "pesquisa": 2369,
+    "requerimento": 40
+   },
+   "processos": {
+    "disponibilidade": 3,
+    "lavra": 1,
+    "pesquisa": 1,
+    "requerimento": 2
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     3231
+    ],
+    [
+     "CASCALHO",
+     2374
+    ],
+    [
+     "AREIA",
+     55
+    ],
+    [
+     "ARGILA",
+     12
+    ]
+   ]
+  },
+  {
+   "cod": "2103802",
+   "nome": "Dom Pedro",
+   "ha": 4863,
+   "pctMunicipio": 13.0,
+   "porFase": {
+    "lavra": 3,
+    "requerimento": 2122,
+    "pesquisa": 2738
+   },
+   "processos": {
+    "lavra": 1,
+    "requerimento": 4,
     "pesquisa": 1
    },
    "substancias": [
     [
-     "ILMENITA",
-     2132
+     "FOSFATO",
+     4859
     ],
     [
+     "ARGILA",
+     3
+    ]
+   ]
+  },
+  {
+   "cod": "2109809",
+   "nome": "Santa Helena",
+   "ha": 4730,
+   "pctMunicipio": 2.0,
+   "porFase": {
+    "disponibilidade": 2830,
+    "pesquisa": 1900
+   },
+   "processos": {
+    "disponibilidade": 3,
+    "pesquisa": 2
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     3726
+    ],
+    [
+     "GRANITO",
+     966
+    ],
+    [
+     "AREIA",
+     38
+    ]
+   ]
+  },
+  {
+   "cod": "2110302",
+   "nome": "Santo Antônio dos Lopes",
+   "ha": 4697,
+   "pctMunicipio": 6.0,
+   "porFase": {
+    "pesquisa": 4094,
+    "disponibilidade": 344,
+    "requerimento": 260
+   },
+   "processos": {
+    "pesquisa": 5,
+    "disponibilidade": 1,
+    "requerimento": 3
+   },
+   "substancias": [
+    [
      "FOSFATO",
-     408
+     4406
+    ],
+    [
+     "MINÉRIO DE OURO",
+     192
+    ],
+    [
+     "AREIA",
+     53
+    ],
+    [
+     "ARGILA",
+     46
+    ]
+   ]
+  },
+  {
+   "cod": "2110203",
+   "nome": "Santa Rita",
+   "ha": 4659,
+   "pctMunicipio": 6.5,
+   "porFase": {
+    "requerimento": 24,
+    "lavra": 347,
+    "pesquisa": 4163,
+    "disponibilidade": 75,
+    "outras": 51
+   },
+   "processos": {
+    "requerimento": 2,
+    "lavra": 9,
+    "pesquisa": 15,
+    "disponibilidade": 3,
+    "outras": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     2011
+    ],
+    [
+     "MINÉRIO DE OURO",
+     1172
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     1132
+    ],
+    [
+     "GRANITO",
+     225
+    ]
+   ]
+  },
+  {
+   "cod": "2107100",
+   "nome": "Morros",
+   "ha": 3719,
+   "pctMunicipio": 2.1,
+   "porFase": {
+    "requerimento": 67,
+    "pesquisa": 3642,
+    "lavra": 10
+   },
+   "processos": {
+    "requerimento": 2,
+    "pesquisa": 8,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     3066
+    ],
+    [
+     "AREIA",
+     387
+    ],
+    [
+     "MINÉRIO DE OURO",
+     241
+    ],
+    [
+     "OURO",
+     25
+    ]
+   ]
+  },
+  {
+   "cod": "2110401",
+   "nome": "São Benedito do Rio Preto",
+   "ha": 3501,
+   "pctMunicipio": 3.7,
+   "porFase": {
+    "requerimento": 3501
+   },
+   "processos": {
+    "requerimento": 4
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     3501
+    ]
+   ]
+  },
+  {
+   "cod": "2111953",
+   "nome": "Sucupira do Riachão",
+   "ha": 3160,
+   "pctMunicipio": 5.5,
+   "porFase": {
+    "pesquisa": 60,
+    "disponibilidade": 3100
+   },
+   "processos": {
+    "pesquisa": 1,
+    "disponibilidade": 2
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     3100
+    ],
+    [
+     "ARENITO",
+     60
     ]
    ]
   },
   {
    "cod": "2112704",
    "nome": "Vargem Grande",
-   "ha": 2495,
-   "pctMunicipio": 1.3,
+   "ha": 3051,
+   "pctMunicipio": 1.5,
    "porFase": {
-    "pesquisa": 2495
+    "requerimento": 89,
+    "lavra": 172,
+    "disponibilidade": 112,
+    "pesquisa": 2678
    },
    "processos": {
-    "pesquisa": 2
+    "requerimento": 4,
+    "lavra": 8,
+    "disponibilidade": 3,
+    "pesquisa": 3
    },
    "substancias": [
     [
@@ -2140,6 +3425,122 @@
     [
      "MINÉRIO DE COBRE",
      1014
+    ],
+    [
+     "AREIA",
+     326
+    ],
+    [
+     "QUARTZO",
+     183
+    ]
+   ]
+  },
+  {
+   "cod": "2100154",
+   "nome": "Água Doce do Maranhão",
+   "ha": 2923,
+   "pctMunicipio": 6.5,
+   "porFase": {
+    "disponibilidade": 2923
+   },
+   "processos": {
+    "disponibilidade": 2
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     2923
+    ]
+   ]
+  },
+  {
+   "cod": "2107803",
+   "nome": "Parnarama",
+   "ha": 2829,
+   "pctMunicipio": 0.8,
+   "porFase": {
+    "requerimento": 120,
+    "disponibilidade": 205,
+    "lavra": 78,
+    "pesquisa": 2427
+   },
+   "processos": {
+    "requerimento": 5,
+    "disponibilidade": 4,
+    "lavra": 4,
+    "pesquisa": 3
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     1412
+    ],
+    [
+     "CALCÁRIO",
+     1014
+    ],
+    [
+     "AREIA",
+     336
+    ],
+    [
+     "ÁGUA MINERAL",
+     50
+    ]
+   ]
+  },
+  {
+   "cod": "2109908",
+   "nome": "Santa Inês",
+   "ha": 2805,
+   "pctMunicipio": 3.6,
+   "porFase": {
+    "lavra": 3,
+    "requerimento": 1064,
+    "pesquisa": 1738
+   },
+   "processos": {
+    "lavra": 2,
+    "requerimento": 1,
+    "pesquisa": 3
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE FERRO",
+     2765
+    ],
+    [
+     "ÁGUA MINERAL",
+     38
+    ],
+    [
+     "ARGILA",
+     3
+    ]
+   ]
+  },
+  {
+   "cod": "2102754",
+   "nome": "Capinzal do Norte",
+   "ha": 2596,
+   "pctMunicipio": 4.3,
+   "porFase": {
+    "disponibilidade": 1599,
+    "pesquisa": 997
+   },
+   "processos": {
+    "disponibilidade": 1,
+    "pesquisa": 1
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     1599
+    ],
+    [
+     "CAULIM",
+     997
     ]
    ]
   },
@@ -2162,176 +3563,408 @@
    ]
   },
   {
-   "cod": "2110203",
-   "nome": "Santa Rita",
-   "ha": 2304,
-   "pctMunicipio": 3.2,
+   "cod": "2101970",
+   "nome": "Boa Vista do Gurupi",
+   "ha": 2391,
+   "pctMunicipio": 5.9,
    "porFase": {
-    "pesquisa": 2304
+    "pesquisa": 836,
+    "requerimento": 650,
+    "disponibilidade": 905
    },
    "processos": {
-    "pesquisa": 3
+    "pesquisa": 2,
+    "requerimento": 3,
+    "disponibilidade": 1
    },
    "substancias": [
     [
      "MINÉRIO DE OURO",
-     1172
+     1556
     ],
+    [
+     "QUARTZO",
+     836
+    ]
+   ]
+  },
+  {
+   "cod": "2111508",
+   "nome": "São Mateus do Maranhão",
+   "ha": 2246,
+   "pctMunicipio": 2.8,
+   "porFase": {
+    "lavra": 106,
+    "pesquisa": 510,
+    "requerimento": 1630
+   },
+   "processos": {
+    "lavra": 5,
+    "pesquisa": 2,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     1630
+    ],
+    [
+     "CALCÁRIO",
+     502
+    ],
+    [
+     "AREIA",
+     67
+    ],
+    [
+     "ARGILA",
+     39
+    ]
+   ]
+  },
+  {
+   "cod": "2108900",
+   "nome": "Poção de Pedras",
+   "ha": 2200,
+   "pctMunicipio": 3.3,
+   "porFase": {
+    "lavra": 4,
+    "pesquisa": 2196
+   },
+   "processos": {
+    "lavra": 1,
+    "pesquisa": 3
+   },
+   "substancias": [
+    [
+     "AREIA",
+     1162
+    ],
+    [
+     "QUARTZO",
+     1038
+    ]
+   ]
+  },
+  {
+   "cod": "2108504",
+   "nome": "Pindaré-Mirim",
+   "ha": 2163,
+   "pctMunicipio": 7.9,
+   "porFase": {
+    "lavra": 200,
+    "requerimento": 406,
+    "pesquisa": 1556,
+    "disponibilidade": 1
+   },
+   "processos": {
+    "lavra": 7,
+    "requerimento": 5,
+    "pesquisa": 6,
+    "disponibilidade": 1
+   },
+   "substancias": [
     [
      "MINÉRIO DE FERRO",
-     1132
+     1123
+    ],
+    [
+     "ARGILA",
+     799
+    ],
+    [
+     "AREIA",
+     183
+    ],
+    [
+     "ÁGUA MINERAL",
+     58
     ]
    ]
   },
   {
-   "cod": "2101251",
-   "nome": "Bacabeira",
-   "ha": 2004,
-   "pctMunicipio": 3.2,
+   "cod": "2105401",
+   "nome": "Itapecuru Mirim",
+   "ha": 2037,
+   "pctMunicipio": 1.4,
    "porFase": {
-    "pesquisa": 2004
+    "lavra": 778,
+    "requerimento": 259,
+    "disponibilidade": 105,
+    "pesquisa": 895
    },
    "processos": {
+    "lavra": 32,
+    "requerimento": 10,
+    "disponibilidade": 6,
     "pesquisa": 3
    },
    "substancias": [
     [
-     "MINÉRIO DE OURO",
-     1793
+     "ARGILA",
+     788
     ],
     [
-     "BAUXITA",
-     211
+     "CAULIM",
+     467
+    ],
+    [
+     "SILTITO",
+     418
+    ],
+    [
+     "AREIA",
+     239
     ]
    ]
   },
   {
-   "cod": "2112209",
-   "nome": "Timon",
-   "ha": 1974,
-   "pctMunicipio": 1.1,
+   "cod": "2109759",
+   "nome": "Santa Filomena do Maranhão",
+   "ha": 1960,
+   "pctMunicipio": 4.8,
    "porFase": {
-    "pesquisa": 1974
+    "pesquisa": 1960
    },
    "processos": {
-    "pesquisa": 8
+    "pesquisa": 2
+   },
+   "substancias": [
+    [
+     "GIPSITA",
+     1960
+    ]
+   ]
+  },
+  {
+   "cod": "2110237",
+   "nome": "Santana do Maranhão",
+   "ha": 1914,
+   "pctMunicipio": 2.0,
+   "porFase": {
+    "pesquisa": 511,
+    "requerimento": 426,
+    "disponibilidade": 978
+   },
+   "processos": {
+    "pesquisa": 1,
+    "requerimento": 1,
+    "disponibilidade": 2
    },
    "substancias": [
     [
      "ILMENITA",
-     1308
+     1914
+    ]
+   ]
+  },
+  {
+   "cod": "2109205",
+   "nome": "Presidente Juscelino",
+   "ha": 1818,
+   "pctMunicipio": 5.0,
+   "porFase": {
+    "lavra": 52,
+    "pesquisa": 1092,
+    "requerimento": 664,
+    "disponibilidade": 11
+   },
+   "processos": {
+    "lavra": 4,
+    "pesquisa": 9,
+    "requerimento": 6,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     1224
     ],
     [
-     "FOSFATO",
-     666
-    ]
-   ]
-  },
-  {
-   "cod": "2111102",
-   "nome": "São João dos Patos",
-   "ha": 1964,
-   "pctMunicipio": 1.3,
-   "porFase": {
-    "pesquisa": 1964
-   },
-   "processos": {
-    "pesquisa": 1
-   },
-   "substancias": [
-    [
-     "ARENITO",
-     1964
-    ]
-   ]
-  },
-  {
-   "cod": "2109809",
-   "nome": "Santa Helena",
-   "ha": 1900,
-   "pctMunicipio": 0.8,
-   "porFase": {
-    "pesquisa": 1900
-   },
-   "processos": {
-    "pesquisa": 2
-   },
-   "substancias": [
-    [
      "MINÉRIO DE OURO",
-     1900
-    ]
-   ]
-  },
-  {
-   "cod": "2109908",
-   "nome": "Santa Inês",
-   "ha": 1700,
-   "pctMunicipio": 2.2,
-   "porFase": {
-    "pesquisa": 1700
-   },
-   "processos": {
-    "pesquisa": 2
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     1700
+     595
     ]
    ]
   },
   {
    "cod": "2110039",
    "nome": "Santa Luzia do Paruá",
-   "ha": 1511,
+   "ha": 1521,
    "pctMunicipio": 1.7,
    "porFase": {
-    "pesquisa": 1511
+    "pesquisa": 1511,
+    "requerimento": 10
    },
    "processos": {
-    "pesquisa": 1
+    "pesquisa": 1,
+    "requerimento": 1
    },
    "substancias": [
     [
      "MINÉRIO DE OURO",
      1511
+    ],
+    [
+     "AREIA",
+     10
     ]
    ]
   },
   {
-   "cod": "2107803",
-   "nome": "Parnarama",
-   "ha": 1412,
-   "pctMunicipio": 0.4,
+   "cod": "2102374",
+   "nome": "Cachoeira Grande",
+   "ha": 1463,
+   "pctMunicipio": 2.0,
    "porFase": {
-    "pesquisa": 1412
+    "pesquisa": 1003,
+    "lavra": 40,
+    "requerimento": 420
    },
    "processos": {
-    "pesquisa": 2
+    "pesquisa": 7,
+    "lavra": 2,
+    "requerimento": 5
    },
    "substancias": [
     [
-     "FOSFATO",
-     1412
+     "AREIA",
+     1065
+    ],
+    [
+     "MINÉRIO DE OURO",
+     397
     ]
    ]
   },
   {
    "cod": "2109270",
    "nome": "Presidente Sarney",
-   "ha": 1389,
+   "ha": 1401,
    "pctMunicipio": 1.9,
    "porFase": {
+    "disponibilidade": 12,
     "pesquisa": 1389
    },
    "processos": {
+    "disponibilidade": 1,
     "pesquisa": 2
    },
    "substancias": [
     [
      "MINÉRIO DE OURO",
      1389
+    ],
+    [
+     "AREIA",
+     12
+    ]
+   ]
+  },
+  {
+   "cod": "2111532",
+   "nome": "São Pedro da Água Branca",
+   "ha": 1383,
+   "pctMunicipio": 1.9,
+   "porFase": {
+    "lavra": 0,
+    "requerimento": 47,
+    "disponibilidade": 65,
+    "pesquisa": 1271
+   },
+   "processos": {
+    "lavra": 1,
+    "requerimento": 2,
+    "disponibilidade": 2,
+    "pesquisa": 4
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE COBRE",
+     631
+    ],
+    [
+     "OURO",
+     374
+    ],
+    [
+     "ARGILA",
+     270
+    ],
+    [
+     "AREIA",
+     93
+    ]
+   ]
+  },
+  {
+   "cod": "2109106",
+   "nome": "Presidente Dutra",
+   "ha": 1373,
+   "pctMunicipio": 1.7,
+   "porFase": {
+    "lavra": 92,
+    "pesquisa": 1165,
+    "requerimento": 113,
+    "disponibilidade": 3
+   },
+   "processos": {
+    "lavra": 4,
+    "pesquisa": 4,
+    "requerimento": 2,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "CALCÁRIO",
+     1030
+    ],
+    [
+     "GIPSITA",
+     135
+    ],
+    [
+     "AREIA",
+     108
+    ],
+    [
+     "FOSFATO",
+     72
+    ]
+   ]
+  },
+  {
+   "cod": "2103604",
+   "nome": "Coroatá",
+   "ha": 1257,
+   "pctMunicipio": 0.5,
+   "porFase": {
+    "lavra": 140,
+    "requerimento": 55,
+    "disponibilidade": 20,
+    "pesquisa": 1042
+   },
+   "processos": {
+    "lavra": 5,
+    "requerimento": 2,
+    "disponibilidade": 3,
+    "pesquisa": 6
+   },
+   "substancias": [
+    [
+     "CALCÁRIO",
+     629
+    ],
+    [
+     "AREIA",
+     310
+    ],
+    [
+     "DIAMANTE",
+     204
+    ],
+    [
+     "ÁGUA MINERAL",
+     81
     ]
    ]
   },
@@ -2354,60 +3987,354 @@
    ]
   },
   {
-   "cod": "2111805",
-   "nome": "Sítio Novo",
-   "ha": 1016,
-   "pctMunicipio": 0.3,
+   "cod": "2106904",
+   "nome": "Monção",
+   "ha": 1176,
+   "pctMunicipio": 0.9,
    "porFase": {
-    "pesquisa": 1016
+    "lavra": 101,
+    "pesquisa": 1071,
+    "disponibilidade": 4
    },
    "processos": {
-    "pesquisa": 1
+    "lavra": 4,
+    "pesquisa": 3,
+    "disponibilidade": 1
    },
    "substancias": [
     [
-     "FOSFATO",
-     1016
+     "AREIA",
+     1121
+    ],
+    [
+     "ARGILA",
+     44
+    ],
+    [
+     "MINÉRIO DE FERRO",
+     11
     ]
    ]
   },
   {
-   "cod": "2111532",
-   "nome": "São Pedro da Água Branca",
-   "ha": 1005,
+   "cod": "2101202",
+   "nome": "Bacabal",
+   "ha": 1142,
+   "pctMunicipio": 0.7,
+   "porFase": {
+    "lavra": 11,
+    "pesquisa": 1034,
+    "disponibilidade": 32,
+    "requerimento": 65
+   },
+   "processos": {
+    "lavra": 3,
+    "pesquisa": 5,
+    "disponibilidade": 1,
+    "requerimento": 4
+   },
+   "substancias": [
+    [
+     "CALCÁRIO",
+     476
+    ],
+    [
+     "MINÉRIO DE OURO",
+     463
+    ],
+    [
+     "AREIA",
+     144
+    ],
+    [
+     "ÁGUA MINERAL",
+     44
+    ]
+   ]
+  },
+  {
+   "cod": "2108454",
+   "nome": "Peritoró",
+   "ha": 1135,
    "pctMunicipio": 1.4,
    "porFase": {
-    "pesquisa": 1005
+    "pesquisa": 1135
    },
    "processos": {
     "pesquisa": 3
    },
    "substancias": [
     [
-     "MINÉRIO DE COBRE",
-     631
-    ],
-    [
-     "OURO",
-     374
+     "QUARTZO",
+     1135
     ]
    ]
   },
   {
-   "cod": "2108504",
-   "nome": "Pindaré-Mirim",
-   "ha": 756,
-   "pctMunicipio": 2.7,
+   "cod": "2103125",
+   "nome": "Central do Maranhão",
+   "ha": 1079,
+   "pctMunicipio": 2.9,
    "porFase": {
-    "pesquisa": 756
+    "pesquisa": 1079
    },
    "processos": {
+    "pesquisa": 1
+   },
+   "substancias": [
+    [
+     "TERRAS RARAS",
+     1079
+    ]
+   ]
+  },
+  {
+   "cod": "2107506",
+   "nome": "Paço do Lumiar",
+   "ha": 1024,
+   "pctMunicipio": 7.6,
+   "porFase": {
+    "lavra": 205,
+    "requerimento": 231,
+    "disponibilidade": 509,
+    "pesquisa": 79
+   },
+   "processos": {
+    "lavra": 7,
+    "requerimento": 6,
+    "disponibilidade": 2,
+    "pesquisa": 3
+   },
+   "substancias": [
+    [
+     "AREIA",
+     752
+    ],
+    [
+     "ÁGUA MINERAL",
+     272
+    ]
+   ]
+  },
+  {
+   "cod": "2108603",
+   "nome": "Pinheiro",
+   "ha": 978,
+   "pctMunicipio": 0.7,
+   "porFase": {
+    "disponibilidade": 736,
+    "lavra": 151,
+    "pesquisa": 91
+   },
+   "processos": {
+    "disponibilidade": 5,
+    "lavra": 7,
     "pesquisa": 2
    },
    "substancias": [
     [
-     "MINÉRIO DE FERRO",
-     756
+     "GRANITO",
+     657
+    ],
+    [
+     "AREIA",
+     133
+    ],
+    [
+     "ÁGUA MINERAL",
+     91
+    ],
+    [
+     "MINÉRIO DE OURO",
+     56
+    ]
+   ]
+  },
+  {
+   "cod": "2100436",
+   "nome": "Alto Alegre do Maranhão",
+   "ha": 865,
+   "pctMunicipio": 2.2,
+   "porFase": {
+    "pesquisa": 865
+   },
+   "processos": {
+    "pesquisa": 3
+   },
+   "substancias": [
+    [
+     "QUARTZO",
+     732
+    ],
+    [
+     "ARGILA",
+     133
+    ]
+   ]
+  },
+  {
+   "cod": "2103752",
+   "nome": "Davinópolis",
+   "ha": 861,
+   "pctMunicipio": 2.5,
+   "porFase": {
+    "lavra": 108,
+    "pesquisa": 751,
+    "requerimento": 2
+   },
+   "processos": {
+    "lavra": 4,
+    "pesquisa": 3,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "DIAMANTE",
+     510
+    ],
+    [
+     "CALCÁRIO",
+     237
+    ],
+    [
+     "CASCALHO",
+     47
+    ],
+    [
+     "ARGILA",
+     36
+    ]
+   ]
+  },
+  {
+   "cod": "2108207",
+   "nome": "Pedreiras",
+   "ha": 725,
+   "pctMunicipio": 2.5,
+   "porFase": {
+    "lavra": 84,
+    "pesquisa": 625,
+    "requerimento": 16
+   },
+   "processos": {
+    "lavra": 4,
+    "pesquisa": 2,
+    "requerimento": 2
+   },
+   "substancias": [
+    [
+     "AREIA",
+     725
+    ]
+   ]
+  },
+  {
+   "cod": "2111409",
+   "nome": "São Luís Gonzaga do Maranhão",
+   "ha": 705,
+   "pctMunicipio": 0.7,
+   "porFase": {
+    "pesquisa": 695,
+    "requerimento": 10
+   },
+   "processos": {
+    "pesquisa": 2,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "QUARTZO",
+     695
+    ],
+    [
+     "AREIA",
+     10
+    ]
+   ]
+  },
+  {
+   "cod": "2104677",
+   "nome": "Governador Nunes Freire",
+   "ha": 668,
+   "pctMunicipio": 0.6,
+   "porFase": {
+    "requerimento": 14,
+    "pesquisa": 537,
+    "disponibilidade": 42,
+    "lavra": 75
+   },
+   "processos": {
+    "requerimento": 1,
+    "pesquisa": 6,
+    "disponibilidade": 1,
+    "lavra": 2
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     486
+    ],
+    [
+     "AREIA",
+     131
+    ],
+    [
+     "ÁGUA MINERAL",
+     51
+    ]
+   ]
+  },
+  {
+   "cod": "2104008",
+   "nome": "Esperantinópolis",
+   "ha": 594,
+   "pctMunicipio": 1.2,
+   "porFase": {
+    "requerimento": 50,
+    "lavra": 6,
+    "pesquisa": 538
+   },
+   "processos": {
+    "requerimento": 4,
+    "lavra": 3,
+    "pesquisa": 3
+   },
+   "substancias": [
+    [
+     "AREIA",
+     458
+    ],
+    [
+     "ILMENITA",
+     92
+    ],
+    [
+     "ARGILA",
+     44
+    ]
+   ]
+  },
+  {
+   "cod": "2112902",
+   "nome": "Vitória do Mearim",
+   "ha": 593,
+   "pctMunicipio": 0.8,
+   "porFase": {
+    "requerimento": 78,
+    "lavra": 16,
+    "disponibilidade": 27,
+    "pesquisa": 473
+   },
+   "processos": {
+    "requerimento": 5,
+    "lavra": 2,
+    "disponibilidade": 3,
+    "pesquisa": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     593
     ]
    ]
   },
@@ -2432,36 +4359,54 @@
   {
    "cod": "2105450",
    "nome": "Jatobá",
-   "ha": 542,
+   "ha": 555,
    "pctMunicipio": 0.9,
    "porFase": {
-    "pesquisa": 542
+    "pesquisa": 542,
+    "lavra": 3,
+    "requerimento": 10
    },
    "processos": {
-    "pesquisa": 1
+    "pesquisa": 1,
+    "lavra": 1,
+    "requerimento": 2
    },
    "substancias": [
     [
      "MINÉRIO DE OURO",
      542
+    ],
+    [
+     "AREIA",
+     13
     ]
    ]
   },
   {
-   "cod": "2110237",
-   "nome": "Santana do Maranhão",
-   "ha": 511,
-   "pctMunicipio": 0.5,
+   "cod": "2101772",
+   "nome": "Bela Vista do Maranhão",
+   "ha": 523,
+   "pctMunicipio": 3.5,
    "porFase": {
-    "pesquisa": 511
+    "lavra": 151,
+    "pesquisa": 344,
+    "requerimento": 14,
+    "disponibilidade": 14
    },
    "processos": {
-    "pesquisa": 1
+    "lavra": 8,
+    "pesquisa": 3,
+    "requerimento": 1,
+    "disponibilidade": 1
    },
    "substancias": [
     [
-     "ILMENITA",
-     511
+     "AREIA",
+     504
+    ],
+    [
+     "ÁGUA MINERAL",
+     19
     ]
    ]
   },
@@ -2484,84 +4429,30 @@
    ]
   },
   {
-   "cod": "2104677",
-   "nome": "Governador Nunes Freire",
-   "ha": 486,
-   "pctMunicipio": 0.5,
+   "cod": "2104503",
+   "nome": "Governador Archer",
+   "ha": 473,
+   "pctMunicipio": 1.1,
    "porFase": {
-    "pesquisa": 486
-   },
-   "processos": {
-    "pesquisa": 5
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE OURO",
-     486
-    ]
-   ]
-  },
-  {
-   "cod": "2101202",
-   "nome": "Bacabal",
-   "ha": 463,
-   "pctMunicipio": 0.3,
-   "porFase": {
-    "pesquisa": 463
+    "pesquisa": 473
    },
    "processos": {
     "pesquisa": 2
    },
    "substancias": [
     [
-     "MINÉRIO DE OURO",
-     463
+     "GIPSITA",
+     473
     ]
    ]
   },
   {
-   "cod": "2107001",
-   "nome": "Montes Altos",
-   "ha": 439,
-   "pctMunicipio": 0.3,
+   "cod": "2107357",
+   "nome": "Nova Olinda do Maranhão",
+   "ha": 316,
+   "pctMunicipio": 0.1,
    "porFase": {
-    "pesquisa": 439
-   },
-   "processos": {
-    "pesquisa": 2
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     439
-    ]
-   ]
-  },
-  {
-   "cod": "2107704",
-   "nome": "Paraibano",
-   "ha": 329,
-   "pctMunicipio": 0.6,
-   "porFase": {
-    "pesquisa": 329
-   },
-   "processos": {
-    "pesquisa": 1
-   },
-   "substancias": [
-    [
-     "MINÉRIO DE FERRO",
-     329
-    ]
-   ]
-  },
-  {
-   "cod": "2111201",
-   "nome": "São José de Ribamar",
-   "ha": 303,
-   "pctMunicipio": 0.8,
-   "porFase": {
-    "pesquisa": 303
+    "pesquisa": 316
    },
    "processos": {
     "pesquisa": 1
@@ -2569,65 +4460,131 @@
    "substancias": [
     [
      "AREIA",
-     303
+     316
     ]
    ]
   },
   {
-   "cod": "2101772",
-   "nome": "Bela Vista do Maranhão",
-   "ha": 289,
-   "pctMunicipio": 2.0,
+   "cod": "2112456",
+   "nome": "Turilândia",
+   "ha": 277,
+   "pctMunicipio": 0.2,
    "porFase": {
-    "pesquisa": 289
+    "lavra": 176,
+    "disponibilidade": 101
    },
    "processos": {
-    "pesquisa": 1
+    "lavra": 5,
+    "disponibilidade": 2
    },
    "substancias": [
     [
      "AREIA",
-     289
+     277
     ]
    ]
   },
   {
-   "cod": "2102374",
-   "nome": "Cachoeira Grande",
-   "ha": 209,
-   "pctMunicipio": 0.3,
+   "cod": "2114007",
+   "nome": "Zé Doca",
+   "ha": 239,
+   "pctMunicipio": 0.1,
    "porFase": {
-    "pesquisa": 209
+    "lavra": 97,
+    "disponibilidade": 57,
+    "pesquisa": 85
    },
    "processos": {
+    "lavra": 5,
+    "disponibilidade": 5,
     "pesquisa": 2
    },
    "substancias": [
     [
-     "AREIA",
-     201
+     "ARGILA",
+     154
     ],
     [
-     "MINÉRIO DE OURO",
-     9
+     "ÁGUA MINERAL",
+     85
     ]
    ]
   },
   {
-   "cod": "2109205",
-   "nome": "Presidente Juscelino",
-   "ha": 168,
-   "pctMunicipio": 0.5,
+   "cod": "2113009",
+   "nome": "Vitorino Freire",
+   "ha": 238,
+   "pctMunicipio": 0.2,
    "porFase": {
-    "pesquisa": 168
+    "lavra": 53,
+    "pesquisa": 185
    },
    "processos": {
-    "pesquisa": 1
+    "lavra": 2,
+    "pesquisa": 2
    },
    "substancias": [
     [
      "AREIA",
-     168
+     231
+    ],
+    [
+     "ARENITO",
+     8
+    ]
+   ]
+  },
+  {
+   "cod": "2108108",
+   "nome": "Paulo Ramos",
+   "ha": 177,
+   "pctMunicipio": 0.2,
+   "porFase": {
+    "lavra": 61,
+    "requerimento": 6,
+    "pesquisa": 64,
+    "disponibilidade": 46
+   },
+   "processos": {
+    "lavra": 2,
+    "requerimento": 1,
+    "pesquisa": 2,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     177
+    ]
+   ]
+  },
+  {
+   "cod": "2111789",
+   "nome": "Serrano do Maranhão",
+   "ha": 156,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "pesquisa": 56,
+    "lavra": 50,
+    "requerimento": 50
+   },
+   "processos": {
+    "pesquisa": 1,
+    "lavra": 1,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "FOSFATO",
+     56
+    ],
+    [
+     "AREIA",
+     50
+    ],
+    [
+     "ARGILA",
+     50
     ]
    ]
   },
@@ -2650,89 +4607,65 @@
    ]
   },
   {
-   "cod": "2104008",
-   "nome": "Esperantinópolis",
-   "ha": 92,
+   "cod": "2100873",
+   "nome": "Araguanã",
+   "ha": 135,
    "pctMunicipio": 0.2,
    "porFase": {
-    "pesquisa": 92
+    "pesquisa": 135
    },
    "processos": {
     "pesquisa": 1
    },
    "substancias": [
     [
-     "ILMENITA",
-     92
+     "AREIA",
+     135
     ]
    ]
   },
   {
-   "cod": "2111953",
-   "nome": "Sucupira do Riachão",
-   "ha": 60,
-   "pctMunicipio": 0.1,
+   "cod": "2112233",
+   "nome": "Trizidela do Vale",
+   "ha": 128,
+   "pctMunicipio": 0.6,
    "porFase": {
-    "pesquisa": 60
+    "requerimento": 45,
+    "lavra": 83
    },
    "processos": {
-    "pesquisa": 1
+    "requerimento": 3,
+    "lavra": 3
    },
    "substancias": [
     [
-     "ARENITO",
-     60
-    ]
-   ]
-  },
-  {
-   "cod": "2111789",
-   "nome": "Serrano do Maranhão",
-   "ha": 56,
-   "pctMunicipio": 0.0,
-   "porFase": {
-    "pesquisa": 56
-   },
-   "processos": {
-    "pesquisa": 1
-   },
-   "substancias": [
+     "ARGILA",
+     88
+    ],
     [
-     "FOSFATO",
-     56
-    ]
-   ]
-  },
-  {
-   "cod": "2104206",
-   "nome": "Fortuna",
-   "ha": 48,
-   "pctMunicipio": 0.1,
-   "porFase": {
-    "pesquisa": 48
-   },
-   "processos": {
-    "pesquisa": 1
-   },
-   "substancias": [
-    [
-     "ILMENITA",
-     48
+     "AREIA",
+     40
     ]
    ]
   },
   {
    "cod": "2101301",
    "nome": "Bacuri",
-   "ha": 30,
-   "pctMunicipio": 0.0,
+   "ha": 125,
+   "pctMunicipio": 0.2,
    "porFase": {
+    "requerimento": 95,
     "pesquisa": 30
    },
    "processos": {
+    "requerimento": 2,
     "pesquisa": 1
    },
    "substancias": [
+    [
+     "AREIA",
+     95
+    ],
     [
      "MINÉRIO DE OURO",
      30
@@ -2740,20 +4673,644 @@
    ]
   },
   {
-   "cod": "2106904",
-   "nome": "Monção",
-   "ha": 11,
+   "cod": "2105708",
+   "nome": "Lago da Pedra",
+   "ha": 110,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "disponibilidade": 59,
+    "lavra": 51
+   },
+   "processos": {
+    "disponibilidade": 2,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     62
+    ],
+    [
+     "SAIBRO",
+     48
+    ]
+   ]
+  },
+  {
+   "cod": "2112803",
+   "nome": "Viana",
+   "ha": 106,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 9,
+    "pesquisa": 97
+   },
+   "processos": {
+    "lavra": 2,
+    "pesquisa": 2
+   },
+   "substancias": [
+    [
+     "ÁGUA MINERAL",
+     97
+    ],
+    [
+     "AREIA",
+     9
+    ],
+    [
+     "ARGILA",
+     0
+    ]
+   ]
+  },
+  {
+   "cod": "2106805",
+   "nome": "Mirinzal",
+   "ha": 104,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 104
+   },
+   "processos": {
+    "lavra": 6
+   },
+   "substancias": [
+    [
+     "AREIA",
+     90
+    ],
+    [
+     "ARGILA",
+     14
+    ]
+   ]
+  },
+  {
+   "cod": "2102507",
+   "nome": "Cajari",
+   "ha": 103,
+   "pctMunicipio": 0.2,
+   "porFase": {
+    "disponibilidade": 50,
+    "lavra": 5,
+    "pesquisa": 48
+   },
+   "processos": {
+    "disponibilidade": 1,
+    "lavra": 1,
+    "pesquisa": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     103
+    ]
+   ]
+  },
+  {
+   "cod": "2108801",
+   "nome": "Pirapemas",
+   "ha": 101,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "disponibilidade": 44,
+    "lavra": 57
+   },
+   "processos": {
+    "disponibilidade": 2,
+    "lavra": 2
+   },
+   "substancias": [
+    [
+     "AREIA",
+     101
+    ]
+   ]
+  },
+  {
+   "cod": "2110708",
+   "nome": "São Domingos do Maranhão",
+   "ha": 100,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "pesquisa": 100
+   },
+   "processos": {
+    "pesquisa": 2
+   },
+   "substancias": [
+    [
+     "ÁGUA MINERAL",
+     100
+    ]
+   ]
+  },
+  {
+   "cod": "2102705",
+   "nome": "Cantanhede",
+   "ha": 92,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 38,
+    "requerimento": 50,
+    "disponibilidade": 4
+   },
+   "processos": {
+    "lavra": 3,
+    "requerimento": 1,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     92
+    ]
+   ]
+  },
+  {
+   "cod": "2108702",
+   "nome": "Pio XII",
+   "ha": 80,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 30,
+    "disponibilidade": 51
+   },
+   "processos": {
+    "lavra": 1,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     80
+    ]
+   ]
+  },
+  {
+   "cod": "2104602",
+   "nome": "Governador Eugênio Barros",
+   "ha": 79,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "disponibilidade": 72,
+    "lavra": 8
+   },
+   "processos": {
+    "disponibilidade": 1,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     79
+    ]
+   ]
+  },
+  {
+   "cod": "2104206",
+   "nome": "Fortuna",
+   "ha": 76,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 18,
+    "requerimento": 11,
+    "pesquisa": 48
+   },
+   "processos": {
+    "lavra": 2,
+    "requerimento": 2,
+    "pesquisa": 1
+   },
+   "substancias": [
+    [
+     "ILMENITA",
+     48
+    ],
+    [
+     "AREIA",
+     29
+    ]
+   ]
+  },
+  {
+   "cod": "2112100",
+   "nome": "Timbiras",
+   "ha": 63,
    "pctMunicipio": 0.0,
    "porFase": {
-    "pesquisa": 11
+    "lavra": 29,
+    "pesquisa": 31,
+    "requerimento": 2
+   },
+   "processos": {
+    "lavra": 1,
+    "pesquisa": 1,
+    "requerimento": 2
+   },
+   "substancias": [
+    [
+     "AREIA",
+     63
+    ]
+   ]
+  },
+  {
+   "cod": "2107209",
+   "nome": "Nina Rodrigues",
+   "ha": 58,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 57,
+    "requerimento": 1
+   },
+   "processos": {
+    "lavra": 6,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     58
+    ]
+   ]
+  },
+  {
+   "cod": "2106631",
+   "nome": "Matões do Norte",
+   "ha": 58,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "requerimento": 50,
+    "pesquisa": 7
+   },
+   "processos": {
+    "requerimento": 1,
+    "pesquisa": 1
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     50
+    ],
+    [
+     "SAIBRO",
+     7
+    ]
+   ]
+  },
+  {
+   "cod": "2100709",
+   "nome": "Anajatuba",
+   "ha": 53,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 53
+   },
+   "processos": {
+    "lavra": 2
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     53
+    ]
+   ]
+  },
+  {
+   "cod": "2106508",
+   "nome": "Matinha",
+   "ha": 52,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 52
+   },
+   "processos": {
+    "lavra": 2
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     52
+    ]
+   ]
+  },
+  {
+   "cod": "2110278",
+   "nome": "Santo Amaro do Maranhão",
+   "ha": 51,
+   "pctMunicipio": 0.0,
+   "porFase": {
+    "requerimento": 51
+   },
+   "processos": {
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     51
+    ]
+   ]
+  },
+  {
+   "cod": "2111003",
+   "nome": "São João Batista",
+   "ha": 50,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "pesquisa": 50
    },
    "processos": {
     "pesquisa": 1
    },
    "substancias": [
     [
-     "MINÉRIO DE FERRO",
-     11
+     "ÁGUA MINERAL",
+     50
+    ]
+   ]
+  },
+  {
+   "cod": "2104305",
+   "nome": "Godofredo Viana",
+   "ha": 50,
+   "pctMunicipio": 99.7,
+   "porFase": {
+    "disponibilidade": 10,
+    "requerimento": 40
+   },
+   "processos": {
+    "disponibilidade": 1,
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE OURO",
+     50
+    ]
+   ]
+  },
+  {
+   "cod": "2105807",
+   "nome": "Lago do Junco",
+   "ha": 50,
+   "pctMunicipio": 0.2,
+   "porFase": {
+    "requerimento": 50
+   },
+   "processos": {
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     50
+    ]
+   ]
+  },
+  {
+   "cod": "2105203",
+   "nome": "Igarapé Grande",
+   "ha": 49,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 49
+   },
+   "processos": {
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     49
+    ]
+   ]
+  },
+  {
+   "cod": "2107456",
+   "nome": "Olinda Nova do Maranhão",
+   "ha": 46,
+   "pctMunicipio": 0.2,
+   "porFase": {
+    "lavra": 46
+   },
+   "processos": {
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     46
+    ]
+   ]
+  },
+  {
+   "cod": "2105963",
+   "nome": "Lagoa Grande do Maranhão",
+   "ha": 45,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "requerimento": 45
+   },
+   "processos": {
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     45
+    ]
+   ]
+  },
+  {
+   "cod": "2110500",
+   "nome": "São Bento",
+   "ha": 41,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 41
+   },
+   "processos": {
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     41
+    ]
+   ]
+  },
+  {
+   "cod": "2106755",
+   "nome": "Miranda do Norte",
+   "ha": 37,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "requerimento": 14,
+    "disponibilidade": 23
+   },
+   "processos": {
+    "requerimento": 1,
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "LATERITA",
+     37
+    ]
+   ]
+  },
+  {
+   "cod": "2111706",
+   "nome": "São Vicente Ferrer",
+   "ha": 24,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "lavra": 24
+   },
+   "processos": {
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     24
+    ]
+   ]
+  },
+  {
+   "cod": "2109304",
+   "nome": "Presidente Vargas",
+   "ha": 24,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "disponibilidade": 24
+   },
+   "processos": {
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     24
+    ]
+   ]
+  },
+  {
+   "cod": "2105153",
+   "nome": "Igarapé do Meio",
+   "ha": 23,
+   "pctMunicipio": 0.1,
+   "porFase": {
+    "pesquisa": 4,
+    "lavra": 20
+   },
+   "processos": {
+    "pesquisa": 2,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     22
+    ],
+    [
+     "ÁGUA MINERAL",
+     1
+    ]
+   ]
+  },
+  {
+   "cod": "2102077",
+   "nome": "Bom Lugar",
+   "ha": 19,
+   "pctMunicipio": 0.0,
+   "porFase": {
+    "pesquisa": 18,
+    "lavra": 0
+   },
+   "processos": {
+    "pesquisa": 1,
+    "lavra": 1
+   },
+   "substancias": [
+    [
+     "ARENITO",
+     19
+    ]
+   ]
+  },
+  {
+   "cod": "2111763",
+   "nome": "Senador La Rocque",
+   "ha": 16,
+   "pctMunicipio": 0.0,
+   "porFase": {
+    "disponibilidade": 16
+   },
+   "processos": {
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "ARGILA",
+     16
+    ]
+   ]
+  },
+  {
+   "cod": "2111722",
+   "nome": "Satubinha",
+   "ha": 15,
+   "pctMunicipio": 0.0,
+   "porFase": {
+    "pesquisa": 15
+   },
+   "processos": {
+    "pesquisa": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     15
+    ]
+   ]
+  },
+  {
+   "cod": "2108405",
+   "nome": "Peri Mirim",
+   "ha": 10,
+   "pctMunicipio": 0.0,
+   "porFase": {
+    "requerimento": 10
+   },
+   "processos": {
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "MINÉRIO DE CROMO",
+     10
+    ]
+   ]
+  },
+  {
+   "cod": "2105500",
+   "nome": "João Lisboa",
+   "ha": 8,
+   "pctMunicipio": 0.0,
+   "porFase": {
+    "requerimento": 8
+   },
+   "processos": {
+    "requerimento": 1
+   },
+   "substancias": [
+    [
+     "CASCALHO",
+     8
     ]
    ]
   },
@@ -2776,38 +5333,56 @@
    ]
   },
   {
-   "cod": "2103752",
-   "nome": "Davinópolis",
+   "cod": "2106003",
+   "nome": "Lima Campos",
    "ha": 5,
    "pctMunicipio": 0.0,
    "porFase": {
-    "pesquisa": 5
+    "disponibilidade": 5
    },
    "processos": {
-    "pesquisa": 1
+    "disponibilidade": 1
    },
    "substancias": [
     [
-     "CASCALHO",
+     "ARGILA",
      5
     ]
    ]
   },
   {
-   "cod": "2105153",
-   "nome": "Igarapé do Meio",
-   "ha": 2,
+   "cod": "2111078",
+   "nome": "São João do Soter",
+   "ha": 5,
    "pctMunicipio": 0.0,
    "porFase": {
-    "pesquisa": 2
+    "disponibilidade": 5
+   },
+   "processos": {
+    "disponibilidade": 1
+   },
+   "substancias": [
+    [
+     "AREIA",
+     5
+    ]
+   ]
+  },
+  {
+   "cod": "2107407",
+   "nome": "Olho d'Água das Cunhãs",
+   "ha": 3,
+   "pctMunicipio": 0.0,
+   "porFase": {
+    "pesquisa": 3
    },
    "processos": {
     "pesquisa": 1
    },
    "substancias": [
     [
-     "AREIA",
-     2
+     "ARENITO",
+     3
     ]
    ]
   },
@@ -2875,17 +5450,31 @@
   },
   {
    "ha": 10100,
+   "processo": "800812/1986",
+   "subs": "OURO",
+   "fase": "AUTORIZAÇÃO DE PESQUISA",
+   "ano": 1986
+  },
+  {
+   "ha": 10100,
    "processo": "800329/1991",
    "subs": "OURO",
    "fase": "AUTORIZAÇÃO DE PESQUISA",
    "ano": 1991
   },
   {
-   "ha": 10100,
-   "processo": "800812/1986",
+   "ha": 10099,
+   "processo": "806162/2008",
+   "subs": "BAUXITA",
+   "fase": "DISPONIBILIDADE",
+   "ano": 2008
+  },
+  {
+   "ha": 10096,
+   "processo": "806057/2003",
    "subs": "OURO",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 1986
+   "fase": "DISPONIBILIDADE",
+   "ano": 2003
   },
   {
    "ha": 10091,
@@ -2916,11 +5505,25 @@
    "ano": 2011
   },
   {
+   "ha": 10083,
+   "processo": "806094/2016",
+   "subs": "BAUXITA",
+   "fase": "REQUERIMENTO DE PESQUISA",
+   "ano": 2016
+  },
+  {
    "ha": 10077,
    "processo": "806029/2024",
    "subs": "MINÉRIO DE FERRO",
    "fase": "AUTORIZAÇÃO DE PESQUISA",
    "ano": 2024
+  },
+  {
+   "ha": 10077,
+   "processo": "850644/1980",
+   "subs": "ALUMÍNIO",
+   "fase": "DISPONIBILIDADE",
+   "ano": 1980
   },
   {
    "ha": 10077,
@@ -2930,6 +5533,41 @@
    "ano": 2011
   },
   {
+   "ha": 10077,
+   "processo": "806344/2011",
+   "subs": "FOSFATO",
+   "fase": "DISPONIBILIDADE",
+   "ano": 2011
+  },
+  {
+   "ha": 10074,
+   "processo": "806022/2007",
+   "subs": "BAUXITA",
+   "fase": "DISPONIBILIDADE",
+   "ano": 2007
+  },
+  {
+   "ha": 10073,
+   "processo": "806287/2011",
+   "subs": "MINÉRIO DE COBRE",
+   "fase": "REQUERIMENTO DE PESQUISA",
+   "ano": 2011
+  },
+  {
+   "ha": 10066,
+   "processo": "806436/2010",
+   "subs": "MINÉRIO DE OURO",
+   "fase": "APTO PARA DISPONIBILIDADE",
+   "ano": 2010
+  },
+  {
+   "ha": 10065,
+   "processo": "806037/2007",
+   "subs": "BAUXITA",
+   "fase": "DISPONIBILIDADE",
+   "ano": 2007
+  },
+  {
    "ha": 10065,
    "processo": "806722/2010",
    "subs": "BAUXITA",
@@ -2937,84 +5575,69 @@
    "ano": 2010
   },
   {
-   "ha": 10060,
-   "processo": "806289/2012",
+   "ha": 10065,
+   "processo": "806435/2010",
    "subs": "MINÉRIO DE OURO",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2012
-  },
-  {
-   "ha": 10059,
-   "processo": "806723/2010",
-   "subs": "BAUXITA",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
+   "fase": "APTO PARA DISPONIBILIDADE",
    "ano": 2010
-  },
-  {
-   "ha": 10059,
-   "processo": "806170/2012",
-   "subs": "FOSFATO",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2012
-  },
-  {
-   "ha": 10059,
-   "processo": "806721/2010",
-   "subs": "BAUXITA",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2010
-  },
-  {
-   "ha": 10053,
-   "processo": "806089/2011",
-   "subs": "MINÉRIO DE OURO",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2011
-  },
-  {
-   "ha": 10053,
-   "processo": "806724/2010",
-   "subs": "BAUXITA",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2010
-  },
-  {
-   "ha": 10052,
-   "processo": "806201/2024",
-   "subs": "MINÉRIO DE FERRO",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2024
-  },
-  {
-   "ha": 10052,
-   "processo": "806240/2008",
-   "subs": "MINÉRIO DE OURO",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2008
-  },
-  {
-   "ha": 10047,
-   "processo": "806050/2018",
-   "subs": "MINÉRIO DE OURO",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2018
-  },
-  {
-   "ha": 10042,
-   "processo": "806249/2025",
-   "subs": "FOSFATO",
-   "fase": "AUTORIZAÇÃO DE PESQUISA",
-   "ano": 2025
   }
  ],
  "porAno": [
   [
+   1960,
+   4
+  ],
+  [
+   1969,
+   2
+  ],
+  [
+   1970,
+   3
+  ],
+  [
+   1971,
+   5
+  ],
+  [
+   1972,
+   5
+  ],
+  [
+   1973,
+   4
+  ],
+  [
+   1974,
+   4
+  ],
+  [
+   1976,
+   5
+  ],
+  [
+   1977,
+   6
+  ],
+  [
    1978,
-   1
+   3
+  ],
+  [
+   1980,
+   5
   ],
   [
    1981,
+   7
+  ],
+  [
+   1982,
    2
+  ],
+  [
+   1983,
+   4
   ],
   [
    1985,
@@ -3022,7 +5645,11 @@
   ],
   [
    1986,
-   3
+   4
+  ],
+  [
+   1987,
+   1
   ],
   [
    1990,
@@ -3033,182 +5660,198 @@
    3
   ],
   [
+   1993,
+   3
+  ],
+  [
    1994,
    1
   ],
   [
-   1996,
+   1995,
    1
+  ],
+  [
+   1996,
+   3
   ],
   [
    1997,
-   1
-  ],
-  [
-   1999,
-   1
-  ],
-  [
-   2001,
-   1
-  ],
-  [
-   2003,
    4
   ],
   [
-   2004,
-   3
-  ],
-  [
-   2005,
-   1
-  ],
-  [
-   2006,
+   1999,
    2
   ],
   [
+   2000,
+   11
+  ],
+  [
+   2001,
+   5
+  ],
+  [
+   2002,
+   4
+  ],
+  [
+   2003,
+   8
+  ],
+  [
+   2004,
+   13
+  ],
+  [
+   2005,
+   8
+  ],
+  [
+   2006,
+   17
+  ],
+  [
    2007,
-   6
+   70
   ],
   [
    2008,
-   20
+   54
   ],
   [
    2009,
-   3
+   56
   ],
   [
    2010,
-   27
+   113
   ],
   [
    2011,
-   74
+   249
   ],
   [
    2012,
-   79
+   199
   ],
   [
    2013,
-   23
+   107
   ],
   [
    2014,
-   9
+   121
   ],
   [
    2015,
-   14
+   122
   ],
   [
    2016,
-   6
+   104
   ],
   [
    2017,
-   15
+   126
   ],
   [
    2018,
-   16
+   105
   ],
   [
    2019,
-   26
+   99
   ],
   [
    2020,
-   7
+   70
   ],
   [
    2021,
-   35
+   126
   ],
   [
    2022,
-   63
+   191
   ],
   [
    2023,
-   35
+   161
   ],
   [
    2024,
-   151
+   302
   ],
   [
    2025,
-   109
+   211
   ],
   [
    2026,
-   44
+   165
   ]
  ],
  "titularesMaiorArea": [
   [
    "MINERACAO MONTE FORMOSO LTDA",
-   308944
-  ],
-  [
-   "Ecology Pesquisas Minerais Ltda",
-   124840
-  ],
-  [
-   "MINERACAO PARAGOMINAS S.A.",
-   111254
+   315157
   ],
   [
    "União Pesquisas Minerais Ltda",
-   102019
+   288523
+  ],
+  [
+   "LUNA GOLD PESQUISA MINERAL LTDA.",
+   155361
+  ],
+  [
+   "Ecology Pesquisas Minerais Ltda",
+   140719
+  ],
+  [
+   "MINERACAO PARAGOMINAS S.A.",
+   130702
+  ],
+  [
+   "Iluka Brasil Mineracao Ltda.",
+   126086
+  ],
+  [
+   "Vicenza Mineração e Participações S A.",
+   109228
+  ],
+  [
+   "Mineração Ouro Vermelho Ltda.",
+   102340
+  ],
+  [
+   "GMIN VENTURES GURUPI LTDA",
+   98938
   ],
   [
    "Pessoa física",
    98125
   ],
   [
-   "GMIN VENTURES GURUPI LTDA",
-   96166
-  ],
-  [
-   "Iluka Brasil Mineracao Ltda.",
-   66961
-  ],
-  [
-   "LUNA GOLD PESQUISA MINERAL LTDA.",
-   62682
-  ],
-  [
    "MINERACAO AURIZONA S/A",
-   53971
+   72863
   ],
   [
-   "Q.A.S MINERACAO LTDA",
-   47161
+   "MINERACAO VALE DO ARAGUAIA LTDA",
+   70150
   ],
   [
-   "PHOSFAZ FERTILIZANTES LTDA",
-   38126
+   "União Mineração Ltda",
+   68443
   ],
   [
-   "Cmn Central Mineral do Nordeste Ltda",
-   35270
-  ],
-  [
-   "ACQUAMAR OCEANOLOGIA LTDA",
-   32365
-  ],
-  [
-   "TERRA DO BRASIL MINERACAO LTDA",
-   30441
+   "ENGEO ENGENHARIA, GEOLOGIA E COMERCIO LTDA",
+   65907
   ],
   [
    "Pessoa física",
-   30346
+   48527
   ]
  ]
 }
