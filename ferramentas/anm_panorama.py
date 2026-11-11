@@ -56,7 +56,7 @@ def anm_arcgis():
                 baixar(f"{raiz}/{sv['name']}/{sv['type']}?f=json", '/tmp/sv.json')
                 for ly in json.load(open('/tmp/sv.json')).get('layers', []):
                     if interessa(sv['name'] + ' ' + ly.get('name', '')) and not ly.get('subLayerIds'):
-                        cand.append(f"{raiz}/{sv['name']}/{sv['type']}/{ly['id']}")
+                        cand.append((f"{raiz}/{sv['name']}/{sv['type']}/{ly['id']}", sv['name'] + ' / ' + ly.get('name', '')))
             except SystemExit:
                 pass
         for pz in j.get('folders', []):
@@ -64,8 +64,14 @@ def anm_arcgis():
     andar('')
     if not cand:
         print('Serviços no catálogo raiz:', [sv['name'] for sv in json.load(open('/tmp/cat.json')).get('services', [])][:80], json.load(open('/tmp/cat.json')).get('folders'), flush=True)
-    print('Camadas candidatas:', cand, flush=True)
-    for url in cand:
+    import re
+    def nota(c):
+        n = c[1].lower()
+        return (5 if re.search(r'dados_anm', n) else 0) + (4 if re.search(r'processos? miner', n) else 0) + (3 if 'ativo' in n and 'inativ' not in n else 0) \
+            - (6 if re.search(r'inativ|arrend|bloqueio|reserva|garimp|economia|pem_|comunica|militar|cultura|transporte|aguas|geocien|estrutura|planejamento|protecao', n) else 0) + (1 if 'FeatureServer' in c[0] else 0)
+    cand.sort(key=nota, reverse=True)
+    print('Camadas candidatas (melhor primeiro):', [(c[1], c[0].split('services/')[1], nota(c)) for c in cand[:15]], flush=True)
+    for url, _nome in cand:
         feats, off = [], 0
         try:
             while True:
