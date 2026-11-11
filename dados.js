@@ -30,11 +30,17 @@ async function buscarTexto(url) {
     } catch (e) { if (/fora do ar/.test(e.message)) throw e; diretoBloqueado.add(host); }
   }
   if (!CONF.proxy) throw new Error('esta base não aceita consulta direta do navegador. Configure o servidor-ponte em ⚙ Configurações.');
-  const r = await fetch(viaPonte(url));
+  // servidor do órgão sobrecarregado (502/503/504): espera e tenta de novo antes de desistir
+  let r;
+  for (let i = 0; i < 3; i++) {
+    r = await fetch(viaPonte(url));
+    if (r.ok || ![502, 503, 504].includes(r.status) || i === 2) break;
+    await new Promise(res => setTimeout(res, [4000, 10000][i]));
+  }
   if (!r.ok) {
     let det = ''; try { det = (await r.text()).slice(0, 200); } catch (e) { }
     if (/não permitido/.test(det)) throw new Error(`a ponte ainda não libera ${host} (cole a versão nova da ponte no Cloudflare)`);
-    throw new Error(`base respondeu ${r.status}${r.status === 403 ? ' (o órgão recusou a consulta)' : ''}`);
+    throw new Error(`base respondeu ${r.status}${r.status === 403 ? ' (o órgão recusou a consulta)' : [502, 503, 504].includes(r.status) ? ' (servidor do órgão fora do ar ou sobrecarregado; tentei 3 vezes — gere de novo mais tarde)' : ''}`);
   }
   return r.text();
 }
