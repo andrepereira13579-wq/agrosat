@@ -9,44 +9,66 @@ Saída: data/gd/<UF>.json, só com os campos técnicos (sem nome, CPF/CNPJ ou CE
    "d": [[lat, lon, iMun, iClasse, iMod, iGer, kW, ano], ...]}
 Variáveis: GD_UFS (padrão "MA"), GD_CSV (arquivo local já baixado, para teste).
 """
-import csv, io, json, os, sys, time, urllib.request, datetime, zipfile
+import csv, io, json, os, sys, time, urllib.request, urllib.parse, datetime, zipfile, subprocess
 
 PACOTE = 'relacao-de-empreendimentos-de-geracao-distribuida'
 API = 'https://dadosabertos.aneel.gov.br/api/3/action/package_show?id=' + PACOTE
-UA = {'User-Agent': 'Mozilla/5.0 (AgroSat; dados abertos)'}
+UA = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36'}
+ZIP_FIXO = 'https://dadosabertos.aneel.gov.br/dataset/5e0fafd2-21b9-4d5b-b622-40438d40aba2/resource/b1bd71e7-d0ad-4214-9053-cbd58e9564a7/download/empreendimento-geracao-distribuida.zip'
+PONTE = os.environ.get('GD_PONTE', 'https://agrosat-ponte.andrepereira13579.workers.dev')
 UFS = [u.strip().upper() for u in os.environ.get('GD_UFS', 'MA').split(',') if u.strip()]
 SAIDA = os.path.join(os.path.dirname(__file__), '..', 'data', 'gd')
 csv.field_size_limit(10 ** 9)
 
 
-def baixar(url, destino, tent=4):
-    for i in range(tent):
-        try:
-            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=600) as r, open(destino, 'wb') as f:
-                while True:
-                    b = r.read(1 << 20)
-                    if not b:
-                        break
-                    f.write(b)
-            return destino
-        except Exception as e:
-            print(f'  tentativa {i + 1} falhou: {e}', flush=True)
-            time.sleep(15 * (i + 1))
+def _urllib(url, destino):
+    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=900) as r, open(destino, 'wb') as f:
+        while True:
+            b = r.read(1 << 20)
+            if not b:
+                break
+            f.write(b)
+
+
+def _curl(url, destino):
+    subprocess.run(['curl', '-fL', '--retry', '3', '--retry-delay', '10', '--connect-timeout', '60', '-A', UA['User-Agent'], '-o', destino, url], check=True)
+
+
+def baixar(url, destino):
+    """ANEEL às vezes corta conexões vindas de fora do Brasil: tenta direto, com curl e pela ponte do Cloudflare."""
+    rotas = [('direto', _urllib, url), ('curl', _curl, url)]
+    if PONTE:
+        rotas.append(('ponte', _curl, PONTE.rstrip('/') + '/?url=' + urllib.parse.quote(url, safe='')))
+    for nome, fn, u in rotas:
+        for i in range(2):
+            try:
+                print(f'  {nome} (tentativa {i + 1})...', flush=True)
+                fn(u, destino)
+                if os.path.getsize(destino) > 1000:
+                    return destino
+                raise IOError('arquivo vazio')
+            except Exception as e:
+                print(f'  {nome} falhou: {e}', flush=True)
+                time.sleep(10)
     raise SystemExit('Não consegui baixar ' + url)
 
 
 def url_csv():
-    with urllib.request.urlopen(urllib.request.Request(API, headers=UA), timeout=120) as r:
-        pac = json.load(r)['result']
+    try:
+        baixar(API, '/tmp/gd_pacote.json')
+        pac = json.load(open('/tmp/gd_pacote.json'))['result']
+    except (Exception, SystemExit) as e:
+        print('Catálogo da ANEEL indisponível, uso o endereço fixo do ZIP:', e, flush=True)
+        return ZIP_FIXO
     cands = []
     for res in pac.get('resources', []):
         u, nome = res.get('url', ''), (res.get('name', '') + ' ' + u).lower()
         if any(x in nome for x in ('dicion', 'metadad', '.pdf')):
             continue
-        if u.lower().endswith(('.csv', '.zip')) and 'empreendimento' in nome:
+        if u.lower().endswith(('.csv', '.zip')) and 'empreendimento-geracao-distribuida' in nome:
             cands.append(res)
     if not cands:
-        raise SystemExit('Recurso CSV não encontrado no pacote da ANEEL')
+        return ZIP_FIXO
     cands.sort(key=lambda r: ('zip' in r['url'].lower(), r.get('last_modified') or ''), reverse=False)
     return cands[0]['url']
 
