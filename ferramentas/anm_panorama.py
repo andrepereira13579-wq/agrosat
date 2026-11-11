@@ -23,7 +23,7 @@ def baixar(url, destino, obrigatorio=True):
     variantes = [[], ['--ciphers', 'DEFAULT:@SECLEVEL=0']]
     # servidores da ANM com cadeia de certificado incompleta: só leitura de dado público, aceita sem verificar
     if 'anm.gov.br' in url:
-        variantes += [['-k', '--ciphers', 'DEFAULT:@SECLEVEL=0'], ['-k', '--tlsv1.2', '--tls-max', '1.2', '--ciphers', 'DEFAULT:@SECLEVEL=0']]
+        variantes = [['-k'], ['-k', '--ciphers', 'DEFAULT:@SECLEVEL=0'], ['-k', '--tlsv1.2', '--tls-max', '1.2', '--ciphers', 'DEFAULT:@SECLEVEL=0']]
     rotas = [(url, v) for v in variantes] + [(PONTE + '/?url=' + urllib.parse.quote(url, safe=''), [])]
     for u, extra in rotas:
         try:
@@ -41,22 +41,29 @@ def anm_arcgis():
     """Reserva: baixa os processos do estado pelo ArcGIS da ANM (geo.anm.gov.br), em páginas, como GeoJSON."""
     raiz = 'https://geo.anm.gov.br/arcgis/rest/services'
     cand = []
+    interessa = lambda nome: any(x in nome.lower() for x in ('sigmine', 'processo', 'direito', 'titulo', 'título'))
     def andar(pasta):
-        baixar(f'{raiz}/{pasta}?f=json' if pasta else f'{raiz}?f=json', '/tmp/cat.json')
+        try:
+            baixar(f'{raiz}/{pasta}?f=json' if pasta else f'{raiz}?f=json', '/tmp/cat.json')
+        except SystemExit:
+            return
         j = json.load(open('/tmp/cat.json'))
-        for sv in j.get('services', []):
-            if sv.get('type') in ('MapServer', 'FeatureServer'):
-                try:
-                    baixar(f"{raiz}/{sv['name']}/{sv['type']}?f=json", '/tmp/sv.json')
-                    for ly in json.load(open('/tmp/sv.json')).get('layers', []):
-                        nome = (sv['name'] + ' ' + ly.get('name', '')).lower()
-                        if 'sigmine' in nome or 'processo' in nome:
-                            cand.append(f"{raiz}/{sv['name']}/{sv['type']}/{ly['id']}")
-                except SystemExit:
-                    pass
+        servs = sorted(j.get('services', []), key=lambda sv: not interessa(sv['name']))
+        for sv in servs:
+            if sv.get('type') not in ('MapServer', 'FeatureServer') or not interessa(sv['name']):
+                continue
+            try:
+                baixar(f"{raiz}/{sv['name']}/{sv['type']}?f=json", '/tmp/sv.json')
+                for ly in json.load(open('/tmp/sv.json')).get('layers', []):
+                    if interessa(sv['name'] + ' ' + ly.get('name', '')) and not ly.get('subLayerIds'):
+                        cand.append(f"{raiz}/{sv['name']}/{sv['type']}/{ly['id']}")
+            except SystemExit:
+                pass
         for pz in j.get('folders', []):
-            if not pasta: andar(pz)
+            if not pasta and interessa(pz): andar(pz)
     andar('')
+    if not cand:
+        print('Serviços no catálogo raiz:', [sv['name'] for sv in json.load(open('/tmp/cat.json')).get('services', [])][:80], json.load(open('/tmp/cat.json')).get('folders'), flush=True)
     print('Camadas candidatas:', cand, flush=True)
     for url in cand:
         feats, off = [], 0
