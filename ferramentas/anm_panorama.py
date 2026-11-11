@@ -18,17 +18,60 @@ UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 SAIDA = os.path.join(os.path.dirname(__file__), '..', 'data', 'anm')
 
 
-def baixar(url, destino):
+def baixar(url, destino, obrigatorio=True):
     import urllib.parse
-    for u in (url, PONTE + '/?url=' + urllib.parse.quote(url, safe='')):
-        for i in range(2):
-            try:
-                subprocess.run(['curl', '-fL', '--retry', '2', '--connect-timeout', '60', '-A', UA, '-o', destino, u], check=True)
-                if os.path.getsize(destino) > 500:
-                    return destino
-            except Exception as e:
-                print('falhou', u[:90], e, flush=True); time.sleep(8)
-    raise SystemExit('Não consegui baixar ' + url)
+    variantes = [[], ['--ciphers', 'DEFAULT:@SECLEVEL=0'], ['--tlsv1.2', '--tls-max', '1.2', '--ciphers', 'DEFAULT:@SECLEVEL=0']]
+    rotas = [(url, v) for v in variantes] + [(PONTE + '/?url=' + urllib.parse.quote(url, safe=''), [])]
+    for u, extra in rotas:
+        try:
+            subprocess.run(['curl', '-fsSL', '--retry', '2', '--connect-timeout', '60', '-A', UA, *extra, '-o', destino, u], check=True)
+            if os.path.getsize(destino) > 500:
+                return destino
+        except Exception as e:
+            print('falhou', u[:90], extra, e.__class__.__name__, getattr(e, 'returncode', ''), flush=True); time.sleep(5)
+    if obrigatorio:
+        raise SystemExit('Não consegui baixar ' + url)
+    return None
+
+
+def anm_arcgis():
+    """Reserva: baixa os processos do estado pelo ArcGIS da ANM (geo.anm.gov.br), em páginas, como GeoJSON."""
+    raiz = 'https://geo.anm.gov.br/arcgis/rest/services'
+    cand = []
+    def andar(pasta):
+        baixar(f'{raiz}/{pasta}?f=json' if pasta else f'{raiz}?f=json', '/tmp/cat.json')
+        j = json.load(open('/tmp/cat.json'))
+        for sv in j.get('services', []):
+            if sv.get('type') in ('MapServer', 'FeatureServer'):
+                try:
+                    baixar(f"{raiz}/{sv['name']}/{sv['type']}?f=json", '/tmp/sv.json')
+                    for ly in json.load(open('/tmp/sv.json')).get('layers', []):
+                        nome = (sv['name'] + ' ' + ly.get('name', '')).lower()
+                        if 'sigmine' in nome or 'processo' in nome:
+                            cand.append(f"{raiz}/{sv['name']}/{sv['type']}/{ly['id']}")
+                except SystemExit:
+                    pass
+        for pz in j.get('folders', []):
+            if not pasta: andar(pz)
+    andar('')
+    print('Camadas candidatas:', cand, flush=True)
+    for url in cand:
+        feats, off = [], 0
+        try:
+            while True:
+                q = f"{url}/query?where=UF%3D%27{UF}%27&outFields=*&returnGeometry=true&outSR=4674&f=geojson&resultOffset={off}&resultRecordCount=1000"
+                baixar(q, '/tmp/pg.json')
+                j = json.load(open('/tmp/pg.json'))
+                fs = j.get('features', [])
+                feats += fs; off += len(fs)
+                if len(fs) < 1000 and not j.get('exceededTransferLimit'): break
+                if not fs: break
+            if feats:
+                print(f'{url}: {len(feats)} processos', flush=True)
+                return feats
+        except (Exception, SystemExit) as e:
+            print('camada falhou', url, e, flush=True)
+    raise SystemExit('ANM indisponível pelo ZIP e pelo ArcGIS')
 
 
 def grupo_fase(f):
@@ -46,7 +89,7 @@ def grupo_fase(f):
 
 def main():
     os.makedirs(SAIDA, exist_ok=True)
-    baixar(URL_ANM, '/tmp/anm.zip'); baixar(URL_MUN, '/tmp/mun.json'); baixar(URL_NOMES, '/tmp/nomes.json')
+    baixar(URL_MUN, '/tmp/mun.json'); baixar(URL_NOMES, '/tmp/nomes.json')
     nomes = {str(m['id']): m['nome'] for m in json.load(open('/tmp/nomes.json', encoding='utf-8'))}
     mun = json.load(open('/tmp/mun.json', encoding='utf-8'))
     tr = Transformer.from_crs('EPSG:4674', 'EPSG:5880', always_xy=True).transform  # SIRGAS -> Policônica (área em m²)
@@ -54,19 +97,25 @@ def main():
     for ft in mun['features']:
         mgeo.append(transform(tr, shape(ft['geometry']).buffer(0))); mcod.append(str(ft['properties'].get('codarea')))
     arv = STRtree(mgeo)
-    z = zipfile.ZipFile('/tmp/anm.zip'); base = [n[:-4] for n in z.namelist() if n.lower().endswith('.shp')][0]
-    sf = shapefile.Reader(shp=io.BytesIO(z.read(base + '.shp')), dbf=io.BytesIO(z.read(base + '.dbf')), shx=io.BytesIO(z.read(base + '.shx')), encoding='latin-1')
-    campos = [f[0] for f in sf.fields[1:]]
-    print('Campos:', campos, flush=True)
+    registros = []   # (dict de atributos, geometria GeoJSON)
+    if baixar(URL_ANM, '/tmp/anm.zip', obrigatorio=False):
+        z = zipfile.ZipFile('/tmp/anm.zip'); base = [n[:-4] for n in z.namelist() if n.lower().endswith('.shp')][0]
+        sf = shapefile.Reader(shp=io.BytesIO(z.read(base + '.shp')), dbf=io.BytesIO(z.read(base + '.dbf')), shx=io.BytesIO(z.read(base + '.shx')), encoding='latin-1')
+        campos = [f[0] for f in sf.fields[1:]]
+        registros = ((dict(zip(campos, sr.record)), sr.shape.__geo_interface__) for sr in sf.iterShapeRecords())
+        print('Fonte: ZIP do SIGMINE', flush=True)
+    else:
+        registros = (({k.upper(): v for k, v in (ft.get('properties') or {}).items()}, ft['geometry']) for ft in anm_arcgis() if ft.get('geometry'))
+        print('Fonte: ArcGIS da ANM', flush=True)
     porMun = collections.defaultdict(lambda: collections.Counter()); porMunN = collections.defaultdict(lambda: collections.Counter())
     porMunSubs = collections.defaultdict(lambda: collections.Counter())
     porSubs = collections.Counter(); porSubsN = collections.Counter(); porFase = collections.Counter(); porFaseN = collections.Counter()
     porFaseDet = collections.Counter(); porAno = collections.Counter(); maiores = []; titulares = collections.Counter()
     n = 0
-    for sr in sf.iterShapeRecords():
-        r = dict(zip(campos, sr.record)); n += 1
+    for r, geo in registros:
+        n += 1
         try:
-            g = transform(tr, shape(sr.shape.__geo_interface__).buffer(0))
+            g = transform(tr, shape(geo).buffer(0))
         except Exception:
             continue
         fase, subs = (r.get('FASE') or '').strip(), (r.get('SUBS') or '').strip().upper() or 'NÃO INFORMADA'
