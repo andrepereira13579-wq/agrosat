@@ -184,13 +184,21 @@ def main():
     hoje = datetime.date.today().isoformat()
     meta = {}
     for uf, o in out.items():
+        if usar_sede:   # todas no mesmo ponto por município: agrega (município, classe, modalidade, fonte) com soma de kW e contagem
+            ag = {}
+            for r in o['d']:
+                k = (r[2], r[3], r[4], r[5])
+                a = ag.setdefault(k, [r[0], r[1], r[2], r[3], r[4], r[5], 0.0, 0, r[8], 0])
+                a[6] += r[6]; a[9] += 1; a[7] = max(a[7], r[7])
+            o['d'] = [a[:6] + [round(a[6], 1)] + a[7:] for a in ag.values()]
         doc = {'gerado': hoje, 'fonte': 'ANEEL — Relação de empreendimentos de geração distribuída (dados abertos)', 'uf': uf,
                'listas': o['listas'], 'd': o['d'], 'semCoordenada': o['sem'],
                'local': 'municipio' if usar_sede else ('empreendimento' if cab[C['lat']] == 'NumCoordNEmpreendimento' else 'subestacao')}
         with open(os.path.join(SAIDA, uf + '.json'), 'w', encoding='utf-8') as f:
             json.dump(doc, f, ensure_ascii=False, separators=(',', ':'))
-        meta[uf] = {'registros': len(o['d']), 'semCoordenada': o['sem']}
-        print(f'{uf}: {len(o["d"])} com coordenada, {o["sem"]} sem', flush=True)
+        tot = sum((r[9] if len(r) > 9 else 1) for r in o['d'])
+        meta[uf] = {'registros': tot, 'linhas': len(o['d']), 'semCoordenada': o['sem']}
+        print(f'{uf}: {tot} com coordenada ({len(o["d"])} linhas), {o["sem"]} sem', flush=True)
     with open(os.path.join(SAIDA, 'meta.json'), 'w', encoding='utf-8') as f:
         json.dump({'gerado': hoje, 'ufs': meta}, f, ensure_ascii=False)
     if not any(m['registros'] for m in meta.values()):

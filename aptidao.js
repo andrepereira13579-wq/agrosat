@@ -28,12 +28,12 @@ async function geracaoDistribuida(f, F, raio = 50) {
     let km = memo.get(kk);
     if (km === undefined) { km = distKmFeicao(F, turf.point([lon, lat])); memo.set(kk, km); }
     if (km > raio) continue;
-    n++; kw += d[6] || 0;
+    const q = d[9] || 1; n += q; kw += d[6] || 0;
     // agrupa pelo ponto (subestação, quando a ANEEL só informa a subestação)
     const g = grupos.get(kk) || { lon, lat, km, sub: L.sub ? L.sub[d[8]] : '', muns: new Map(), classes: new Map(), n: 0, kw: 0 };
-    g.n++; g.kw += d[6] || 0;
-    const m = L.mun[d[2]]; g.muns.set(m, (g.muns.get(m) || 0) + 1);
-    const c = L.classe[d[3]]; g.classes.set(c, (g.classes.get(c) || 0) + 1);
+    g.n += q; g.kw += d[6] || 0;
+    const m = L.mun[d[2]]; g.muns.set(m, (g.muns.get(m) || 0) + q);
+    const c = L.classe[d[3]]; g.classes.set(c, (g.classes.get(c) || 0) + q);
     grupos.set(kk, g);
   }
   const lista = [...grupos.values()].sort((a, b) => a.km - b.km).map(g => ({ ...g, muns: [...g.muns.entries()].sort((a, b) => b[1] - a[1]).map(x => x[0]), classes: [...g.classes.entries()].sort((a, b) => b[1] - a[1]) }));
