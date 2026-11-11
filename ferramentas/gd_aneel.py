@@ -62,7 +62,7 @@ def url_csv():
         return ZIP_FIXO
     cands = []
     for res in pac.get('resources', []):
-        u, nome = res.get('url', ''), (res.get('name', '') + ' ' + u).lower()
+        u = res.get('url', ''); nome = (res.get('name', '') + ' ' + u).lower()
         if any(x in nome for x in ('dicion', 'metadad', '.pdf')):
             continue
         if u.lower().endswith(('.csv', '.zip')) and 'empreendimento-geracao-distribuida' in nome:
