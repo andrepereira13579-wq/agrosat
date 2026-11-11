@@ -20,7 +20,7 @@ const TEMAS_ENTORNO = [
   { k: 'termo', nome: 'Termelétricas (UTE)', raiz: ['aneel', 'infrasa'], re: /\bUTE\b|termel/i, raio: 50 },
   { k: 'lt', nome: 'Linhas de transmissão', raiz: ['aneel', 'infrasa'], re: /linhas? de transmiss|\bLT\b/i, raio: 20 },
   { k: 'se', nome: 'Subestações', raiz: ['aneel', 'infrasa'], re: /subesta/i, raio: 30 },
-  { k: 'min', nome: 'Processos minerários (ANM)', raiz: 'anm', re: /processo|sigmine|brasil/i, raio: 10, dentro: 'alerta' },
+  { k: 'min', nome: 'Processos minerários (ANM)', raiz: 'anm', re: /processos? miner[aá]rios? ativos/i, uma: true, reserva: 'https://geo.anm.gov.br/arcgis/rest/services/SIGMINE/dados_anm/FeatureServer/0', raio: 10, dentro: 'alerta' },
   { k: 'outorga', nome: 'Outorgas de água (ANA)', raiz: ['ana', 'ana2'], re: /outorg/i, raio: 10 },
   { k: 'pivo', nome: 'Pivôs centrais', raiz: ['ana', 'ana2'], re: /piv[oô]/i, raio: 20 },
   { k: 'barragem', nome: 'Barragens (SNISB)', raiz: ['ana', 'ana2', 'infrasa'], re: /barrag|snisb/i, raio: 50 },
@@ -101,9 +101,10 @@ async function consultarTema(T, F) {
   const raizes = Array.isArray(T.raiz) ? T.raiz : [T.raiz];
   let alvo = [], erro = null;
   for (const rz of raizes) {
-    try { alvo = (await indiceCatalogo(rz)).filter(c => T.re.test(c.nome)).slice(0, 4); if (alvo.length) break; }
+    try { alvo = (await indiceCatalogo(rz)).filter(c => T.re.test(c.nome)).sort((a, b) => /FeatureServer/.test(b.url) - /FeatureServer/.test(a.url)).slice(0, T.uma ? 1 : 4); if (alvo.length) break; }
     catch (e) { erro = e; }
   }
+  if (!alvo.length && T.reserva) alvo = [{ url: T.reserva, nome: 'reserva' }];
   if (!alvo.length) throw erro || new Error('camada não encontrada no catálogo do órgão');
   const b = turf.bbox(turf.buffer(F, T.raio, { units: 'kilometers' }));
   const feats = [];
